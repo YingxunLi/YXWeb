@@ -5,6 +5,8 @@ let isHovering = false;
 let mouseX = 0;
 let targetRotationY = 0;
 let currentRotationY = 0;
+let isRotating = false;
+let lastTriggerDirection = 0; // 记录最后一次触发的方向
 
 function init() {
     // 创建场景
@@ -109,16 +111,20 @@ function animate() {
     
     // 处理鼠标交互的Y轴旋转效果（翻页效果）
     if (logo) {
-        if (isHovering) {
-            // 鼠标悬停时的引导旋转 + 鼠标移动控制
-            targetRotationY = (mouseX * Math.PI / 2) + Math.sin(Date.now() * 0.005) * 0.17; // 0.17 ≈ 10度
-        } else {
-            // 没有悬停时保持当前位置
-            targetRotationY = currentRotationY;
+        if (isRotating) {
+            // 惯性旋转到目标位置
+            const diff = targetRotationY - currentRotationY;
+            if (Math.abs(diff) > 0.01) {
+                currentRotationY += diff * 0.1;
+            } else {
+                currentRotationY = targetRotationY;
+                isRotating = false;
+            }
+        } else if (isHovering) {
+            // 鼠标悬停时的引导旋转
+            currentRotationY += Math.sin(Date.now() * 0.005) * 0.002; // 轻微摆动
         }
         
-        // 平滑过渡到目标旋转
-        currentRotationY += (targetRotationY - currentRotationY) * 0.1;
         logo.rotation.y = currentRotationY;
     }
     
@@ -138,9 +144,48 @@ function addMouseEvents() {
     });
     
     canvas.addEventListener('mousemove', (event) => {
-        if (isHovering) {
+        if (isHovering && !isRotating) {
             // 将鼠标x坐标映射到-1到1的范围
             mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            
+            // 检查鼠标移动方向，可以无限制旋转
+            if (mouseX < -0.3 && lastTriggerDirection !== -1) {
+                // 向左移动
+                isRotating = true;
+                lastTriggerDirection = -1;
+                targetRotationY -= Math.PI / 2; // 减去90度
+            } else if (mouseX > 0.3 && lastTriggerDirection !== 1) {
+                // 向右移动
+                isRotating = true;
+                lastTriggerDirection = 1;
+                targetRotationY += Math.PI / 2; // 加上90度
+            } else if (Math.abs(mouseX) <= 0.2 && lastTriggerDirection !== 0) {
+                // 回到中间区域，可以触发回到最近的90度倍数位置
+                isRotating = true;
+                lastTriggerDirection = 0;
+                // 找到最近的90度倍数位置
+                const nearestAngle = Math.round(targetRotationY / (Math.PI / 2)) * (Math.PI / 2);
+                targetRotationY = nearestAngle;
+            }
+        }
+    });
+    
+    // 添加点击事件作为备选交互方式
+    canvas.addEventListener('click', (event) => {
+        if (!isRotating) {
+            const clickX = (event.clientX / window.innerWidth) * 2 - 1;
+            isRotating = true;
+            
+            // 根据点击位置决定旋转方向
+            if (clickX < -0.2) {
+                targetRotationY -= Math.PI / 2; // 向左旋转90度
+            } else if (clickX > 0.2) {
+                targetRotationY += Math.PI / 2; // 向右旋转90度
+            } else {
+                // 点击中间区域回到最近的90度倍数位置
+                const nearestAngle = Math.round(targetRotationY / (Math.PI / 2)) * (Math.PI / 2);
+                targetRotationY = nearestAngle;
+            }
         }
     });
 }
