@@ -77,6 +77,9 @@ function init() {
     
     // === 初始化导航栏 ===
     updateNavbar();
+    
+    // === 初始化导航栏 ===
+    updateNavbar();
 }
 
 // ============ STL文件加载函数 ============
@@ -215,17 +218,20 @@ function addMouseEvents() {
         isHovering = false; // 鼠标离开canvas区域
     });
     
-    // === 核心交互逻辑：鼠标移动事件 ===
+    // === 鼠标移动事件处理 ===
     canvas.addEventListener('mousemove', (event) => {
-        // --- 射线检测：精确判断鼠标是否在logo上 ---
+        // --- 区域检测：判断鼠标是否在画布中央70%区域内 ---
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         
-        // 检查鼠标是否悬停在logo上
-        if (logo) {
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(logo);
-            isHoveringLogo = intersects.length > 0; // 有交点则在logo上
+        // 检查鼠标是否在中央70%区域内（-0.35 到 0.35 的范围）
+        const centerAreaSize = 0.35; // 70%区域的一半
+        isHoveringLogo = (Math.abs(mouse.x) <= centerAreaSize && Math.abs(mouse.y) <= centerAreaSize);
+        
+        // 控制导航栏显示/隐藏
+        const navbar = document.getElementById('navbar');
+        if (navbar) {
+            navbar.style.opacity = isHoveringLogo ? '1' : '0';
         }
         
         // --- 手势识别：检测从右向左的移动 ---

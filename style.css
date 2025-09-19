@@ -3,13 +3,33 @@ body {
     padding: 0;
     background-color: white;
     overflow: hidden;
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', Arial, sans-serif;
 }
 
 #container {
     width: 100vw;
     height: 100vh;
     position: relative;
+}
+
+#navbar {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.nav-content {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #000;
+    letter-spacing: 2px;
+    transition: opacity 0.2s ease;
 }
 
 #loading {
