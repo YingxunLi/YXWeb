@@ -1,23 +1,35 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YXWeb</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Yingxun Portfolio</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="container">
-        <div id="loading">加载中...</div>
+    <div id="main-container">
+        <!-- 导航栏 -->
+        <nav id="navbar">
+            <div class="nav-content">YINGXUN</div>
+        </nav>
+        
+        <!-- 3D Logo容器 -->
+        <div id="logo-container"></div>
+        
+        <!-- 底部引导箭头 -->
+        <div id="bottom-arrow">▼</div>
+        
+        <!-- 加载提示 -->
+        <div id="loading">Loading 3D Model...</div>
     </div>
 
-    <!-- Three.js CDN -->
+    <!-- Three.js 库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- STL Loader -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-    <!-- OrbitControls for interaction -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <!-- 项目脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    
+    <!-- 主页脚本 -->
     <script src="main.js"></script>
 </body>
 </html>

@@ -23,6 +23,9 @@ let currentRotationZ = 0; // Z轴当前旋转角度
 let isRotating = false; // 是否正在执行旋转动画
 let interactionCount = 0; // 交互次数计数器（用于控制Y轴/Z轴交替）
 let hasTriggered = false; // 防止重复触发标志
+let currentState = 1; // 当前状态：1=Yingxun, 2=Projekte, 3=Kontakt
+let targetState = 1; // 目标状态（用于渐变过渡）
+let stateProgress = 1; // 状态过渡进度（0到1）
 
 // 射线检测相关对象
 let raycaster = new THREE.Raycaster(); // 用于精确检测鼠标与3D物体的交互
@@ -52,7 +55,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = false; // 不使用阴影
-    document.getElementById('container').appendChild(renderer.domElement);
+    document.getElementById('logo-container').appendChild(renderer.domElement);
 
     // === 控制器设置（允许用户手动旋转查看模型）===
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -71,6 +74,9 @@ function init() {
 
     // === UI更新 ===
     document.getElementById('loading').style.display = 'none';
+    
+    // === 初始化导航栏 ===
+    updateNavbar();
 }
 
 // ============ STL文件加载函数 ============
@@ -165,9 +171,19 @@ function animate() {
                 currentRotationZ = targetRotationZ;
             }
             
+            // 计算旋转进度并更新状态过渡
+            const totalDiff = Math.abs(diffX) + Math.abs(diffY) + Math.abs(diffZ);
+            stateProgress = Math.max(0, Math.min(1, 1 - totalDiff / Math.PI)); // 进度从0到1
+            
+            // 实时更新导航栏
+            updateNavbar();
+            
             // 检查是否完成旋转
             if (Math.abs(diffX) <= 0.01 && Math.abs(diffY) <= 0.01 && Math.abs(diffZ) <= 0.01) {
                 isRotating = false;
+                currentState = targetState; // 确保状态同步
+                stateProgress = 1; // 确保进度完成
+                updateNavbar(); // 最终更新
             }
         } else if (isHoveringLogo) {
             // 悬停引导效果：只有当鼠标悬停在logo上时才显示轻微摆动
@@ -233,15 +249,18 @@ function addMouseEvents() {
                 if (interactionCount === 1) {
                     // 第一次交互：Y轴旋转90度（翻页效果）
                     targetRotationY += Math.PI / 2;
+                    targetState = 2; // 设置目标状态2：Projekte
                 } else if (interactionCount === 2) {
                     // 第二次交互：X轴和Y轴复合旋转
                     targetRotationX -= Math.PI / 2;
-                    targetRotationY += Math.PI / 4; 
+                    targetRotationY += Math.PI / 4;
+                    targetState = 3; // 设置目标状态3：Kontakt
                 } else if (interactionCount === 3) {
                     // 第三次交互：回到原始位置
                     targetRotationX = 0;
                     targetRotationY = 0;
                     targetRotationZ = 0;
+                    targetState = 1; // 设置目标状态1：Yingxun
                 } else {
                     // 第4次及以后：循环前三种状态
                     const cyclePosition = (interactionCount - 1) % 3 + 1; // 将交互次数映射到1,2,3循环
@@ -251,16 +270,19 @@ function addMouseEvents() {
                         targetRotationX = 0;
                         targetRotationY = Math.PI / 2;
                         targetRotationZ = 0;
+                        targetState = 2; // Projekte
                     } else if (cyclePosition === 2) {
                         // 相当于第二次：X轴和Y轴复合旋转
                         targetRotationX = -Math.PI / 2;
                         targetRotationY = Math.PI / 2 + Math.PI / 4;
                         targetRotationZ = 0;
+                        targetState = 3; // Kontakt
                     } else if (cyclePosition === 3) {
                         // 相当于第三次：回到原始位置
                         targetRotationX = 0;
                         targetRotationY = 0;
                         targetRotationZ = 0;
+                        targetState = 1; // Yingxun
                     }
                 }
                 
@@ -294,6 +316,48 @@ function onWindowResize() {
     
     // 更新渲染器尺寸
     renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// ============ 导航栏更新函数 ============
+// 根据当前状态更新导航栏文字
+function updateNavbar() {
+    let navbarElement = document.querySelector('.nav-content');
+    
+    // 如果导航栏不存在，创建它
+    if (!navbarElement) {
+        const navbar = document.getElementById('navbar');
+        if (navbar) {
+            navbarElement = navbar.querySelector('.nav-content');
+        }
+    }
+    
+    if (!navbarElement) {
+        console.error('导航栏元素未找到');
+        return;
+    }
+    
+    // 状态名称数组
+    const stateNames = ['', 'YINGXUN', 'PROJEKTE', 'KONTAKT'];
+
+    if (isRotating && currentState !== targetState) {
+        // 旋转中：根据进度混合显示两个状态的文字
+        const fromState = currentState;
+        const toState = targetState;
+        
+        if (stateProgress < 0.5) {
+            // 前半段：显示当前状态，逐渐变透明
+            navbarElement.textContent = stateNames[fromState];
+            navbarElement.style.opacity = 1 - stateProgress * 2; // 从1到0
+        } else {
+            // 后半段：显示目标状态，逐渐显现
+            navbarElement.textContent = stateNames[toState];
+            navbarElement.style.opacity = (stateProgress - 0.5) * 2; // 从0到1
+        }
+    } else {
+        // 静止状态：正常显示当前状态
+        navbarElement.textContent = stateNames[currentState];
+        navbarElement.style.opacity = 1;
+    }
 }
 
 // ============ 事件监听器注册 ============
