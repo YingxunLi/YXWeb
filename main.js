@@ -220,18 +220,25 @@ function addMouseEvents() {
     
     // === 鼠标移动事件处理 ===
     canvas.addEventListener('mousemove', (event) => {
-        // --- 区域检测：判断鼠标是否在画布中央70%区域内 ---
+        // --- 标准化鼠标坐标 ---
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         
-        // 检查鼠标是否在中央70%区域内（-0.35 到 0.35 的范围）
+        // --- 区域检测：判断鼠标是否在画布中央70%区域内（用于导航栏显示）---
         const centerAreaSize = 0.35; // 70%区域的一半
-        isHoveringLogo = (Math.abs(mouse.x) <= centerAreaSize && Math.abs(mouse.y) <= centerAreaSize);
+        const isInCenterArea = (Math.abs(mouse.x) <= centerAreaSize && Math.abs(mouse.y) <= centerAreaSize);
         
-        // 控制导航栏显示/隐藏
+        // --- 射线检测：精确判断鼠标是否悬停在logo上（用于旋转交互）---
+        if (logo) {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(logo);
+            isHoveringLogo = intersects.length > 0;
+        }
+        
+        // 控制导航栏显示/隐藏（基于中央70%区域）
         const navbar = document.getElementById('navbar');
         if (navbar) {
-            navbar.style.opacity = isHoveringLogo ? '1' : '0';
+            navbar.style.opacity = isInCenterArea ? '1' : '0';
         }
         
         // --- 手势识别：检测从右向左的移动 ---
