@@ -190,7 +190,7 @@ function animate() {
             }
         } else if (isHoveringLogo) {
             // 悬停引导效果：只有当鼠标悬停在logo上时才显示轻微摆动
-            const hoverEffect = Math.sin(Date.now() * 0.005) * 0.002;
+            const hoverEffect = Math.sin(Date.now() * 0.002) * 0.003;
             currentRotationY += hoverEffect;
         }
         
