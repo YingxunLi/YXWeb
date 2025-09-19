@@ -12,8 +12,10 @@ let mouseX = 0; // 当前鼠标X坐标（标准化为-1到1）
 let lastMouseX = 0; // 上一帧的鼠标X坐标，用于计算移动方向
 
 // 旋转控制变量
+let targetRotationX = 0; // X轴目标旋转角度（上下翻转）
 let targetRotationY = 0; // Y轴目标旋转角度（翻页效果）
 let targetRotationZ = 0; // Z轴目标旋转角度（垂直屏幕旋转）
+let currentRotationX = 0; // X轴当前旋转角度
 let currentRotationY = 0; // Y轴当前旋转角度
 let currentRotationZ = 0; // Z轴当前旋转角度
 
@@ -102,7 +104,7 @@ function loadSTL() {
         
         // 根据模型大小调整正交相机的视野范围
         const aspect = window.innerWidth / window.innerHeight;
-        const frustumSize = maxDim * 1.5; // 留一些边距
+        const frustumSize = maxDim * 4.5; // 留一些边距，logo大小
         
         camera.left = frustumSize * aspect / -2;
         camera.right = frustumSize * aspect / 2;
@@ -138,8 +140,16 @@ function animate() {
     if (logo) {
         if (isRotating) {
             // 惯性旋转到目标位置（平滑过渡）
+            const diffX = targetRotationX - currentRotationX;
             const diffY = targetRotationY - currentRotationY;
             const diffZ = targetRotationZ - currentRotationZ;
+            
+            // X轴旋转插值计算
+            if (Math.abs(diffX) > 0.01) {
+                currentRotationX += diffX * 0.1;
+            } else {
+                currentRotationX = targetRotationX;
+            }
             
             // Y轴旋转插值计算
             if (Math.abs(diffY) > 0.01) {
@@ -156,7 +166,7 @@ function animate() {
             }
             
             // 检查是否完成旋转
-            if (Math.abs(diffY) <= 0.01 && Math.abs(diffZ) <= 0.01) {
+            if (Math.abs(diffX) <= 0.01 && Math.abs(diffY) <= 0.01 && Math.abs(diffZ) <= 0.01) {
                 isRotating = false;
             }
         } else if (isHoveringLogo) {
@@ -166,6 +176,7 @@ function animate() {
         }
         
         // 应用旋转到logo对象
+        logo.rotation.x = currentRotationX;
         logo.rotation.y = currentRotationY;
         logo.rotation.z = currentRotationZ;
     }
@@ -223,14 +234,33 @@ function addMouseEvents() {
                     // 第一次交互：Y轴旋转90度（翻页效果）
                     targetRotationY += Math.PI / 2;
                 } else if (interactionCount === 2) {
-                    // 第二次交互：Z轴旋转90度（垂直屏幕旋转）
-                    targetRotationZ += Math.PI / 2;
+                    // 第二次交互：X轴和Y轴复合旋转
+                    targetRotationX -= Math.PI / 2;
+                    targetRotationY += Math.PI / 4; 
+                } else if (interactionCount === 3) {
+                    // 第三次交互：回到原始位置
+                    targetRotationX = 0;
+                    targetRotationY = 0;
+                    targetRotationZ = 0;
                 } else {
-                    // 后续交互：交替旋转Y轴和Z轴
-                    if (interactionCount % 2 === 1) {
-                        targetRotationY += Math.PI / 2; // 奇数次：Y轴
-                    } else {
-                        targetRotationZ += Math.PI / 2; // 偶数次：Z轴
+                    // 第4次及以后：循环前三种状态
+                    const cyclePosition = (interactionCount - 1) % 3 + 1; // 将交互次数映射到1,2,3循环
+                    
+                    if (cyclePosition === 1) {
+                        // 相当于第一次：Y轴旋转90度
+                        targetRotationX = 0;
+                        targetRotationY = Math.PI / 2;
+                        targetRotationZ = 0;
+                    } else if (cyclePosition === 2) {
+                        // 相当于第二次：X轴和Y轴复合旋转
+                        targetRotationX = -Math.PI / 2;
+                        targetRotationY = Math.PI / 2 + Math.PI / 4;
+                        targetRotationZ = 0;
+                    } else if (cyclePosition === 3) {
+                        // 相当于第三次：回到原始位置
+                        targetRotationX = 0;
+                        targetRotationY = 0;
+                        targetRotationZ = 0;
                     }
                 }
                 
