@@ -17,7 +17,7 @@ body {
     top: 80px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 200;
+    z-index: 300; /* 提高层级，确保在时间轴之上 */
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -101,10 +101,12 @@ canvas {
 
 .timeline-column {
     position: absolute;
-    top: 250px;
+    top: 150px; /* 从导航栏下方开始，给导航栏留出空间 */
     width: 2px;
     background-color: #ccc;
     pointer-events: none;
+    height: 0; /* 初始高度为0，通过滚动逐渐增长 */
+    transition: height 0.3s ease;
 }
 
 .timeline-left {
@@ -139,7 +141,7 @@ canvas {
 }
 
 .timeline-label {
-    position: fixed; /* 改为fixed，相对于视口定位 */
+    position: fixed; /* 使用fixed定位，相对于视口 */
     left: 50%;
     transform: translateX(-50%);
     font-size: 14px;
@@ -150,13 +152,5 @@ canvas {
     transition: opacity 0.3s ease;
     text-align: center;
     width: 150px;
+    z-index: 200; /* 确保在时间轴之上 */
 }
-/* .timeline-label.left-label {
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-}
-
-.timeline-label.right-label {
-    left: -50%;
-    transform: translateX(-50%) translateY(-50%);
-} */

@@ -379,24 +379,24 @@ function createTimeline() {
     timelineContainer = document.createElement('div');
     timelineContainer.id = 'timeline-container';
     
-    // 创建左侧时间轴（Ausbildung）
+    // 创建左侧时间轴（Ausbildung）- 手动设置位置
     const leftTimeline = createTimelineColumn('left', 'Ausbildung', [
-        '09.2018',
-        '06.2022', 
-        '10.2024',
-        '03.2028'
+        { time: '09.2018', position: 50 },   // 第一个时间点距离标题50px
+        { time: '06.2022', position: 150 },  // 第二个时间点距离标题150px
+        { time: '10.2024', position: 280 },  // 第三个时间点距离标题280px
+        { time: '03.2028', position: 400 }   // 第四个时间点距离标题400px
     ]);
     
-    // 创建右侧时间轴（Berufserfahrung）
+    // 创建右侧时间轴（Berufserfahrung）- 手动设置位置
     const rightTimeline = createTimelineColumn('right', 'Berufserfahrung', [
-        '03.2022',
-        '05.2022',
-        '07.2022', 
-        '09.2022',
-        '08.2024',
-        '11.2024',
-        '12.2024',
-        '06.2025'
+        { time: '03.2022', position: 30 },   // 建议位置，你可以自己调整
+        { time: '05.2022', position: 80 },
+        { time: '07.2022', position: 130 },
+        { time: '09.2022', position: 180 },
+        { time: '08.2024', position: 250 },
+        { time: '11.2024', position: 320 },
+        { time: '12.2024', position: 370 },
+        { time: '06.2025', position: 450 }
     ]);
     
     timelineContainer.appendChild(leftTimeline);
@@ -421,8 +421,9 @@ function createTimelineColumn(side, title, timepoints) {
     const offsetX = side === 'left' ? -150 : 150;
     const positionX = centerX + offsetX;
     
-    // 只设置动态计算的位置，其他样式由CSS处理
+    // 设置列的基本样式
     column.style.left = `${positionX}px`;
+    column.style.height = '0px'; // 初始高度为0
     
     // 添加标题
     const titleElement = document.createElement('div');
@@ -430,57 +431,24 @@ function createTimelineColumn(side, title, timepoints) {
     titleElement.textContent = title;
     column.appendChild(titleElement);
     
-    // 计算时间跨度和位置
-    const timeSpans = calculateTimePositions(timepoints);
-    
-    // 添加时间点
-    timepoints.forEach((timepoint, index) => {
+    // 添加时间点（使用手动设置的位置）
+    timepoints.forEach((item, index) => {
         const pointElement = document.createElement('div');
         pointElement.className = 'timeline-point';
-        const topPosition = timeSpans[index];
-        
-        // 只设置动态计算的top位置
-        pointElement.style.top = `${topPosition}px`;
+        pointElement.style.top = `${item.position}px`; // 使用手动设置的位置
+        pointElement.style.opacity = '0'; // 初始隐藏
         
         // 添加时间标签
         const labelElement = document.createElement('div');
         labelElement.className = `timeline-label ${side}-label`;
-        labelElement.textContent = timepoint;
+        labelElement.textContent = item.time;
+        labelElement.style.opacity = '0'; // 初始隐藏
         
         pointElement.appendChild(labelElement);
         column.appendChild(pointElement);
     });
     
     return column;
-}
-
-// 计算基于实际时间跨度的位置
-function calculateTimePositions(timepoints) {
-    // 解析时间点为Date对象
-    const dates = timepoints.map(timepoint => {
-        const [month, year] = timepoint.split('.');
-        return new Date(parseInt(year), parseInt(month) - 1, 1);
-    });
-    
-    // 找到最早和最晚的时间
-    const minDate = new Date(Math.min(...dates));
-    const maxDate = new Date(Math.max(...dates));
-    
-    // 计算总时间跨度（以月为单位）
-    const totalMonths = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + 
-                       (maxDate.getMonth() - minDate.getMonth());
-    
-    // 设置时间轴的像素长度（可根据需要调整）
-    const timelinePixelLength = Math.max(400, totalMonths * 20); // 最小400px，每月20px
-    
-    // 计算每个时间点的位置
-    const positions = dates.map(date => {
-        const monthsFromStart = (date.getFullYear() - minDate.getFullYear()) * 12 + 
-                               (date.getMonth() - minDate.getMonth());
-        return (monthsFromStart / totalMonths) * timelinePixelLength;
-    });
-    
-    return positions;
 }
 
 // 移除时间轴
@@ -511,7 +479,7 @@ function handleTimelineScroll(event) {
     event.preventDefault();
     
     // 更新滚动进度
-    const scrollSensitivity = 0.002;
+    const scrollSensitivity = 0.001; // 降低滚动敏感度，让滚动更平滑
     timelineScrollProgress += event.deltaY * scrollSensitivity;
     timelineScrollProgress = Math.max(0, Math.min(1, timelineScrollProgress));
     
@@ -534,7 +502,10 @@ function updateTimelineDisplay() {
     const maxPoints = Math.max(leftPoints.length, rightPoints.length);
     
     // 根据滚动进度显示时间点
-    const visiblePoints = Math.floor(timelineScrollProgress * maxPoints) + 1;
+    const visiblePoints = Math.floor(timelineScrollProgress * maxPoints);
+    
+    // 计算时间轴线条的高度
+    let maxVisibleHeight = 150; // 最小高度，保证从导航栏下方开始
     
     // 更新左侧时间轴
     leftPoints.forEach((point, index) => {
@@ -542,6 +513,9 @@ function updateTimelineDisplay() {
         if (index < visiblePoints) {
             point.style.opacity = '1';
             label.style.opacity = '1';
+            // 更新最大可见高度
+            const pointTop = parseFloat(point.style.top) || 0;
+            maxVisibleHeight = Math.max(maxVisibleHeight, pointTop + 20);
         } else {
             point.style.opacity = '0';
             label.style.opacity = '0';
@@ -554,38 +528,18 @@ function updateTimelineDisplay() {
         if (index < visiblePoints) {
             point.style.opacity = '1';
             label.style.opacity = '1';
+            // 更新最大可见高度
+            const pointTop = parseFloat(point.style.top) || 0;
+            maxVisibleHeight = Math.max(maxVisibleHeight, pointTop + 20);
         } else {
             point.style.opacity = '0';
             label.style.opacity = '0';
         }
     });
     
-    // 计算时间轴线条的实际高度（基于最后一个可见时间点的位置）
-    let maxHeight = 0;
-    
-    // 检查左侧时间轴的最后一个可见点
-    if (leftPoints.length > 0 && visiblePoints > 0) {
-        const lastVisibleLeft = Math.min(visiblePoints - 1, leftPoints.length - 1);
-        const lastPointLeft = leftPoints[lastVisibleLeft];
-        if (lastPointLeft) {
-            const topValue = parseFloat(lastPointLeft.style.top) || 0;
-            maxHeight = Math.max(maxHeight, topValue + 15); // 加上圆点半径
-        }
-    }
-    
-    // 检查右侧时间轴的最后一个可见点
-    if (rightPoints.length > 0 && visiblePoints > 0) {
-        const lastVisibleRight = Math.min(visiblePoints - 1, rightPoints.length - 1);
-        const lastPointRight = rightPoints[lastVisibleRight];
-        if (lastPointRight) {
-            const topValue = parseFloat(lastPointRight.style.top) || 0;
-            maxHeight = Math.max(maxHeight, topValue + 15); // 加上圆点半径
-        }
-    }
-    
-    // 应用计算出的高度
-    leftColumn.style.height = `${maxHeight}px`;
-    rightColumn.style.height = `${maxHeight}px`;
+    // 应用计算出的高度到时间轴线条
+    leftColumn.style.height = `${maxVisibleHeight}px`;
+    rightColumn.style.height = `${maxVisibleHeight}px`;
 }
 
 // ============ 鼠标事件处理函数 ============
