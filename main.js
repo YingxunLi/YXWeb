@@ -381,10 +381,10 @@ function createTimeline() {
     
     // 创建左侧时间轴（Ausbildung）- 手动设置位置
     const leftTimeline = createTimelineColumn('left', 'Ausbildung', [
-        { time: '09.2018', position: 50 },   // 第一个时间点距离标题50px
+        { time: '09.2018', position: 10 },   // 第一个时间点距离标题50px
         { time: '06.2022', position: 150 },  // 第二个时间点距离标题150px
         { time: '10.2024', position: 280 },  // 第三个时间点距离标题280px
-        { time: '03.2028', position: 400 }   // 第四个时间点距离标题400px
+        { time: '03.2028', position: 900 }   // 第四个时间点距离标题400px
     ]);
     
     // 创建右侧时间轴（Berufserfahrung）- 手动设置位置
@@ -444,7 +444,17 @@ function createTimelineColumn(side, title, timepoints) {
         labelElement.textContent = item.time;
         labelElement.style.opacity = '0'; // 初始隐藏
         
-        pointElement.appendChild(labelElement);
+        // 给标签添加唯一ID，方便后续查找
+        labelElement.id = `timeline-label-${side}-${index}`;
+        
+        // 计算标签的绝对位置（时间轴容器顶部 + 列偏移 + 点位置）
+        const timelineTop = 80; // timeline-container的top值
+        const columnTop = 150; // timeline-column的top值
+        const absoluteTop = timelineTop + columnTop + item.position;
+        labelElement.style.top = `${absoluteTop}px`;
+        
+        // 将标签直接添加到body而不是pointElement
+        document.body.appendChild(labelElement);
         column.appendChild(pointElement);
     });
     
@@ -457,6 +467,14 @@ function removeTimeline() {
         document.body.removeChild(timelineContainer);
         timelineContainer = null;
     }
+    
+    // 移除所有timeline-label元素
+    const labels = document.querySelectorAll('.timeline-label');
+    labels.forEach(label => {
+        if (label.parentNode) {
+            label.parentNode.removeChild(label);
+        }
+    });
     
     // 移除滚动事件监听
     removeTimelineScrollEvents();
@@ -507,33 +525,52 @@ function updateTimelineDisplay() {
     // 计算时间轴线条的高度
     let maxVisibleHeight = 150; // 最小高度，保证从导航栏下方开始
     
+    const timelineTop = 80; // timeline-container的top值
+    const columnTop = 150; // timeline-column的top值
+    
     // 更新左侧时间轴
     leftPoints.forEach((point, index) => {
-        const label = point.querySelector('.timeline-label');
+        const label = document.getElementById(`timeline-label-left-${index}`);
         if (index < visiblePoints) {
             point.style.opacity = '1';
-            label.style.opacity = '1';
+            if (label) {
+                label.style.opacity = '1';
+                // 重新计算并设置标签的绝对位置
+                const pointTop = parseFloat(point.style.top) || 0;
+                const absoluteTop = timelineTop + columnTop + pointTop;
+                label.style.top = `${absoluteTop}px`;
+            }
             // 更新最大可见高度
             const pointTop = parseFloat(point.style.top) || 0;
             maxVisibleHeight = Math.max(maxVisibleHeight, pointTop + 20);
         } else {
             point.style.opacity = '0';
-            label.style.opacity = '0';
+            if (label) {
+                label.style.opacity = '0';
+            }
         }
     });
     
     // 更新右侧时间轴
     rightPoints.forEach((point, index) => {
-        const label = point.querySelector('.timeline-label');
+        const label = document.getElementById(`timeline-label-right-${index}`);
         if (index < visiblePoints) {
             point.style.opacity = '1';
-            label.style.opacity = '1';
+            if (label) {
+                label.style.opacity = '1';
+                // 重新计算并设置标签的绝对位置
+                const pointTop = parseFloat(point.style.top) || 0;
+                const absoluteTop = timelineTop + columnTop + pointTop;
+                label.style.top = `${absoluteTop}px`;
+            }
             // 更新最大可见高度
             const pointTop = parseFloat(point.style.top) || 0;
             maxVisibleHeight = Math.max(maxVisibleHeight, pointTop + 20);
         } else {
             point.style.opacity = '0';
-            label.style.opacity = '0';
+            if (label) {
+                label.style.opacity = '0';
+            }
         }
     });
     
