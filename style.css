@@ -30,6 +30,47 @@ body {
     color: #000;
     letter-spacing: 2px;
     transition: opacity 0.2s ease;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-item {
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    display: none; /* 默认隐藏，在详情页模式下显示 */
+}
+
+.single-text {
+    display: inline; /* 默认显示，在详情页模式下隐藏 */
+}
+
+/* 详情页模式下的导航栏样式 */
+#navbar.detail-mode {
+    opacity: 1 !important;
+    pointer-events: auto;
+}
+
+#navbar.detail-mode .single-text {
+    display: none;
+}
+
+#navbar.detail-mode .nav-item {
+    display: inline;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+#navbar.detail-mode .nav-item:hover {
+    opacity: 0.8;
+}
+
+#navbar.detail-mode .nav-item.active {
+    opacity: 1;
+}
+
+#navbar.detail-mode .nav-item.active:hover {
+    opacity: 1;
 }
 
 #loading {

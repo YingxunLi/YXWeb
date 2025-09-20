@@ -27,6 +27,14 @@ let currentState = 1; // 当前状态：1=Yingxun, 2=Projekte, 3=Kontakt
 let targetState = 1; // 目标状态（用于渐变过渡）
 let stateProgress = 1; // 状态过渡进度（0到1）
 
+// 详情页状态管理
+let isDetailMode = false; // 是否处于详情页模式
+let isTransitioningToDetail = false; // 是否正在过渡到详情页
+let logoTargetScale = 1; // logo目标缩放比例
+let logoCurrentScale = 1; // logo当前缩放比例
+let logoTargetPosition = { x: 0, y: 0, z: 0 }; // logo目标位置
+let logoCurrentPosition = { x: 0, y: 0, z: 0 }; // logo当前位置
+
 // 射线检测相关对象
 let raycaster = new THREE.Raycaster(); // 用于精确检测鼠标与3D物体的交互
 let mouse = new THREE.Vector2(); // 标准化的鼠标坐标
@@ -78,8 +86,8 @@ function init() {
     // === 初始化导航栏 ===
     updateNavbar();
     
-    // === 初始化导航栏 ===
-    updateNavbar();
+    // === 添加导航栏点击事件 ===
+    addNavbarEvents();
 }
 
 // ============ STL文件加载函数 ============
@@ -147,6 +155,56 @@ function animate() {
     
     // === 处理logo旋转动画效果 ===
     if (logo) {
+        // === 详情页模式的缩放和位置动画 ===
+        if (isTransitioningToDetail || isDetailMode) {
+            // 处理缩放动画
+            const scaleDiff = logoTargetScale - logoCurrentScale;
+            if (Math.abs(scaleDiff) > 0.01) {
+                logoCurrentScale += scaleDiff * 0.1;
+            } else {
+                logoCurrentScale = logoTargetScale;
+            }
+            
+            // 处理位置动画
+            const posXDiff = logoTargetPosition.x - logoCurrentPosition.x;
+            const posYDiff = logoTargetPosition.y - logoCurrentPosition.y;
+            const posZDiff = logoTargetPosition.z - logoCurrentPosition.z;
+            
+            if (Math.abs(posXDiff) > 0.1) {
+                logoCurrentPosition.x += posXDiff * 0.1;
+            } else {
+                logoCurrentPosition.x = logoTargetPosition.x;
+            }
+            
+            if (Math.abs(posYDiff) > 0.1) {
+                logoCurrentPosition.y += posYDiff * 0.1;
+            } else {
+                logoCurrentPosition.y = logoTargetPosition.y;
+            }
+            
+            if (Math.abs(posZDiff) > 0.1) {
+                logoCurrentPosition.z += posZDiff * 0.1;
+            } else {
+                logoCurrentPosition.z = logoTargetPosition.z;
+            }
+            
+            // 应用缩放和位置到logo
+            logo.scale.set(logoCurrentScale, logoCurrentScale, logoCurrentScale);
+            logo.position.set(logoCurrentPosition.x, logoCurrentPosition.y, logoCurrentPosition.z);
+            
+            // 调试信息：每30帧输出一次位置信息
+            if (Math.floor(Date.now() / 500) % 2 === 0) {
+                console.log('Logo position:', logoCurrentPosition, 'Scale:', logoCurrentScale);
+            }
+            
+            // 检查动画是否完成
+            const totalDiff = Math.abs(scaleDiff) + Math.abs(posXDiff) + Math.abs(posYDiff) + Math.abs(posZDiff);
+            if (totalDiff < 0.1) {
+                isTransitioningToDetail = false;
+                console.log('Detail mode transition completed');
+            }
+        }
+        
         if (isRotating) {
             // 惯性旋转到目标位置（平滑过渡）
             const diffX = targetRotationX - currentRotationX;
@@ -198,10 +256,96 @@ function animate() {
         logo.rotation.x = currentRotationX;
         logo.rotation.y = currentRotationY;
         logo.rotation.z = currentRotationZ;
+        
+        // 确保在详情页模式下，位置和缩放始终被应用（即使在旋转时）
+        if (isDetailMode || isTransitioningToDetail) {
+            logo.scale.set(logoCurrentScale, logoCurrentScale, logoCurrentScale);
+            logo.position.set(logoCurrentPosition.x, logoCurrentPosition.y, logoCurrentPosition.z);
+        }
     }
     
     // 渲染场景
     renderer.render(scene, camera);
+}
+
+// ============ 详情页模式函数 ============
+// 进入详情页模式的动画处理
+function enterDetailMode() {
+    if (isDetailMode || isTransitioningToDetail) return;
+    
+    console.log('Entering detail mode...');
+    isTransitioningToDetail = true;
+    isDetailMode = true;
+    
+    // 根据当前相机的视野范围计算合适的移动距离
+    const cameraWidth = camera.right - camera.left;
+    const moveDistance = cameraWidth * 0.12; // 移动到视野宽度的15%处
+    
+    // 设置logo目标状态
+    logoTargetScale = 0.2; // 缩小到30%
+    logoTargetPosition.x = -moveDistance; // 动态计算移动距离
+    
+    // 精确计算导航栏对应的3D坐标位置
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+        // 获取导航栏的实际DOM位置
+        const navbarRect = navbar.getBoundingClientRect();
+        const navbarCenterY = navbarRect.top + navbarRect.height / 2; // 导航栏中心Y坐标
+        
+        // 使用Three.js的方法进行精确的屏幕坐标到世界坐标转换
+        const vector = new THREE.Vector3();
+        
+        // 将屏幕坐标转换为标准化设备坐标
+        vector.x = 0; // X坐标不重要，我们只关心Y
+        vector.y = -(navbarCenterY / window.innerHeight) * 2 + 1; // NDC Y坐标
+        vector.z = 0; // Z坐标设为0（在相机平面上）
+        
+        // 使用相机的逆投影矩阵将NDC坐标转换为世界坐标
+        vector.unproject(camera);
+        
+        // 手动微调偏移量（根据需要调整这个值）
+        const manualOffset = 0; // 正值向上，负值向下，单位是3D世界坐标
+        logoTargetPosition.y = vector.y + manualOffset;
+        
+        console.log('Navbar screen position:', navbarCenterY);
+        console.log('Screen height:', window.innerHeight);
+        console.log('NDC Y coordinate:', -(navbarCenterY / window.innerHeight) * 2 + 1);
+        console.log('Unprojected world Y:', vector.y);
+        console.log('Camera top/bottom:', camera.top, camera.bottom);
+    } else {
+        // 备用方案：使用CSS的top值
+        const cameraHeight = camera.top - camera.bottom;
+        const navbarRelativePosition = (80 / window.innerHeight - 0.5) * -1;
+        logoTargetPosition.y = navbarRelativePosition * cameraHeight;
+        console.log('Using fallback calculation');
+    }
+    
+    logoTargetPosition.z = 0;
+    
+    console.log('Camera width:', cameraWidth);
+    console.log('Target position set to:', logoTargetPosition);
+    console.log('Current position:', logoCurrentPosition);
+    
+    // 更新导航栏状态
+    updateNavbar();
+}
+
+// 退出详情页模式的动画处理
+function exitDetailMode() {
+    if (!isDetailMode) return;
+    
+    console.log('Exiting detail mode...');
+    isTransitioningToDetail = true;
+    isDetailMode = false;
+    
+    // 恢复logo原始状态
+    logoTargetScale = 1;
+    logoTargetPosition.x = 0;
+    logoTargetPosition.y = 0;
+    logoTargetPosition.z = 0;
+    
+    // 更新导航栏状态
+    updateNavbar();
 }
 
 // ============ 鼠标事件处理函数 ============
@@ -244,8 +388,8 @@ function addMouseEvents() {
         // --- 手势识别：检测从右向左的移动 ---
         const currentMouseX = (event.clientX / window.innerWidth) * 2 - 1;
         
-        // 只有当鼠标悬停在logo上时才能进行交互
-        if (isHoveringLogo && !isRotating) {
+        // 只有当鼠标悬停在logo上且不在详情页模式时才能进行交互
+        if (isHoveringLogo && !isRotating && !isDetailMode && !isTransitioningToDetail) {
             // 计算鼠标移动方向 (正值为向右，负值为向左)
             const deltaX = currentMouseX - lastMouseX;
             
@@ -312,6 +456,98 @@ function addMouseEvents() {
         // --- 始终更新上一次鼠标位置（用于计算移动方向）---
         lastMouseX = currentMouseX;
     });
+    
+    // === 鼠标点击事件处理 ===
+    canvas.addEventListener('click', (event) => {
+        // --- 标准化鼠标坐标 ---
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        
+        // --- 射线检测：检查是否点击了logo ---
+        if (logo && !isRotating && !isTransitioningToDetail) {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(logo);
+            
+            if (intersects.length > 0) {
+                console.log('Logo clicked, entering detail mode'); // 调试信息
+                if (isDetailMode) {
+                    exitDetailMode();
+                } else {
+                    enterDetailMode();
+                }
+            }
+        }
+    });
+}
+
+// ============ 导航栏点击事件处理函数 ============
+// 为详情页模式下的导航栏添加点击切换功能
+function addNavbarEvents() {
+    const navItems = {
+        yingxun: document.getElementById('nav-yingxun'),
+        projekte: document.getElementById('nav-projekte'),
+        kontakt: document.getElementById('nav-kontakt')
+    };
+    
+    // 为每个导航项添加点击事件
+    if (navItems.yingxun) {
+        navItems.yingxun.addEventListener('click', () => {
+            if (isDetailMode && !isRotating) {
+                switchToState(1); // 切换到状态1: Yingxun
+            }
+        });
+    }
+    
+    if (navItems.projekte) {
+        navItems.projekte.addEventListener('click', () => {
+            if (isDetailMode && !isRotating) {
+                switchToState(2); // 切换到状态2: Projekte
+            }
+        });
+    }
+    
+    if (navItems.kontakt) {
+        navItems.kontakt.addEventListener('click', () => {
+            if (isDetailMode && !isRotating) {
+                switchToState(3); // 切换到状态3: Kontakt
+            }
+        });
+    }
+}
+
+// ============ 状态切换函数 ============
+// 在详情页模式下切换到指定状态
+function switchToState(newState) {
+    if (currentState === newState || isRotating) return;
+    
+    console.log(`Switching from state ${currentState} to state ${newState}`);
+    
+    targetState = newState;
+    isRotating = true;
+    
+    // 根据目标状态设置旋转参数
+    if (newState === 1) {
+        // 状态1: Yingxun - 原始位置
+        targetRotationX = 0;
+        targetRotationY = 0;
+        targetRotationZ = 0;
+    } else if (newState === 2) {
+        // 状态2: Projekte - Y轴旋转90度
+        targetRotationX = 0;
+        targetRotationY = Math.PI / 2;
+        targetRotationZ = 0;
+    } else if (newState === 3) {
+        // 状态3: Kontakt - X轴和Y轴复合旋转
+        targetRotationX = -Math.PI / 2;
+        targetRotationY = Math.PI / 2 + Math.PI / 4;
+        targetRotationZ = 0;
+    }
+    
+    console.log('Target rotation set to:', {
+        x: targetRotationX,
+        y: targetRotationY,
+        z: targetRotationZ
+    });
 }
 
 // ============ 窗口大小调整函数 ============
@@ -334,42 +570,63 @@ function onWindowResize() {
 // ============ 导航栏更新函数 ============
 // 根据当前状态更新导航栏文字
 function updateNavbar() {
-    let navbarElement = document.querySelector('.nav-content');
+    const navbar = document.getElementById('navbar');
+    const singleText = navbar.querySelector('.single-text');
+    const navItems = {
+        yingxun: document.getElementById('nav-yingxun'),
+        projekte: document.getElementById('nav-projekte'),
+        kontakt: document.getElementById('nav-kontakt')
+    };
     
-    // 如果导航栏不存在，创建它
-    if (!navbarElement) {
-        const navbar = document.getElementById('navbar');
-        if (navbar) {
-            navbarElement = navbar.querySelector('.nav-content');
-        }
-    }
-    
-    if (!navbarElement) {
+    if (!navbar || !singleText || !navItems.yingxun || !navItems.projekte || !navItems.kontakt) {
         console.error('导航栏元素未找到');
         return;
     }
     
-    // 状态名称数组
-    const stateNames = ['', 'YINGXUN', 'PROJEKTE', 'KONTAKT'];
-
-    if (isRotating && currentState !== targetState) {
-        // 旋转中：根据进度混合显示两个状态的文字
-        const fromState = currentState;
-        const toState = targetState;
+    if (isDetailMode) {
+        // 详情页模式：显示所有三个状态，当前状态高亮，其他状态50%透明度
+        navbar.classList.add('detail-mode');
         
-        if (stateProgress < 0.5) {
-            // 前半段：显示当前状态，逐渐变透明
-            navbarElement.textContent = stateNames[fromState];
-            navbarElement.style.opacity = 1 - stateProgress * 2; // 从1到0
-        } else {
-            // 后半段：显示目标状态，逐渐显现
-            navbarElement.textContent = stateNames[toState];
-            navbarElement.style.opacity = (stateProgress - 0.5) * 2; // 从0到1
+        // 移除所有active类
+        navItems.yingxun.classList.remove('active');
+        navItems.projekte.classList.remove('active');
+        navItems.kontakt.classList.remove('active');
+        
+        // 根据当前状态添加active类
+        if (currentState === 1) {
+            navItems.yingxun.classList.add('active');
+        } else if (currentState === 2) {
+            navItems.projekte.classList.add('active');
+        } else if (currentState === 3) {
+            navItems.kontakt.classList.add('active');
         }
+        
     } else {
-        // 静止状态：正常显示当前状态
-        navbarElement.textContent = stateNames[currentState];
-        navbarElement.style.opacity = 1;
+        // 正常模式：显示单个状态名称
+        navbar.classList.remove('detail-mode');
+        
+        // 状态名称数组
+        const stateNames = ['', 'YINGXUN', 'PROJEKTE', 'KONTAKT'];
+
+        if (isRotating && currentState !== targetState) {
+            // 旋转中：根据进度混合显示两个状态的文字
+            const fromState = currentState;
+            const toState = targetState;
+            
+            if (stateProgress < 0.5) {
+                // 前半段：显示当前状态，逐渐变透明
+                singleText.textContent = stateNames[fromState];
+                singleText.style.opacity = 1 - stateProgress * 2; // 从1到0
+            } else {
+                // 后半段：显示目标状态，逐渐显现
+                singleText.textContent = stateNames[toState];
+                singleText.style.opacity = (stateProgress - 0.5) * 2; // 从0到1
+            }
+        } else {
+            // 静止状态：正常显示当前状态
+            singleText.textContent = stateNames[currentState];
+            singleText.style.opacity = 1;
+        }
     }
 }
 
