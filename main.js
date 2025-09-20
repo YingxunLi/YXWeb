@@ -35,6 +35,10 @@ let logoCurrentScale = 1; // logo当前缩放比例
 let logoTargetPosition = { x: 0, y: 0, z: 0 }; // logo目标位置
 let logoCurrentPosition = { x: 0, y: 0, z: 0 }; // logo当前位置
 
+// 时间轴相关变量
+let timelineScrollProgress = 0; // 时间轴滚动进度 (0-1)
+let timelineContainer = null; // 时间轴容器元素
+
 // 射线检测相关对象
 let raycaster = new THREE.Raycaster(); // 用于精确检测鼠标与3D物体的交互
 let mouse = new THREE.Vector2(); // 标准化的鼠标坐标
@@ -151,8 +155,9 @@ function loadSTL() {
 function animate() {
     requestAnimationFrame(animate);
     
-    controls.update();
-    
+    if (!isDetailMode && !isTransitioningToDetail) {
+        controls.update();
+    }    
     // === 处理logo旋转动画效果 ===
     if (logo) {
         // === 详情页模式的缩放和位置动画 ===
@@ -277,6 +282,9 @@ function enterDetailMode() {
     isTransitioningToDetail = true;
     isDetailMode = true;
     
+    // 禁用OrbitControls
+    controls.enabled = false;
+    
     // 根据当前相机的视野范围计算合适的移动距离
     const cameraWidth = camera.right - camera.left;
     const moveDistance = cameraWidth * 0.12; // 移动到视野宽度的15%处
@@ -326,6 +334,11 @@ function enterDetailMode() {
     console.log('Target position set to:', logoTargetPosition);
     console.log('Current position:', logoCurrentPosition);
     
+    // 创建时间轴（仅在Yingxun状态下）
+    if (currentState === 1) {
+        createTimeline();
+    }
+    
     // 更新导航栏状态
     updateNavbar();
 }
@@ -338,14 +351,241 @@ function exitDetailMode() {
     isTransitioningToDetail = true;
     isDetailMode = false;
     
+    // 重新启用OrbitControls
+    controls.enabled = true;
+    
     // 恢复logo原始状态
     logoTargetScale = 1;
     logoTargetPosition.x = 0;
     logoTargetPosition.y = 0;
     logoTargetPosition.z = 0;
     
+    // 移除时间轴
+    removeTimeline();
+    
     // 更新导航栏状态
     updateNavbar();
+}
+
+// ============ 时间轴相关函数 ============
+// 创建时间轴
+function createTimeline() {
+    // 检查是否已存在时间轴容器
+    if (timelineContainer) {
+        removeTimeline();
+    }
+    
+    // 创建时间轴容器
+    timelineContainer = document.createElement('div');
+    timelineContainer.id = 'timeline-container';
+    
+    // 创建左侧时间轴（Ausbildung）
+    const leftTimeline = createTimelineColumn('left', 'Ausbildung', [
+        '09.2018',
+        '06.2022', 
+        '10.2024',
+        '03.2028'
+    ]);
+    
+    // 创建右侧时间轴（Berufserfahrung）
+    const rightTimeline = createTimelineColumn('right', 'Berufserfahrung', [
+        '03.2022',
+        '05.2022',
+        '07.2022', 
+        '09.2022',
+        '08.2024',
+        '11.2024',
+        '12.2024',
+        '06.2025'
+    ]);
+    
+    timelineContainer.appendChild(leftTimeline);
+    timelineContainer.appendChild(rightTimeline);
+    document.body.appendChild(timelineContainer);
+    
+    // 重置滚动进度
+    timelineScrollProgress = 0;
+    updateTimelineDisplay();
+    
+    // 添加滚动事件监听
+    addTimelineScrollEvents();
+}
+
+// 创建单个时间轴列
+function createTimelineColumn(side, title, timepoints) {
+    const column = document.createElement('div');
+    column.className = `timeline-column timeline-${side}`;
+    
+    // 计算位置（画布中心左右各150px）
+    const centerX = window.innerWidth / 2;
+    const offsetX = side === 'left' ? -150 : 150;
+    const positionX = centerX + offsetX;
+    
+    // 只设置动态计算的位置，其他样式由CSS处理
+    column.style.left = `${positionX}px`;
+    
+    // 添加标题
+    const titleElement = document.createElement('div');
+    titleElement.className = 'timeline-title';
+    titleElement.textContent = title;
+    column.appendChild(titleElement);
+    
+    // 计算时间跨度和位置
+    const timeSpans = calculateTimePositions(timepoints);
+    
+    // 添加时间点
+    timepoints.forEach((timepoint, index) => {
+        const pointElement = document.createElement('div');
+        pointElement.className = 'timeline-point';
+        const topPosition = timeSpans[index];
+        
+        // 只设置动态计算的top位置
+        pointElement.style.top = `${topPosition}px`;
+        
+        // 添加时间标签
+        const labelElement = document.createElement('div');
+        labelElement.className = `timeline-label ${side}-label`;
+        labelElement.textContent = timepoint;
+        
+        pointElement.appendChild(labelElement);
+        column.appendChild(pointElement);
+    });
+    
+    return column;
+}
+
+// 计算基于实际时间跨度的位置
+function calculateTimePositions(timepoints) {
+    // 解析时间点为Date对象
+    const dates = timepoints.map(timepoint => {
+        const [month, year] = timepoint.split('.');
+        return new Date(parseInt(year), parseInt(month) - 1, 1);
+    });
+    
+    // 找到最早和最晚的时间
+    const minDate = new Date(Math.min(...dates));
+    const maxDate = new Date(Math.max(...dates));
+    
+    // 计算总时间跨度（以月为单位）
+    const totalMonths = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + 
+                       (maxDate.getMonth() - minDate.getMonth());
+    
+    // 设置时间轴的像素长度（可根据需要调整）
+    const timelinePixelLength = Math.max(400, totalMonths * 20); // 最小400px，每月20px
+    
+    // 计算每个时间点的位置
+    const positions = dates.map(date => {
+        const monthsFromStart = (date.getFullYear() - minDate.getFullYear()) * 12 + 
+                               (date.getMonth() - minDate.getMonth());
+        return (monthsFromStart / totalMonths) * timelinePixelLength;
+    });
+    
+    return positions;
+}
+
+// 移除时间轴
+function removeTimeline() {
+    if (timelineContainer) {
+        document.body.removeChild(timelineContainer);
+        timelineContainer = null;
+    }
+    
+    // 移除滚动事件监听
+    removeTimelineScrollEvents();
+}
+
+// 添加时间轴滚动事件
+function addTimelineScrollEvents() {
+    document.addEventListener('wheel', handleTimelineScroll, { passive: false });
+}
+
+// 移除时间轴滚动事件
+function removeTimelineScrollEvents() {
+    document.removeEventListener('wheel', handleTimelineScroll);
+}
+
+// 处理时间轴滚动
+function handleTimelineScroll(event) {
+    if (!isDetailMode || currentState !== 1 || !timelineContainer) return;
+    
+    event.preventDefault();
+    
+    // 更新滚动进度
+    const scrollSensitivity = 0.002;
+    timelineScrollProgress += event.deltaY * scrollSensitivity;
+    timelineScrollProgress = Math.max(0, Math.min(1, timelineScrollProgress));
+    
+    updateTimelineDisplay();
+}
+
+// 更新时间轴显示
+function updateTimelineDisplay() {
+    if (!timelineContainer) return;
+    
+    const leftColumn = timelineContainer.querySelector('.timeline-left');
+    const rightColumn = timelineContainer.querySelector('.timeline-right');
+    
+    if (!leftColumn || !rightColumn) return;
+    
+    const leftPoints = leftColumn.querySelectorAll('.timeline-point');
+    const rightPoints = rightColumn.querySelectorAll('.timeline-point');
+    
+    // 计算最大时间点数量
+    const maxPoints = Math.max(leftPoints.length, rightPoints.length);
+    
+    // 根据滚动进度显示时间点
+    const visiblePoints = Math.floor(timelineScrollProgress * maxPoints) + 1;
+    
+    // 更新左侧时间轴
+    leftPoints.forEach((point, index) => {
+        const label = point.querySelector('.timeline-label');
+        if (index < visiblePoints) {
+            point.style.opacity = '1';
+            label.style.opacity = '1';
+        } else {
+            point.style.opacity = '0';
+            label.style.opacity = '0';
+        }
+    });
+    
+    // 更新右侧时间轴
+    rightPoints.forEach((point, index) => {
+        const label = point.querySelector('.timeline-label');
+        if (index < visiblePoints) {
+            point.style.opacity = '1';
+            label.style.opacity = '1';
+        } else {
+            point.style.opacity = '0';
+            label.style.opacity = '0';
+        }
+    });
+    
+    // 计算时间轴线条的实际高度（基于最后一个可见时间点的位置）
+    let maxHeight = 0;
+    
+    // 检查左侧时间轴的最后一个可见点
+    if (leftPoints.length > 0 && visiblePoints > 0) {
+        const lastVisibleLeft = Math.min(visiblePoints - 1, leftPoints.length - 1);
+        const lastPointLeft = leftPoints[lastVisibleLeft];
+        if (lastPointLeft) {
+            const topValue = parseFloat(lastPointLeft.style.top) || 0;
+            maxHeight = Math.max(maxHeight, topValue + 15); // 加上圆点半径
+        }
+    }
+    
+    // 检查右侧时间轴的最后一个可见点
+    if (rightPoints.length > 0 && visiblePoints > 0) {
+        const lastVisibleRight = Math.min(visiblePoints - 1, rightPoints.length - 1);
+        const lastPointRight = rightPoints[lastVisibleRight];
+        if (lastPointRight) {
+            const topValue = parseFloat(lastPointRight.style.top) || 0;
+            maxHeight = Math.max(maxHeight, topValue + 15); // 加上圆点半径
+        }
+    }
+    
+    // 应用计算出的高度
+    leftColumn.style.height = `${maxHeight}px`;
+    rightColumn.style.height = `${maxHeight}px`;
 }
 
 // ============ 鼠标事件处理函数 ============
@@ -531,16 +771,24 @@ function switchToState(newState) {
         targetRotationX = 0;
         targetRotationY = 0;
         targetRotationZ = 0;
+        // 如果在详情页模式下，创建时间轴
+        if (isDetailMode) {
+            setTimeout(() => createTimeline(), 500); // 等待旋转完成后创建
+        }
     } else if (newState === 2) {
         // 状态2: Projekte - Y轴旋转90度
         targetRotationX = 0;
         targetRotationY = Math.PI / 2;
         targetRotationZ = 0;
+        // 移除时间轴
+        removeTimeline();
     } else if (newState === 3) {
         // 状态3: Kontakt - X轴和Y轴复合旋转
         targetRotationX = -Math.PI / 2;
         targetRotationY = Math.PI / 2 + Math.PI / 4;
         targetRotationZ = 0;
+        // 移除时间轴
+        removeTimeline();
     }
     
     console.log('Target rotation set to:', {
