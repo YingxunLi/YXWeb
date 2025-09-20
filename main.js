@@ -381,22 +381,22 @@ function createTimeline() {
     
     // 创建左侧时间轴（Ausbildung）- 手动设置位置
     const leftTimeline = createTimelineColumn('left', 'Ausbildung', [
-        { time: '09.2018', position: 10 },   // 第一个时间点距离标题50px
-        { time: '06.2022', position: 150 },  // 第二个时间点距离标题150px
-        { time: '10.2024', position: 280 },  // 第三个时间点距离标题280px
-        { time: '03.2028', position: 900 }   // 第四个时间点距离标题400px
+        { time: '09.2018', position: 20 },   // 第一个时间点距离标题50px
+        { time: '06.2022', position: 250 },  // 第二个时间点距离标题150px
+        { time: '10.2024', position: 550 },  // 第三个时间点距离标题280px
+        { time: '03.2028', position: 1100 }   // 第四个时间点距离标题400px
     ]);
     
     // 创建右侧时间轴（Berufserfahrung）- 手动设置位置
     const rightTimeline = createTimelineColumn('right', 'Berufserfahrung', [
-        { time: '03.2022', position: 30 },   // 建议位置，你可以自己调整
-        { time: '05.2022', position: 80 },
-        { time: '07.2022', position: 130 },
-        { time: '09.2022', position: 180 },
-        { time: '08.2024', position: 250 },
-        { time: '11.2024', position: 320 },
-        { time: '12.2024', position: 370 },
-        { time: '06.2025', position: 450 }
+        { time: '03.2022', position: 120 },   // 建议位置，你可以自己调整
+        { time: '05.2022', position: 220 },
+        { time: '07.2022', position: 280 },
+        { time: '09.2022', position: 380 },
+        { time: '08.2024', position: 440 },
+        { time: '11.2024', position: 580 },
+        { time: '12.2024', position: 610 },
+        { time: '06.2025', position: 970 }
     ]);
     
     timelineContainer.appendChild(leftTimeline);
