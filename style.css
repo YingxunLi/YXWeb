@@ -100,7 +100,7 @@ canvas {
 /* 详情页内容容器 */
 #detail-content {
     position: fixed;
-    top: 130px; /* 导航栏下方 */
+    top: 140px; /* 导航栏下方 */
     left: 0;
     right: 0;
     bottom: 0;
@@ -117,50 +117,62 @@ canvas {
 
 /* 时间轴样式 */
 #timeline-container {
-    position: relative; /* 改为relative，相对于detail-content定位 */
-    top: 50px; /* 从容器顶部开始 */
+    position: relative;
+    top: 0px;
     left: 0;
     width: 100%;
-    min-height: 1500px; /* 设置最小高度，确保页面有足够的滚动空间 */
+    min-height: 2500px;
     pointer-events: none;
     z-index: 100;
 }
 
-.timeline-column {
+/* 左右两条时间轴线 */
+.timeline-line {
     position: absolute;
-    top: 150px; /* 从导航栏下方开始，给导航栏留出空间 */
+    top: 40px;
     width: 2px;
     background-color: var(--color-light-gray);
-    pointer-events: none;
-    height: 0; /* 初始高度为0，通过滚动逐渐增长 */
+    height: 0;
     transition: height 0.3s ease;
+    z-index: 101;
 }
 
+.timeline-line.left-line {
+    left: 45%;
+    transform: translateX(-50%);
+}
+
+.timeline-line.right-line {
+    left: 55%;
+    transform: translateX(-50%);
+}
+
+/* 时间轴标题 */
 .timeline-title {
     position: absolute;
-    top: -40px;
-    left: -50px;
-    width: 100px;
-    text-align: center;
+    top: 0;
     font-family: var(--font-primary);
     font-size: 16px;
     color: var(--color-gray);
     white-space: nowrap;
+    z-index: 105;
 }
 
-.timeline-point {
-    position: absolute;
-    left: -8px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background-color: var(--color-black);
-    opacity: 0;
-    transition: var(--transition-opacity-normal);
+.timeline-title.left-title {
+    left: 45%;
+    transform: translateX(-50%);
+    text-align: center;
 }
 
+.timeline-title.right-title {
+    left: 55%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+/* 时间标签 - 始终在中央 */
 .timeline-label {
-    position: absolute; /* 改为absolute，相对于时间轴容器定位 */
+    position: absolute;
     left: 50%;
     transform: translateX(-50%);
     font-size: 14px;
@@ -170,6 +182,27 @@ canvas {
     opacity: 0;
     transition: var(--transition-opacity-normal);
     text-align: center;
-    width: 150px;
-    z-index: 200; /* 确保在时间轴之上 */
+    z-index: 104;
+}
+
+/* 时间点 - 分布在左右两侧 */
+.timeline-point {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--color-black);
+    opacity: 0;
+    transition: var(--transition-opacity-normal);
+    z-index: 103;
+}
+
+.timeline-point.left-point {
+    left: 45%;
+    transform: translateX(-50%);
+}
+
+.timeline-point.right-point {
+    left: 55%;
+    transform: translateX(-50%);
 }
