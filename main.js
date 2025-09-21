@@ -1,4 +1,59 @@
 // ============ 全局变量区域 ============
+// === 常量定义 ===
+const ANIMATION_CONSTANTS = {
+    SCALE_THRESHOLD: 0.01,
+    POSITION_THRESHOLD: 0.1,
+    ROTATION_THRESHOLD: 0.01,
+    INTERPOLATION_FACTOR: 0.1,
+    HOVER_EFFECT_SPEED: 0.002,
+    HOVER_EFFECT_AMPLITUDE: 0.003,
+    MOVE_DETECTION_THRESHOLD: 0.02,
+    CENTER_AREA_SIZE: 0.35,
+    LOGO_DETAIL_SCALE: 0.2,
+    CAMERA_MOVE_FACTOR: 0.12
+};
+
+const ROTATION_STATES = {
+    YINGXUN: { x: 0, y: 0, z: 0 },
+    PROJEKTE: { x: 0, y: Math.PI / 2, z: 0 },
+    KONTAKT: { x: -Math.PI / 2, y: Math.PI / 2 + Math.PI / 4, z: 0 }
+};
+
+const TIMEOUT_DELAYS = {
+    TRIGGER_RESET: 500
+};
+
+// === 工具函数 ===
+const utils = {
+    // 缓存DOM元素
+    domCache: {},
+    getElement(id) {
+        if (!this.domCache[id]) {
+            this.domCache[id] = document.getElementById(id);
+        }
+        return this.domCache[id];
+    },
+    
+    // 动画插值计算
+    smoothTransition(current, target, factor = ANIMATION_CONSTANTS.INTERPOLATION_FACTOR) {
+        const diff = target - current;
+        if (Math.abs(diff) > ANIMATION_CONSTANTS.ROTATION_THRESHOLD) {
+            return current + diff * factor;
+        }
+        return target;
+    },
+    
+    // 检查动画是否完成
+    isAnimationComplete(diffs, threshold = ANIMATION_CONSTANTS.ROTATION_THRESHOLD) {
+        return diffs.every(diff => Math.abs(diff) <= threshold);
+    },
+    
+    // 计算总差值
+    calculateTotalDiff(...diffs) {
+        return diffs.reduce((sum, diff) => sum + Math.abs(diff), 0);
+    }
+};
+
 // Three.js 核心对象
 let scene, camera, renderer, controls;
 let logo; // 3D logo模型对象
@@ -69,7 +124,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = false; // 不使用阴影
-    document.getElementById('logo-container').appendChild(renderer.domElement);
+    utils.getElement('logo-container').appendChild(renderer.domElement);
 
     // === 控制器设置（允许用户手动旋转查看模型）===
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -87,7 +142,7 @@ function init() {
     animate();
 
     // === UI更新 ===
-    document.getElementById('loading').style.display = 'none';
+    utils.getElement('loading').style.display = 'none';
     
     // === 初始化导航栏 ===
     updateNavbar();
@@ -148,7 +203,7 @@ function loadSTL() {
     }, function (error) {
         // 加载失败回调
         console.error('STL文件加载失败:', error);
-        document.getElementById('loading').textContent = '文件加载失败，请检查STL文件路径';
+        utils.getElement('loading').textContent = '文件加载失败，请检查STL文件路径';
     });
 }
 
@@ -166,34 +221,18 @@ function animate() {
         if (isTransitioningToDetail || isDetailMode) {
             // 处理缩放动画
             const scaleDiff = logoTargetScale - logoCurrentScale;
-            if (Math.abs(scaleDiff) > 0.01) {
-                logoCurrentScale += scaleDiff * 0.1;
-            } else {
-                logoCurrentScale = logoTargetScale;
-            }
+            logoCurrentScale = utils.smoothTransition(logoCurrentScale, logoTargetScale, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
             
             // 处理位置动画
-            const posXDiff = logoTargetPosition.x - logoCurrentPosition.x;
-            const posYDiff = logoTargetPosition.y - logoCurrentPosition.y;
-            const posZDiff = logoTargetPosition.z - logoCurrentPosition.z;
+            const positionDiffs = [
+                logoTargetPosition.x - logoCurrentPosition.x,
+                logoTargetPosition.y - logoCurrentPosition.y,
+                logoTargetPosition.z - logoCurrentPosition.z
+            ];
             
-            if (Math.abs(posXDiff) > 0.1) {
-                logoCurrentPosition.x += posXDiff * 0.1;
-            } else {
-                logoCurrentPosition.x = logoTargetPosition.x;
-            }
-            
-            if (Math.abs(posYDiff) > 0.1) {
-                logoCurrentPosition.y += posYDiff * 0.1;
-            } else {
-                logoCurrentPosition.y = logoTargetPosition.y;
-            }
-            
-            if (Math.abs(posZDiff) > 0.1) {
-                logoCurrentPosition.z += posZDiff * 0.1;
-            } else {
-                logoCurrentPosition.z = logoTargetPosition.z;
-            }
+            logoCurrentPosition.x = utils.smoothTransition(logoCurrentPosition.x, logoTargetPosition.x, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
+            logoCurrentPosition.y = utils.smoothTransition(logoCurrentPosition.y, logoTargetPosition.y, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
+            logoCurrentPosition.z = utils.smoothTransition(logoCurrentPosition.z, logoTargetPosition.z, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
             
             // 应用缩放和位置到logo
             logo.scale.set(logoCurrentScale, logoCurrentScale, logoCurrentScale);
@@ -205,8 +244,8 @@ function animate() {
             }
             
             // 检查动画是否完成
-            const totalDiff = Math.abs(scaleDiff) + Math.abs(posXDiff) + Math.abs(posYDiff) + Math.abs(posZDiff);
-            if (totalDiff < 0.1) {
+            const totalDiff = utils.calculateTotalDiff(scaleDiff, ...positionDiffs);
+            if (totalDiff < ANIMATION_CONSTANTS.POSITION_THRESHOLD) {
                 isTransitioningToDetail = false;
                 console.log('Detail mode transition completed');
             }
@@ -214,40 +253,26 @@ function animate() {
         
         if (isRotating) {
             // 惯性旋转到目标位置（平滑过渡）
-            const diffX = targetRotationX - currentRotationX;
-            const diffY = targetRotationY - currentRotationY;
-            const diffZ = targetRotationZ - currentRotationZ;
+            const rotationDiffs = [
+                targetRotationX - currentRotationX,
+                targetRotationY - currentRotationY,
+                targetRotationZ - currentRotationZ
+            ];
             
-            // X轴旋转插值计算
-            if (Math.abs(diffX) > 0.01) {
-                currentRotationX += diffX * 0.1;
-            } else {
-                currentRotationX = targetRotationX;
-            }
-            
-            // Y轴旋转插值计算
-            if (Math.abs(diffY) > 0.01) {
-                currentRotationY += diffY * 0.1;
-            } else {
-                currentRotationY = targetRotationY;
-            }
-            
-            // Z轴旋转插值计算
-            if (Math.abs(diffZ) > 0.01) {
-                currentRotationZ += diffZ * 0.1;
-            } else {
-                currentRotationZ = targetRotationZ;
-            }
+            // 使用工具函数进行平滑过渡
+            currentRotationX = utils.smoothTransition(currentRotationX, targetRotationX);
+            currentRotationY = utils.smoothTransition(currentRotationY, targetRotationY);
+            currentRotationZ = utils.smoothTransition(currentRotationZ, targetRotationZ);
             
             // 计算旋转进度并更新状态过渡
-            const totalDiff = Math.abs(diffX) + Math.abs(diffY) + Math.abs(diffZ);
+            const totalDiff = utils.calculateTotalDiff(...rotationDiffs);
             stateProgress = Math.max(0, Math.min(1, 1 - totalDiff / Math.PI)); // 进度从0到1
             
             // 实时更新导航栏
             updateNavbar();
             
             // 检查是否完成旋转
-            if (Math.abs(diffX) <= 0.01 && Math.abs(diffY) <= 0.01 && Math.abs(diffZ) <= 0.01) {
+            if (utils.isAnimationComplete(rotationDiffs)) {
                 isRotating = false;
                 currentState = targetState; // 确保状态同步
                 stateProgress = 1; // 确保进度完成
@@ -255,7 +280,7 @@ function animate() {
             }
         } else if (isHoveringLogo && !isDetailMode) {
             // 悬停引导效果：只有当鼠标悬停在logo上且不在详情页模式时才显示轻微摆动
-            const hoverEffect = Math.sin(Date.now() * 0.002) * 0.003;
+            const hoverEffect = Math.sin(Date.now() * ANIMATION_CONSTANTS.HOVER_EFFECT_SPEED) * ANIMATION_CONSTANTS.HOVER_EFFECT_AMPLITUDE;
             currentRotationY += hoverEffect;
         }
         
@@ -289,14 +314,14 @@ function enterDetailMode() {
     
     // 根据当前相机的视野范围计算合适的移动距离
     const cameraWidth = camera.right - camera.left;
-    const moveDistance = cameraWidth * 0.12; // 移动到视野宽度的15%处
+    const moveDistance = cameraWidth * ANIMATION_CONSTANTS.CAMERA_MOVE_FACTOR; // 移动到视野宽度的12%处
     
     // 设置logo目标状态
-    logoTargetScale = 0.2; // 缩小到30%
+    logoTargetScale = ANIMATION_CONSTANTS.LOGO_DETAIL_SCALE; // 缩小到20%
     logoTargetPosition.x = -moveDistance; // 动态计算移动距离
     
     // 精确计算导航栏对应的3D坐标位置
-    const navbar = document.getElementById('navbar');
+    const navbar = utils.getElement('navbar');
     if (navbar) {
         // 获取导航栏的实际DOM位置
         const navbarRect = navbar.getBoundingClientRect();
@@ -378,7 +403,7 @@ function createTimeline() {
     }
     
     // 创建详情页内容容器
-    let detailContent = document.getElementById('detail-content');
+    let detailContent = utils.getElement('detail-content');
     if (!detailContent) {
         detailContent = document.createElement('div');
         detailContent.id = 'detail-content';
@@ -482,7 +507,7 @@ function removeTimeline() {
     }
     
     // 隐藏详情页内容容器
-    const detailContent = document.getElementById('detail-content');
+    const detailContent = utils.getElement('detail-content');
     if (detailContent) {
         detailContent.className = '';
     }
@@ -498,7 +523,7 @@ function addTimelineScrollEvents() {
     hasScrollControl = true;
     
     // 监听详情页内容容器的滚动事件
-    const detailContent = document.getElementById('detail-content');
+    const detailContent = utils.getElement('detail-content');
     if (detailContent) {
         detailContent.addEventListener('scroll', handlePageScroll, { passive: true });
     }
@@ -517,7 +542,7 @@ function removeTimelineScrollEvents() {
     hasScrollControl = false;
     
     // 移除详情页内容容器的滚动监听
-    const detailContent = document.getElementById('detail-content');
+    const detailContent = utils.getElement('detail-content');
     if (detailContent) {
         detailContent.removeEventListener('scroll', handlePageScroll);
         detailContent.scrollTop = 0;
@@ -528,7 +553,7 @@ function removeTimelineScrollEvents() {
 function handlePageScroll() {
     if (!isDetailMode || currentState !== 1 || !timelineContainer) return;
     
-    const detailContent = document.getElementById('detail-content');
+    const detailContent = utils.getElement('detail-content');
     if (!detailContent) return;
     
     const scrollTop = detailContent.scrollTop;
@@ -662,8 +687,7 @@ function addMouseEvents() {
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         
         // --- 区域检测：判断鼠标是否在画布中央70%区域内（用于导航栏显示）---
-        const centerAreaSize = 0.35; // 70%区域的一半
-        const isInCenterArea = (Math.abs(mouse.x) <= centerAreaSize && Math.abs(mouse.y) <= centerAreaSize);
+        const isInCenterArea = (Math.abs(mouse.x) <= ANIMATION_CONSTANTS.CENTER_AREA_SIZE && Math.abs(mouse.y) <= ANIMATION_CONSTANTS.CENTER_AREA_SIZE);
         
         // --- 射线检测：精确判断鼠标是否悬停在logo上（用于旋转交互）---
         if (logo) {
