@@ -126,13 +126,14 @@ canvas {
     z-index: 100;
 }
 
+
 /* 左右两条时间轴线 */
 .timeline-line {
     position: absolute;
     top: 40px;
     width: 2px;
     background-color: var(--color-light-gray);
-    height: 0;
+    height: 0px;
     transition: height 0.3s ease;
     z-index: 101;
 }
@@ -205,4 +206,59 @@ canvas {
 .timeline-point.right-point {
     left: 55%;
     transform: translateX(-50%);
+}
+
+.timeline-content {
+    position: absolute;
+    width: 480px;
+    text-align: right;
+    transition: opacity 0.3s ease;
+}
+
+.timeline-content.left-content {
+    right: calc(50% + 100px); /* 位于左侧时间轴线的左侧 */
+}
+
+.content-line {
+    margin-bottom: 4px;
+    line-height: 1.2;
+    font-size: 14px; /* 与时间标签相同的字体大小 */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+}
+
+/* 左侧内容行：从右向左滑入 */
+.timeline-content.left-content .content-line {
+    transform: translateX(50px); /* 初始位置在右侧 */
+}
+
+/* 右侧内容行：从左向右滑入 */
+.timeline-content.right-content .content-line {
+    transform: translateX(-50px); /* 初始位置在左侧 */
+}
+
+.content-title {
+    font-weight: bold;
+    color: #000;
+}
+
+.content-location {
+    font-size: 10px;
+    color: #8f8f8f;
+}
+
+.content-degree {
+    font-weight: normal;
+    color: #000;
+}
+
+.timeline-content.right-content {
+    left: calc(50% + 100px); /* 位于右侧时间轴线的右侧 */
+    text-align: left; /* 左对齐 */
+}
+
+.content-description {
+    font-weight: normal;
+    color: #000;
+    font-size: 14px;
 }

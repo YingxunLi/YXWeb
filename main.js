@@ -476,6 +476,128 @@ function createTimeline() {
         pointElement.style.opacity = '0';
         pointElement.id = `timeline-point-${index}`;
         timelineContainer.appendChild(pointElement);
+        
+        // 为09.2018项目添加内容
+        if (item.time === '09.2018') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content left-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Zhejiang University of Technology</div>
+                <div class="content-line content-location" data-line="1">Hangzhou, Zhejiang, China</div>
+                <div class="content-line content-degree" data-line="2">Industrie Design, Bachelor of Engineering</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
+        // 为03.2022项目添加内容
+        if (item.time === '03.2022') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content right-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Produktmanager Praktikant</div>
+                <div class="content-line content-location" data-line="1">Hangzhou Zhixiao Technology Co. ｜ Hangzhou, Zhejiang, China ｜ Vor Ort</div>
+                <div class="content-line content-description" data-line="2">Erstellung von PRD sowie Web- und Mobil-Prototypen eines Jobsuchprodukts für Studierende</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
+        // 为07.2022项目添加内容
+        if (item.time === '07.2022') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content right-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Produktmanager</div>
+                <div class="content-line content-location" data-line="1">Chaozhou Three-circle Group Co., Ltd. ｜ Chaozhou, Guangdong, China ｜ Vor Ort</div>
+                <div class="content-line content-description" data-line="2">Erstellung von Designspezifikationen für CNC-Bearbeitung smarter Produkte</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
+        // 为08.2024项目添加内容
+        if (item.time === '08.2024') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content right-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Content Marketing Praktikant</div>
+                <div class="content-line content-location" data-line="1">Education Victory ｜ Portland, Oregon, Vereinigte Staaten von Amerika ｜ Remote</div>
+                <div class="content-line content-description" data-line="2">Betrieb des YouTube-Kanals inkl. Video-Editing und Datenanalyse</div>
+                <div class="content-line content-description" data-line="3">Entwurf interaktiver 3D-Prototypen für Systemdesign-Strukturen</div>
+                <div class="content-line content-description" data-line="4">Marktforschung zu Jobsuche-Tools und Entwicklung kreativer Ideen</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
+        // 为10.2024项目添加内容
+        if (item.time === '10.2024') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content left-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Hochschule für Gestaltung Schwäbisch Gmünd</div>
+                <div class="content-line content-location" data-line="1">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</div>
+                <div class="content-line content-degree" data-line="2">Interaktiongestaltung, Bachelor of Arts</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
+        // 为12.2024项目添加内容
+        if (item.time === '12.2024') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content right-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Freiwilliger für Content-Management</div>
+                <div class="content-line content-location" data-line="1">Weltladen Schwäbisch Gmünd｜Schwäbisch Gmünd, Baden-Württemberg, Deutschland｜Vor Ort</div>
+                <div class="content-line content-description" data-line="2">Promotion auf Instagram: Videoaufnahme, Fotografie, Nachbearbeitung</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
+        // 为06.2025项目添加内容
+        if (item.time === '06.2025') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content right-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Kommunikationsdesigner (Studentische Hiwi)</div>
+                <div class="content-line content-location" data-line="1">open science for open societies｜Ludwigsburg, Baden-Württemberg｜Deutschland · Remote</div>
+                <div class="content-line content-description" data-line="2">Mitarbeit am Parkli-Boje-Projekt: Gestaltung von Visual-Postern, Unterstützung bei der Erstellung von Leitfäden</div>
+                <div class="content-line content-description" data-line="3">Mitarbeit am FEAST-Projekt: Gestaltung von Postern, Flyern, interaktiven Materialien für die FEAST Summer School 2025</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
     });
     
     detailContent.appendChild(timelineContainer);
@@ -577,6 +699,7 @@ function updateTimelineDisplay() {
     const rightLine = timelineContainer.querySelector('.right-line');
     const allLabels = timelineContainer.querySelectorAll('.timeline-label');
     const allPoints = timelineContainer.querySelectorAll('.timeline-point');
+    const allContents = timelineContainer.querySelectorAll('.timeline-content');
     
     if (!leftLine || !rightLine || allLabels.length === 0) return;
     
@@ -592,11 +715,21 @@ function updateTimelineDisplay() {
     // 更新每个时间轴项目的显示状态
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
+        const content = allContents[index]; // 可能为null
         
         if (index < visibleItems) {
             // 已完全显示的项目
             label.style.opacity = '1';
             if (point) point.style.opacity = '1';
+            if (content) {
+                content.style.opacity = '1';
+                // 显示所有内容行
+                const contentLines = content.querySelectorAll('.content-line');
+                contentLines.forEach(line => {
+                    line.style.opacity = '1';
+                    line.style.transform = 'translateX(0)';
+                });
+            }
             
             // 更新最大高度
             const itemTop = parseFloat(label.style.top) || 0;
@@ -606,6 +739,49 @@ function updateTimelineDisplay() {
             const opacity = currentItemProgress.toString();
             label.style.opacity = opacity;
             if (point) point.style.opacity = opacity;
+            if (content) {
+                content.style.opacity = '1';
+                // 特殊处理内容行的逐行显示
+                const contentLines = content.querySelectorAll('.content-line');
+                const totalLines = contentLines.length;
+                const lineProgress = currentItemProgress * totalLines;
+                
+                // 判断内容是左侧还是右侧
+                const isRightContent = content.classList.contains('right-content');
+                
+                contentLines.forEach((line, lineIndex) => {
+                    if (lineIndex < Math.floor(lineProgress)) {
+                        // 完全显示的行
+                        line.style.opacity = '1';
+                        line.style.transform = 'translateX(0)';
+                    } else if (lineIndex === Math.floor(lineProgress)) {
+                        // 正在显示的行
+                        const currentLineProgress = lineProgress - lineIndex;
+                        line.style.opacity = currentLineProgress.toString();
+                        
+                        // 根据左右侧设置不同的滑入方向
+                        if (isRightContent) {
+                            // 右侧内容：从左向右滑入
+                            const translateX = (1 - currentLineProgress) * -50; // 负值表示从左侧滑入
+                            line.style.transform = `translateX(${translateX}px)`;
+                        } else {
+                            // 左侧内容：从右向左滑入
+                            const translateX = (1 - currentLineProgress) * 50; // 正值表示从右侧滑入
+                            line.style.transform = `translateX(${translateX}px)`;
+                        }
+                    } else {
+                        // 未显示的行
+                        line.style.opacity = '0';
+                        if (isRightContent) {
+                            // 右侧内容：初始位置在左侧
+                            line.style.transform = 'translateX(-50px)';
+                        } else {
+                            // 左侧内容：初始位置在右侧
+                            line.style.transform = 'translateX(50px)';
+                        }
+                    }
+                });
+            }
             
             // 更新最大高度（渐进式）
             const itemTop = parseFloat(label.style.top) || 0;
@@ -614,10 +790,27 @@ function updateTimelineDisplay() {
             // 未显示的项目保持透明
             label.style.opacity = '0';
             if (point) point.style.opacity = '0';
+            if (content) {
+                content.style.opacity = '0';
+                // 隐藏所有内容行
+                const contentLines = content.querySelectorAll('.content-line');
+                const isRightContent = content.classList.contains('right-content');
+                
+                contentLines.forEach(line => {
+                    line.style.opacity = '0';
+                    if (isRightContent) {
+                        // 右侧内容：初始位置在左侧
+                        line.style.transform = 'translateX(-50px)';
+                    } else {
+                        // 左侧内容：初始位置在右侧
+                        line.style.transform = 'translateX(50px)';
+                    }
+                });
+            }
         }
     });
     
-// 应用计算出的高度到左右时间轴线 - 修改这里
+    // 应用计算出的高度到左右时间轴线 - 修改这里
     const lineHeight = maxVisibleHeight - 40; // 减去时间轴线的起始位置(40px)
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
@@ -646,7 +839,7 @@ function addMouseEvents() {
         // --- 区域检测：判断鼠标是否在画布中央70%区域内（用于导航栏显示）---
         const isInCenterArea = (Math.abs(mouse.x) <= ANIMATION_CONSTANTS.CENTER_AREA_SIZE && Math.abs(mouse.y) <= ANIMATION_CONSTANTS.CENTER_AREA_SIZE);
         
-        // --- 射线检测：精确判断鼠标是否悬停在logo上（用于旋转交互）---
+        // --- 射线检测：精确判断鼠标悬停在logo上（用于旋转交互）---
         if (logo) {
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(logo);
