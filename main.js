@@ -549,27 +549,23 @@ function handlePageScroll() {
     if (!detailContent) return;
     
     const scrollTop = detailContent.scrollTop;
-    
-    // 获取时间轴容器的实际高度和位置
     const containerHeight = timelineContainer.offsetHeight;
-    const containerTop = timelineContainer.offsetTop;
-    
-    // 计算滚动进度：从时间轴开始位置到结束位置
     const viewportHeight = detailContent.clientHeight;
-    const scrollStart = containerTop - viewportHeight * 0.8; // 提前一点开始显示
-    const scrollEnd = containerTop + containerHeight - viewportHeight * 0.2; // 提前一点结束
-    const scrollRange = scrollEnd - scrollStart;
     
+    // 简化滚动进度计算
+    const scrollableHeight = containerHeight - viewportHeight;
     let newProgress = 0;
-    if (scrollTop > scrollStart && scrollRange > 0) {
-        newProgress = Math.min((scrollTop - scrollStart) / scrollRange, 1);
+    
+    if (scrollableHeight > 0) {
+        newProgress = Math.min(scrollTop / scrollableHeight, 1);
     }
     
+    // 允许进度减少（支持向上滚动）
+    // timelineScrollProgress = newProgress;
     // 只有当进度增加时才更新（实现向下滚动时间轴出现，向上滚动不消失）
     if (newProgress > timelineScrollProgress) {
         timelineScrollProgress = newProgress;
     }
-    
     updateTimelineDisplay();
 }
 
