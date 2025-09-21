@@ -38,6 +38,8 @@ let logoCurrentPosition = { x: 0, y: 0, z: 0 }; // logo当前位置
 // 时间轴相关变量
 let timelineScrollProgress = 0; // 时间轴滚动进度 (0-1)
 let timelineContainer = null; // 时间轴容器元素
+let timelineMaxHeight = 1200; // 时间轴最大高度，用于计算滚动范围
+let hasScrollControl = false; // 是否已接管页面滚动控制
 
 // 射线检测相关对象
 let raycaster = new THREE.Raycaster(); // 用于精确检测鼠标与3D物体的交互
@@ -251,8 +253,8 @@ function animate() {
                 stateProgress = 1; // 确保进度完成
                 updateNavbar(); // 最终更新
             }
-        } else if (isHoveringLogo) {
-            // 悬停引导效果：只有当鼠标悬停在logo上时才显示轻微摆动
+        } else if (isHoveringLogo && !isDetailMode) {
+            // 悬停引导效果：只有当鼠标悬停在logo上且不在详情页模式时才显示轻微摆动
             const hoverEffect = Math.sin(Date.now() * 0.002) * 0.003;
             currentRotationY += hoverEffect;
         }
@@ -375,6 +377,17 @@ function createTimeline() {
         removeTimeline();
     }
     
+    // 创建详情页内容容器
+    let detailContent = document.getElementById('detail-content');
+    if (!detailContent) {
+        detailContent = document.createElement('div');
+        detailContent.id = 'detail-content';
+        detailContent.className = 'visible';
+        document.body.appendChild(detailContent);
+    } else {
+        detailContent.className = 'visible';
+    }
+    
     // 创建时间轴容器
     timelineContainer = document.createElement('div');
     timelineContainer.id = 'timeline-container';
@@ -401,7 +414,7 @@ function createTimeline() {
     
     timelineContainer.appendChild(leftTimeline);
     timelineContainer.appendChild(rightTimeline);
-    document.body.appendChild(timelineContainer);
+    detailContent.appendChild(timelineContainer); // 添加到详情页内容容器中
     
     // 重置滚动进度
     timelineScrollProgress = 0;
@@ -447,14 +460,11 @@ function createTimelineColumn(side, title, timepoints) {
         // 给标签添加唯一ID，方便后续查找
         labelElement.id = `timeline-label-${side}-${index}`;
         
-        // 计算标签的绝对位置（时间轴容器顶部 + 列偏移 + 点位置）
-        const timelineTop = 80; // timeline-container的top值
-        const columnTop = 150; // timeline-column的top值
-        const absoluteTop = timelineTop + columnTop + item.position;
-        labelElement.style.top = `${absoluteTop}px`;
+        // 设置标签的相对位置（相对于时间轴容器）
+        labelElement.style.top = `${item.position}px`;
         
-        // 将标签直接添加到body而不是pointElement
-        document.body.appendChild(labelElement);
+        // 将标签添加到时间轴容器而不是body
+        timelineContainer.appendChild(labelElement);
         column.appendChild(pointElement);
     });
     
@@ -464,17 +474,18 @@ function createTimelineColumn(side, title, timepoints) {
 // 移除时间轴
 function removeTimeline() {
     if (timelineContainer) {
-        document.body.removeChild(timelineContainer);
+        // 移除时间轴容器
+        if (timelineContainer.parentNode) {
+            timelineContainer.parentNode.removeChild(timelineContainer);
+        }
         timelineContainer = null;
     }
     
-    // 移除所有timeline-label元素
-    const labels = document.querySelectorAll('.timeline-label');
-    labels.forEach(label => {
-        if (label.parentNode) {
-            label.parentNode.removeChild(label);
-        }
-    });
+    // 隐藏详情页内容容器
+    const detailContent = document.getElementById('detail-content');
+    if (detailContent) {
+        detailContent.className = '';
+    }
     
     // 移除滚动事件监听
     removeTimelineScrollEvents();
@@ -482,24 +493,65 @@ function removeTimeline() {
 
 // 添加时间轴滚动事件
 function addTimelineScrollEvents() {
-    document.addEventListener('wheel', handleTimelineScroll, { passive: false });
+    if (hasScrollControl) return;
+    
+    hasScrollControl = true;
+    
+    // 监听详情页内容容器的滚动事件
+    const detailContent = document.getElementById('detail-content');
+    if (detailContent) {
+        detailContent.addEventListener('scroll', handlePageScroll, { passive: true });
+    }
+    
+    // 重置滚动位置
+    if (detailContent) {
+        detailContent.scrollTop = 0;
+    }
+    timelineScrollProgress = 0;
 }
 
 // 移除时间轴滚动事件
 function removeTimelineScrollEvents() {
-    document.removeEventListener('wheel', handleTimelineScroll);
+    if (!hasScrollControl) return;
+    
+    hasScrollControl = false;
+    
+    // 移除详情页内容容器的滚动监听
+    const detailContent = document.getElementById('detail-content');
+    if (detailContent) {
+        detailContent.removeEventListener('scroll', handlePageScroll);
+        detailContent.scrollTop = 0;
+    }
 }
 
-// 处理时间轴滚动
-function handleTimelineScroll(event) {
+// 处理页面滚动
+function handlePageScroll() {
     if (!isDetailMode || currentState !== 1 || !timelineContainer) return;
     
-    event.preventDefault();
+    const detailContent = document.getElementById('detail-content');
+    if (!detailContent) return;
     
-    // 更新滚动进度
-    const scrollSensitivity = 0.001; // 降低滚动敏感度，让滚动更平滑
-    timelineScrollProgress += event.deltaY * scrollSensitivity;
-    timelineScrollProgress = Math.max(0, Math.min(1, timelineScrollProgress));
+    const scrollTop = detailContent.scrollTop;
+    
+    // 获取时间轴容器的实际高度和位置
+    const containerHeight = timelineContainer.offsetHeight;
+    const containerTop = timelineContainer.offsetTop;
+    
+    // 计算滚动进度：从时间轴开始位置到结束位置
+    const viewportHeight = detailContent.clientHeight;
+    const scrollStart = containerTop - viewportHeight * 0.8; // 提前一点开始显示
+    const scrollEnd = containerTop + containerHeight - viewportHeight * 0.2; // 提前一点结束
+    const scrollRange = scrollEnd - scrollStart;
+    
+    let newProgress = 0;
+    if (scrollTop > scrollStart && scrollRange > 0) {
+        newProgress = Math.min((scrollTop - scrollStart) / scrollRange, 1);
+    }
+    
+    // 只有当进度增加时才更新（实现向下滚动时间轴出现，向上滚动不消失）
+    if (newProgress > timelineScrollProgress) {
+        timelineScrollProgress = newProgress;
+    }
     
     updateTimelineDisplay();
 }
@@ -519,8 +571,10 @@ function updateTimelineDisplay() {
     // 计算最大时间点数量
     const maxPoints = Math.max(leftPoints.length, rightPoints.length);
     
-    // 根据滚动进度显示时间点
-    const visiblePoints = Math.floor(timelineScrollProgress * maxPoints);
+    // 根据滚动进度显示时间点（渐进式显示）
+    const visiblePointsFloat = timelineScrollProgress * maxPoints;
+    const visiblePoints = Math.floor(visiblePointsFloat);
+    const currentPointProgress = visiblePointsFloat - visiblePoints; // 当前正在显示的点的进度
     
     // 计算时间轴线条的高度
     let maxVisibleHeight = 150; // 最小高度，保证从导航栏下方开始
@@ -531,46 +585,54 @@ function updateTimelineDisplay() {
     // 更新左侧时间轴
     leftPoints.forEach((point, index) => {
         const label = document.getElementById(`timeline-label-left-${index}`);
+        
         if (index < visiblePoints) {
+            // 已完全显示的点
             point.style.opacity = '1';
             if (label) {
                 label.style.opacity = '1';
-                // 重新计算并设置标签的绝对位置
+                // 使用相对于时间轴容器的定位
                 const pointTop = parseFloat(point.style.top) || 0;
-                const absoluteTop = timelineTop + columnTop + pointTop;
-                label.style.top = `${absoluteTop}px`;
+                label.style.top = `${pointTop}px`;
             }
-            // 更新最大可见高度
             const pointTop = parseFloat(point.style.top) || 0;
             maxVisibleHeight = Math.max(maxVisibleHeight, pointTop + 20);
-        } else {
-            point.style.opacity = '0';
+        } else if (index === visiblePoints) {
+            // 正在显示的点（渐进效果）
+            point.style.opacity = currentPointProgress.toString();
             if (label) {
-                label.style.opacity = '0';
+                label.style.opacity = currentPointProgress.toString();
+                const pointTop = parseFloat(point.style.top) || 0;
+                label.style.top = `${pointTop}px`;
             }
+            const pointTop = parseFloat(point.style.top) || 0;
+            maxVisibleHeight = Math.max(maxVisibleHeight, pointTop * currentPointProgress + 20);
         }
+        // 未显示的点保持透明（不需要处理）
     });
     
-    // 更新右侧时间轴
+    // 更新右侧时间轴（相同逻辑）
     rightPoints.forEach((point, index) => {
         const label = document.getElementById(`timeline-label-right-${index}`);
+        
         if (index < visiblePoints) {
             point.style.opacity = '1';
             if (label) {
                 label.style.opacity = '1';
-                // 重新计算并设置标签的绝对位置
                 const pointTop = parseFloat(point.style.top) || 0;
-                const absoluteTop = timelineTop + columnTop + pointTop;
-                label.style.top = `${absoluteTop}px`;
+                label.style.top = `${pointTop}px`;
             }
-            // 更新最大可见高度
             const pointTop = parseFloat(point.style.top) || 0;
             maxVisibleHeight = Math.max(maxVisibleHeight, pointTop + 20);
-        } else {
-            point.style.opacity = '0';
+        } else if (index === visiblePoints) {
+            point.style.opacity = currentPointProgress.toString();
             if (label) {
-                label.style.opacity = '0';
+                label.style.opacity = currentPointProgress.toString();
+                const pointTop = parseFloat(point.style.top) || 0;
+                label.style.top = `${pointTop}px`;
             }
+            const pointTop = parseFloat(point.style.top) || 0;
+            maxVisibleHeight = Math.max(maxVisibleHeight, pointTop * currentPointProgress + 20);
         }
     });
     

@@ -2,7 +2,8 @@ body {
     margin: 0;
     padding: 0;
     background-color: white;
-    overflow: hidden;
+    overflow-x: hidden; /* 只隐藏水平滚动条 */
+    overflow-y: auto; /* 允许垂直滚动 */
     font-family: 'Roboto', Arial, sans-serif;
 }
 
@@ -87,16 +88,33 @@ canvas {
     display: block;
 }
 
+/* 详情页内容容器 */
+#detail-content {
+    position: fixed;
+    top: 130px; /* 导航栏下方 */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 50;
+    background: transparent;
+    display: none; /* 默认隐藏 */
+}
+
+#detail-content.visible {
+    display: block;
+}
+
 /* 时间轴样式 */
 #timeline-container {
-    position: fixed;
-    top: 80px;
+    position: relative; /* 改为relative，相对于detail-content定位 */
+    top: 50px; /* 从容器顶部开始 */
     left: 0;
-    width: 100vw;
-    height: calc(100vh - 80px);
+    width: 100%;
+    min-height: 1500px; /* 设置最小高度，确保页面有足够的滚动空间 */
     pointer-events: none;
     z-index: 100;
-    overflow: hidden;
 }
 
 .timeline-column {
@@ -107,14 +125,6 @@ canvas {
     pointer-events: none;
     height: 0; /* 初始高度为0，通过滚动逐渐增长 */
     transition: height 0.3s ease;
-}
-
-.timeline-left {
-    /* 位置通过JavaScript计算设置 */
-}
-
-.timeline-right {
-    /* 位置通过JavaScript计算设置 */
 }
 
 .timeline-title {
@@ -141,7 +151,7 @@ canvas {
 }
 
 .timeline-label {
-    position: fixed; /* 使用fixed定位，相对于视口 */
+    position: absolute; /* 改为absolute，相对于时间轴容器定位 */
     left: 50%;
     transform: translateX(-50%);
     font-size: 14px;
