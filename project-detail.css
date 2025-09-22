@@ -169,9 +169,9 @@
 
 /* 关闭按钮 */
 .project-close-btn {
-    position: absolute; /* 改为相对于详情页定位 */
+    position: fixed; /* 改回fixed定位，与右箭头对齐 */
     top: 40px;
-    right: 40px;
+    right: 30px; /* 与右箭头相同的right值 */
     width: 50px;
     height: 50px;
     background: rgba(0, 0, 0, 0.8);
@@ -190,9 +190,10 @@
     transform: scale(1.1);
 }
 
-/* 确保顶部导航栏在详情页中保持可见 */
+/* 确保顶部导航栏在详情页中隐藏 */
 body:has(#project-detail-overlay) #navbar {
-    z-index: 1003 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 /* 展开动画的中间状态 */
@@ -235,7 +236,7 @@ body:has(#project-detail-overlay) #navbar {
     
     .project-close-btn {
         top: 20px;
-        right: 80px;
+        right: 15px; /* 与右箭头对齐 */
         width: 40px;
         height: 40px;
     }

@@ -1413,13 +1413,6 @@ function showProjectDetail(project) {
                     </div>
                 </div>
             </div>
-            
-            <!-- 关闭按钮 -->
-            <div class="project-close-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
         </div>
     `;
     
@@ -1441,6 +1434,16 @@ function showProjectDetail(project) {
         </div>
     `;
     document.body.appendChild(navArrows);
+    
+    // 创建独立的关闭按钮（在详情页外侧，与右箭头对齐）
+    const closeBtn = document.createElement('div');
+    closeBtn.className = 'project-close-btn';
+    closeBtn.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    `;
+    document.body.appendChild(closeBtn);
     
     // 执行其他项目的挤压动画
     animateOtherProjects(clickedItem, 'compress');
@@ -1472,7 +1475,7 @@ function showProjectDetail(project) {
     }, 50);
     
     // 添加事件监听器
-    addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex);
+    addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex);
 }
 
 // 获取当前项目在数组中的索引
@@ -1536,27 +1539,26 @@ function animateOtherProjects(clickedItem, action) {
 }
 
 // 添加项目详情页事件监听器
-function addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex) {
-    // 关闭按钮
-    const closeBtn = detailOverlay.querySelector('.project-close-btn');
-    closeBtn.addEventListener('click', () => closeProjectDetail(detailOverlay, navArrows));
+function addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex) {
+    // 关闭按钮（现在是独立的元素）
+    closeBtn.addEventListener('click', () => closeProjectDetail(detailOverlay, navArrows, closeBtn));
     
     // 导航箭头（现在在独立的容器中）
     const prevBtn = navArrows.querySelector('.nav-prev');
     const nextBtn = navArrows.querySelector('.nav-next');
     
     if (!prevBtn.classList.contains('disabled')) {
-        prevBtn.addEventListener('click', () => navigateProject(currentIndex - 1, detailOverlay, navArrows));
+        prevBtn.addEventListener('click', () => navigateProject(currentIndex - 1, detailOverlay, navArrows, closeBtn));
     }
     
     if (!nextBtn.classList.contains('disabled')) {
-        nextBtn.addEventListener('click', () => navigateProject(currentIndex + 1, detailOverlay, navArrows));
+        nextBtn.addEventListener('click', () => navigateProject(currentIndex + 1, detailOverlay, navArrows, closeBtn));
     }
     
     // ESC键关闭
     const handleKeyPress = (e) => {
         if (e.key === 'Escape') {
-            closeProjectDetail(detailOverlay, navArrows);
+            closeProjectDetail(detailOverlay, navArrows, closeBtn);
             document.removeEventListener('keydown', handleKeyPress);
         }
     };
@@ -1564,7 +1566,7 @@ function addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex) 
 }
 
 // 关闭项目详情页
-function closeProjectDetail(detailOverlay, navArrows) {
+function closeProjectDetail(detailOverlay, navArrows, closeBtn) {
     // 恢复其他项目的位置
     animateOtherProjects(null, 'restore');
     
@@ -1575,9 +1577,12 @@ function closeProjectDetail(detailOverlay, navArrows) {
     detailOverlay.style.opacity = '0';
     detailOverlay.style.transform = 'scale(0.95)';
     
-    // 同时隐藏导航箭头
+    // 同时隐藏导航箭头和关闭按钮
     if (navArrows) {
         navArrows.style.opacity = '0';
+    }
+    if (closeBtn) {
+        closeBtn.style.opacity = '0';
     }
     
     setTimeout(() => {
@@ -1587,11 +1592,14 @@ function closeProjectDetail(detailOverlay, navArrows) {
         if (navArrows && navArrows.parentNode) {
             navArrows.parentNode.removeChild(navArrows);
         }
+        if (closeBtn && closeBtn.parentNode) {
+            closeBtn.parentNode.removeChild(closeBtn);
+        }
     }, 300);
 }
 
 // 导航到其他项目
-function navigateProject(newIndex, currentOverlay, currentNavArrows) {
+function navigateProject(newIndex, currentOverlay, currentNavArrows, currentCloseBtn) {
     if (newIndex < 0 || newIndex > 5) return;
     
     const projectsData = [
@@ -1609,9 +1617,12 @@ function navigateProject(newIndex, currentOverlay, currentNavArrows) {
     currentOverlay.style.opacity = '0';
     currentOverlay.style.transform = 'scale(0.95)';
     
-    // 同时隐藏当前导航箭头
+    // 同时隐藏当前导航箭头和关闭按钮
     if (currentNavArrows) {
         currentNavArrows.style.opacity = '0';
+    }
+    if (currentCloseBtn) {
+        currentCloseBtn.style.opacity = '0';
     }
     
     setTimeout(() => {
@@ -1620,6 +1631,9 @@ function navigateProject(newIndex, currentOverlay, currentNavArrows) {
         }
         if (currentNavArrows && currentNavArrows.parentNode) {
             currentNavArrows.parentNode.removeChild(currentNavArrows);
+        }
+        if (currentCloseBtn && currentCloseBtn.parentNode) {
+            currentCloseBtn.parentNode.removeChild(currentCloseBtn);
         }
         // 不恢复背景和项目状态，直接打开新项目
         showProjectDetailDirect(newProject);
@@ -1685,13 +1699,6 @@ function showProjectDetailDirect(project) {
                     </div>
                 </div>
             </div>
-            
-            <!-- 关闭按钮 -->
-            <div class="project-close-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
         </div>
     `;
     
@@ -1715,15 +1722,27 @@ function showProjectDetailDirect(project) {
     `;
     document.body.appendChild(navArrows);
     
+    // 创建独立的关闭按钮
+    const closeBtn = document.createElement('div');
+    closeBtn.className = 'project-close-btn';
+    closeBtn.style.opacity = '0';
+    closeBtn.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    `;
+    document.body.appendChild(closeBtn);
+    
     // 淡入动画
     setTimeout(() => {
         detailOverlay.style.opacity = '1';
         detailOverlay.style.transform = 'scale(1)';
         navArrows.style.opacity = '1';
+        closeBtn.style.opacity = '1';
     }, 50);
     
     // 添加事件监听器
-    addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex);
+    addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex);
 }
 
 // ============ 内容清理函数 ============
