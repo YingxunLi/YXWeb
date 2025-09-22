@@ -436,18 +436,18 @@ function createTimeline() {
     
     // 定义时间轴数据 - 左右交替显示
     const timelineData = [
-        { time: '09.2018', side: 'left', top: 50, title: 'Ausbildung' },
-        { time: '03.2022', side: 'right', top: 150, title: 'Berufserfahrung' },
-        { time: '06.2022', side: 'left', top: 280 },
-        { time: '05.2022', side: 'right', top: 250 },
-        { time: '07.2022', side: 'right', top: 310 },
-        { time: '09.2022', side: 'right', top: 410 },
-        { time: '08.2024', side: 'right', top: 440 },
-        { time: '10.2024', side: 'left', top: 530 },
-        { time: '11.2024', side: 'right', top: 560 },
-        { time: '12.2024', side: 'right', top: 590 },
-        { time: '06.2025', side: 'right', top: 690 },
-        { time: '03.2028', side: 'left', top: 720 }
+        { time: '09.2018', side: 'left', top: 80, title: 'Ausbildung' },
+        { time: '03.2022', side: 'right', top: 190, title: 'Berufserfahrung' },
+        { time: '06.2022', side: 'left', top: 380 },
+        { time: '05.2022', side: 'right', top: 340 },
+        { time: '07.2022', side: 'right', top: 420 },
+        { time: '09.2022', side: 'right', top: 570 },
+        { time: '08.2024', side: 'right', top: 650 },
+        { time: '10.2024', side: 'left', top: 810 },
+        { time: '11.2024', side: 'right', top: 850 },
+        { time: '12.2024', side: 'right', top: 890 },
+        { time: '06.2025', side: 'right', top: 1040 },
+        { time: '03.2028', side: 'left', top: 1110 }
     ];
     
     // 添加这几行：计算所需的容器高度
@@ -961,6 +961,8 @@ function addMouseEvents() {
 
 // ============ 导航栏点击事件处理函数 ============
 // 为详情页模式下的导航栏添加点击切换功能
+// ============ 导航栏点击事件处理函数 ============
+// 为详情页模式下的导航栏添加点击切换功能
 function addNavbarEvents() {
     const navItems = {
         yingxun: document.getElementById('nav-yingxun'),
@@ -972,7 +974,11 @@ function addNavbarEvents() {
     if (navItems.yingxun) {
         navItems.yingxun.addEventListener('click', () => {
             console.log('Clicked nav-yingxun, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
-            if (isDetailMode && !isRotating) {
+            if (!isRotating) {
+                if (!isDetailMode) {
+                    // 如果不在详情模式，先进入详情模式
+                    enterDetailMode();
+                }
                 switchToState(1); // 切换到状态1: Yingxun
             }
         });
@@ -981,7 +987,11 @@ function addNavbarEvents() {
     if (navItems.projekte) {
         navItems.projekte.addEventListener('click', () => {
             console.log('Clicked nav-projekte, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
-            if (isDetailMode && !isRotating) {
+            if (!isRotating) {
+                if (!isDetailMode) {
+                    // 如果不在详情模式，先进入详情模式
+                    enterDetailMode();
+                }
                 switchToState(2); // 切换到状态2: Projekte
             }
         });
@@ -990,7 +1000,11 @@ function addNavbarEvents() {
     if (navItems.kontakt) {
         navItems.kontakt.addEventListener('click', () => {
             console.log('Clicked nav-kontakt, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
-            if (isDetailMode && !isRotating) {
+            if (!isRotating) {
+                if (!isDetailMode) {
+                    // 如果不在详情模式，先进入详情模式
+                    enterDetailMode();
+                }
                 switchToState(3); // 切换到状态3: Kontakt
             }
         });
@@ -1015,13 +1029,11 @@ function switchToState(newState) {
         targetRotationZ = 0;
         // 移除其他内容，准备显示时间轴
         removeTimeline(); // 确保清理所有内容
-        // 如果在详情页模式下，创建时间轴
-        if (isDetailMode) {
-            setTimeout(() => {
-                console.log('Creating timeline after switching to yingxun state');
-                createTimeline();
-            }, 500); // 等待旋转完成后创建
-        }
+        // 创建时间轴
+        setTimeout(() => {
+            console.log('Creating timeline after switching to yingxun state');
+            createTimeline();
+        }, 500); // 等待旋转完成后创建
     } else if (newState === 2) {
         // 状态2: Projekte - Y轴旋转90度
         targetRotationX = 0;
@@ -1029,9 +1041,7 @@ function switchToState(newState) {
         targetRotationZ = 0;
         // 移除时间轴，显示项目页面
         removeTimeline();
-        if (isDetailMode) {
-            setTimeout(() => showProjectsGrid(), 500); // 等待旋转完成后显示项目网格
-        }
+        setTimeout(() => showProjectsGrid(), 500); // 等待旋转完成后显示项目网格
     } else if (newState === 3) {
         // 状态3: Kontakt - X轴和Y轴复合旋转
         targetRotationX = -Math.PI / 2;
@@ -1039,9 +1049,7 @@ function switchToState(newState) {
         targetRotationZ = 0;
         // 移除时间轴，显示联系页面
         removeTimeline();
-        if (isDetailMode) {
-            setTimeout(() => showKontaktContent(), 500); // 等待旋转完成后显示联系页面
-        }
+        setTimeout(() => showKontaktContent(), 500); // 等待旋转完成后显示联系页面
     }
     
     console.log('Target rotation set to:', {
@@ -1078,46 +1086,46 @@ function showProjectsGrid() {
     // 项目数据
     const projectsData = [
         {
-            id: 'interactive-dashboard',
-            title: 'Interactive Dashboard',
-            category: 'UI/UX Design',
+            id: 'project-1',
+            title: '项目 1',
+            category: 'Design',
             year: '2024',
-            image: 'projects/images/dashboard-cover.jpg'
+            image: 'projects/project-1/images/cover.png'
         },
         {
-            id: 'mobile-app',
-            title: 'Mobile Learning App',
-            category: 'App Design',
+            id: 'project-2',
+            title: '项目 2',
+            category: 'Design',
             year: '2024',
-            image: 'projects/images/mobile-app-cover.jpg'
+            image: 'projects/project-2/images/cover.png'
         },
         {
-            id: 'brand-identity',
-            title: 'Brand Identity System',
-            category: 'Branding',
+            id: 'project-3',
+            title: '项目 3',
+            category: 'Design',
             year: '2023',
-            image: 'projects/images/brand-cover.jpg'
+            image: 'projects/project-3/images/cover.png'
         },
         {
-            id: 'web-platform',
-            title: 'E-Learning Platform',
-            category: 'Web Design',
+            id: 'project-4',
+            title: '项目 4',
+            category: 'Design',
             year: '2023',
-            image: 'projects/images/web-platform-cover.jpg'
+            image: 'projects/project-4/images/cover.png'
         },
         {
-            id: 'smart-device',
-            title: 'Smart Device Interface',
-            category: 'IoT Design',
+            id: 'project-5',
+            title: '项目 5',
+            category: 'Design',
             year: '2022',
-            image: 'projects/images/smart-device-cover.jpg'
+            image: 'projects/project-5/images/cover.png'
         },
         {
-            id: 'data-visualization',
-            title: 'Data Visualization Tool',
-            category: 'Information Design',
+            id: 'project-6',
+            title: '项目 6',
+            category: 'Design',
             year: '2022',
-            image: 'projects/images/data-viz-cover.jpg'
+            image: 'projects/project-6/images/cover.png'
         }
     ];
     
@@ -1137,13 +1145,14 @@ function showProjectsGrid() {
                 overflow: hidden;
                 background-color: #f5f5f5;
                 margin-bottom: 20px;
+                position: relative;
             ">
                 <img src="${project.image}" alt="${project.title}" style="
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
                     transition: transform 0.3s ease;
-                " onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f0f0f0';">
+                " onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:var(--font-primary);font-size:14px;\\'>${project.title}</div>'">
             </div>
             <div class="project-info" style="padding: 0 5px;">
                 <h3 class="project-title" style="
@@ -1574,140 +1583,8 @@ function updateNavbar() {
 
 // ============ 项目详情显示函数 ============
 function showProjectDetail(project) {
-    const detailContent = utils.getElement('detail-content');
-    if (!detailContent) return;
-    
-    // 清空现有内容
-    detailContent.innerHTML = '';
-    detailContent.className = 'visible';
-    
-    // 创建项目详情容器
-    const projectDetail = document.createElement('div');
-    projectDetail.id = 'project-detail';
-    projectDetail.style.cssText = `
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 40px;
-    `;
-    
-    projectDetail.innerHTML = `
-        <div class="project-nav" style="
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        ">
-            <button onclick="showProjectsGrid()" style="
-                background: none;
-                border: none;
-                font-family: var(--font-primary);
-                font-size: 14px;
-                color: var(--color-black);
-                cursor: pointer;
-                transition: opacity 0.3s ease;
-            " onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">← 返回项目列表</button>
-        </div>
-        
-        <header class="project-header" style="margin-bottom: 80px;">
-            <div class="project-meta" style="margin-bottom: 40px;">
-                <h1 class="project-title" style="
-                    font-family: var(--font-primary);
-                    font-size: 32px;
-                    font-weight: 500;
-                    margin: 0 0 20px 0;
-                    line-height: 1.2;
-                ">${project.title}</h1>
-                <div class="project-details" style="
-                    display: flex;
-                    gap: 30px;
-                    font-family: var(--font-primary);
-                    font-size: 14px;
-                ">
-                    <span class="project-category" style="
-                        color: var(--color-black);
-                        font-weight: 500;
-                    ">${project.category}</span>
-                    <span class="project-year" style="
-                        color: var(--color-gray);
-                    ">${project.year}</span>
-                    <span class="project-duration" style="
-                        color: var(--color-gray);
-                    ">3 Monate</span>
-                </div>
-            </div>
-            <div class="project-description" style="
-                font-family: var(--font-primary);
-                font-size: 16px;
-                line-height: 1.6;
-                color: var(--color-gray);
-                max-width: 600px;
-            ">
-                <p>Ein innovatives Projekt, das moderne Designprinzipien mit benutzerfreundlicher Funktionalität verbindet. Dieses Projekt zeigt meine Fähigkeiten in der Entwicklung durchdachter Benutzererfahrungen.</p>
-            </div>
-        </header>
-        
-        <section class="project-gallery" style="
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 80px;
-        ">
-            <div class="gallery-item" style="
-                grid-column: 1 / -1;
-                overflow: hidden;
-            ">
-                <img src="${project.image}" alt="${project.title}" style="
-                    width: 100%;
-                    height: auto;
-                    display: block;
-                " onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'height:300px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;\\'>Bild wird geladen...</div>'">
-            </div>
-            
-            <div class="text-section" style="
-                grid-column: 1 / -1;
-                max-width: 600px;
-                margin: 40px 0;
-            ">
-                <h3 style="
-                    font-family: var(--font-primary);
-                    font-size: 20px;
-                    font-weight: 500;
-                    margin: 0 0 16px 0;
-                    color: var(--color-black);
-                ">Design Herausforderung</h3>
-                <p style="
-                    font-family: var(--font-primary);
-                    font-size: 16px;
-                    line-height: 1.6;
-                    color: var(--color-gray);
-                    margin: 0;
-                ">Die Hauptherausforderung dieses Projekts lag darin, komplexe Anforderungen in eine intuitive und ansprechende Lösung zu übersetzen. Durch iterative Designprozesse und Benutzerfeedback konnte eine optimale Balance zwischen Funktionalität und Ästhetik erreicht werden.</p>
-            </div>
-            
-            <div class="text-section" style="
-                grid-column: 1 / -1;
-                max-width: 600px;
-                margin: 40px 0;
-            ">
-                <h3 style="
-                    font-family: var(--font-primary);
-                    font-size: 20px;
-                    font-weight: 500;
-                    margin: 0 0 16px 0;
-                    color: var(--color-black);
-                ">Lösung & Ergebnisse</h3>
-                <p style="
-                    font-family: var(--font-primary);
-                    font-size: 16px;
-                    line-height: 1.6;
-                    color: var(--color-gray);
-                    margin: 0;
-                ">Das finale Ergebnis übertraf die Erwartungen und führte zu einer signifikanten Verbesserung der Benutzererfahrung. Die Lösung wurde erfolgreich implementiert und erhielt positives Feedback von Nutzern und Stakeholdern.</p>
-            </div>
-        </section>
-    `;
-    
-    detailContent.appendChild(projectDetail);
+    // 跳转到项目的独立详情页
+    window.location.href = `projects/${project.id}/index.html`;
 }
 
 // ============ 内容清理函数 ============
