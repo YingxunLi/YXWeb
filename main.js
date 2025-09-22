@@ -282,6 +282,12 @@ function animate() {
             // 悬停引导效果：只有当鼠标悬停在logo上且不在详情页模式时才显示轻微摆动
             const hoverEffect = Math.sin(Date.now() * ANIMATION_CONSTANTS.HOVER_EFFECT_SPEED) * ANIMATION_CONSTANTS.HOVER_EFFECT_AMPLITUDE;
             currentRotationY += hoverEffect;
+        } else if (isHoveringLogo && isDetailMode) {
+            // 详情页模式下的hover效果：轻微放大提示可点击
+            logoCurrentScale = logoTargetScale * 1.1; // 放大10%作为hover提示
+        } else if (isDetailMode) {
+            // 详情页模式下非hover状态：恢复正常大小
+            // logoCurrentScale会在下面的插值中自动恢复到logoTargetScale
         }
         
         // 应用旋转到logo对象
@@ -843,6 +849,13 @@ function addMouseEvents() {
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(logo);
             isHoveringLogo = intersects.length > 0;
+            
+            // 简单的鼠标指针提示
+            if (isDetailMode && isHoveringLogo) {
+                canvas.style.cursor = 'pointer'; // 详情页模式下hover时显示pointer
+            } else {
+                canvas.style.cursor = 'default'; // 其他情况显示默认指针
+            }
         }
         
         // 控制导航栏显示/隐藏（基于中央70%区域）
