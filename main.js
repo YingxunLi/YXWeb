@@ -1135,6 +1135,19 @@ function showProjectsGrid() {
             image: 'projects/project-6/images/cover.png'
         }
     ];
+
+    // 预加载所有图片
+    const preloadImages = projectsData.map(project => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null); // 即使失败也继续
+            img.src = project.image;
+        });
+    });
+
+    // 等待图片预加载完成后再创建卡片
+    Promise.all(preloadImages).then((loadedImages) => {
     
     // 创建项目卡片
     projectsData.forEach(project => {
@@ -1142,29 +1155,51 @@ function showProjectsGrid() {
         projectItem.className = 'project-item';
         projectItem.setAttribute('data-project', project.title);
         
-        projectItem.innerHTML = `
-            <div class="project-image">
-                <img src="${project.image}" alt="${project.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'project-fallback\\'>${project.title}</div>'">
-            </div>
-            <div class="project-info">
-                <h3 class="project-title">${project.title}</h3>
-                <p class="project-category">${project.category}</p>
-                <p class="project-year">${project.year}</p>
-            </div>
+        // 预创建图片元素以便预加载
+        const img = document.createElement('img');
+        img.src = project.image;
+        img.alt = project.title;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.filter = 'grayscale(100%)';
+        img.style.transition = 'filter 0.2s ease, transform 0.2s ease'; // 缩短过渡时间
+        img.style.willChange = 'filter, transform'; // 优化GPU加速
+        
+        img.onerror = function() {
+            this.style.display = 'none';
+            this.parentElement.innerHTML = `<div class='project-fallback'>${project.title}</div>`;
+        };
+        
+        const projectImageDiv = document.createElement('div');
+        projectImageDiv.className = 'project-image';
+        projectImageDiv.appendChild(img);
+        
+        const projectInfoDiv = document.createElement('div');
+        projectInfoDiv.className = 'project-info';
+        projectInfoDiv.innerHTML = `
+            <h3 class="project-title">${project.title}</h3>
+            <p class="project-category">${project.category}</p>
+            <p class="project-year">${project.year}</p>
         `;
         
-        // 添加自定义光标效果
+        projectItem.appendChild(projectImageDiv);
+        projectItem.appendChild(projectInfoDiv);
+        
+        // 预创建自定义光标SVG（避免每次hover重新生成）
         const projectTitle = project.title;
         const cursorSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="30" viewBox="0 0 120 30"><rect width="120" height="30" fill="black" rx="15"/><text x="60" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12">${projectTitle}</text></svg>`;
         
         // 添加悬停效果
         projectItem.addEventListener('mouseenter', function() {
-            // 设置自定义光标
+            img.style.filter = 'grayscale(0%)';
+            img.style.transform = 'scale(1.02)';
             this.style.cursor = `url('${cursorSvg}'), pointer`;
         });
         
         projectItem.addEventListener('mouseleave', function() {
-            // 恢复默认光标
+            img.style.filter = 'grayscale(100%)';
+            img.style.transform = 'scale(1)';
             this.style.cursor = 'pointer';
         });
         
@@ -1177,6 +1212,7 @@ function showProjectsGrid() {
     });
     
     detailContent.appendChild(projectsGrid);
+    }); // 关闭 Promise.all.then
 }
 
 // ============ 联系页面显示函数 ============

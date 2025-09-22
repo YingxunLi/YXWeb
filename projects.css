@@ -25,15 +25,8 @@
     position: relative;
 }
 
-.project-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: grayscale(100%);
-    transition: filter 0.3s ease, transform 0.3s ease;
-}
-
 .project-item:hover .project-image img {
+    /* hover效果已在JS中处理，保留这里作为fallback */
     filter: grayscale(0%);
     transform: scale(1.02);
 }
