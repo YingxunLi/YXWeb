@@ -367,9 +367,17 @@ function enterDetailMode() {
     console.log('Target position set to:', logoTargetPosition);
     console.log('Current position:', logoCurrentPosition);
     
-    // 创建时间轴（仅在Yingxun状态下）
+    // 根据当前状态创建对应的内容
+    console.log('Current state when entering detail mode:', currentState);
     if (currentState === 1) {
+        // Yingxun状态：创建时间轴
         createTimeline();
+    } else if (currentState === 2) {
+        // Projekt状态：显示项目网格
+        setTimeout(() => showProjectsGrid(), 100);
+    } else if (currentState === 3) {
+        // Kontakt状态：显示联系页面
+        setTimeout(() => showKontaktContent(), 100);
     }
     
     // 更新导航栏状态
@@ -1064,12 +1072,19 @@ function switchToState(newState) {
 
 // ============ 项目网格显示函数 ============
 function showProjectsGrid() {
-    const detailContent = utils.getElement('detail-content');
-    if (!detailContent) return;
+    // 创建或获取详情页内容容器
+    let detailContent = utils.getElement('detail-content');
+    if (!detailContent) {
+        detailContent = document.createElement('div');
+        detailContent.id = 'detail-content';
+        detailContent.className = 'visible';
+        document.body.appendChild(detailContent);
+    } else {
+        detailContent.className = 'visible';
+    }
     
     // 清空现有内容
     detailContent.innerHTML = '';
-    detailContent.className = 'visible';
     
     // 创建项目网格容器
     const projectsGrid = document.createElement('div');
@@ -1231,12 +1246,19 @@ function showProjectsGrid() {
 
 // ============ 联系页面显示函数 ============
 function showKontaktContent() {
-    const detailContent = utils.getElement('detail-content');
-    if (!detailContent) return;
+    // 创建或获取详情页内容容器
+    let detailContent = utils.getElement('detail-content');
+    if (!detailContent) {
+        detailContent = document.createElement('div');
+        detailContent.id = 'detail-content';
+        detailContent.className = 'visible';
+        document.body.appendChild(detailContent);
+    } else {
+        detailContent.className = 'visible';
+    }
     
     // 清空现有内容
     detailContent.innerHTML = '';
-    detailContent.className = 'visible';
     
     // 创建联系页面容器
     const kontaktContainer = document.createElement('div');
