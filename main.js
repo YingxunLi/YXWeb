@@ -1090,12 +1090,13 @@ function showProjectsGrid() {
     const projectsGrid = document.createElement('div');
     projectsGrid.id = 'projects-grid';
     projectsGrid.style.cssText = `
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 40px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 60px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
     `;
     
     // 项目数据
@@ -1148,15 +1149,19 @@ function showProjectsGrid() {
     projectsData.forEach(project => {
         const projectItem = document.createElement('div');
         projectItem.className = 'project-item';
+        projectItem.setAttribute('data-project', project.title);
         projectItem.style.cssText = `
+            flex: 1;
+            max-width: 200px;
             cursor: pointer;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: all 0.3s ease;
+            position: relative;
         `;
         
         projectItem.innerHTML = `
             <div class="project-image" style="
                 width: 100%;
-                height: 280px;
+                height: 400px;
                 overflow: hidden;
                 background-color: #f5f5f5;
                 margin-bottom: 20px;
@@ -1166,45 +1171,56 @@ function showProjectsGrid() {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    transition: transform 0.3s ease;
+                    filter: grayscale(100%);
+                    transition: filter 0.3s ease, transform 0.3s ease;
                 " onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:var(--font-primary);font-size:14px;\\'>${project.title}</div>'">
             </div>
-            <div class="project-info" style="padding: 0 5px;">
-                <h3 class="project-title" style="
-                    font-family: var(--font-primary);
-                    font-size: 18px;
-                    font-weight: 500;
-                    margin: 0 0 8px 0;
-                    color: var(--color-black);
-                ">${project.title}</h3>
-                <p class="project-category" style="
-                    font-family: var(--font-primary);
-                    font-size: 14px;
-                    color: var(--color-gray);
-                    margin: 0 0 4px 0;
-                ">${project.category}</p>
-                <p class="project-year" style="
-                    font-family: var(--font-primary);
-                    font-size: 12px;
-                    color: #999;
-                    margin: 0;
-                ">${project.year}</p>
+            <div class="project-info" style="display: none;">
+                <h3 class="project-title">${project.title}</h3>
+                <p class="project-category">${project.category}</p>
+                <p class="project-year">${project.year}</p>
             </div>
         `;
         
+        // 添加悬停时显示项目名称的标签
+        const nameLabel = document.createElement('div');
+        nameLabel.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: var(--font-primary, Arial, sans-serif);
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            white-space: nowrap;
+        `;
+        nameLabel.textContent = project.title;
+        projectItem.appendChild(nameLabel);
+        
         // 添加悬停效果
         projectItem.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-            this.style.opacity = '0.9';
             const img = this.querySelector('img');
-            if (img) img.style.transform = 'scale(1.02)';
+            if (img) {
+                img.style.filter = 'grayscale(0%)';
+                img.style.transform = 'scale(1.02)';
+            }
+            nameLabel.style.opacity = '1';
         });
         
         projectItem.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.opacity = '1';
             const img = this.querySelector('img');
-            if (img) img.style.transform = 'scale(1)';
+            if (img) {
+                img.style.filter = 'grayscale(100%)';
+                img.style.transform = 'scale(1)';
+            }
+            nameLabel.style.opacity = '0';
         });
         
         // 添加点击事件
@@ -1220,22 +1236,32 @@ function showProjectsGrid() {
     // 添加响应式处理
     window.handleProjectsResize = function() {
         if (window.innerWidth <= 768) {
-            projectsGrid.style.gridTemplateColumns = '1fr';
+            projectsGrid.style.flexDirection = 'column';
+            projectsGrid.style.alignItems = 'center';
             projectsGrid.style.padding = '20px';
             projectsGrid.style.gap = '40px';
             // 调整项目图片高度
             const projectImages = projectsGrid.querySelectorAll('.project-image');
             projectImages.forEach(img => {
-                img.style.height = '240px';
+                img.style.height = '350px';
+            });
+            const projectItems = projectsGrid.querySelectorAll('.project-item');
+            projectItems.forEach(item => {
+                item.style.maxWidth = '300px';
             });
         } else {
-            projectsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(350px, 1fr))';
+            projectsGrid.style.flexDirection = 'row';
+            projectsGrid.style.alignItems = 'flex-start';
             projectsGrid.style.padding = '40px';
-            projectsGrid.style.gap = '60px 40px';
+            projectsGrid.style.gap = '15px';
             // 恢复项目图片高度
             const projectImages = projectsGrid.querySelectorAll('.project-image');
             projectImages.forEach(img => {
-                img.style.height = '280px';
+                img.style.height = '400px';
+            });
+            const projectItems = projectsGrid.querySelectorAll('.project-item');
+            projectItems.forEach(item => {
+                item.style.maxWidth = '200px';
             });
         }
     };
