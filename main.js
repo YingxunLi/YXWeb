@@ -1089,15 +1089,6 @@ function showProjectsGrid() {
     // 创建项目网格容器
     const projectsGrid = document.createElement('div');
     projectsGrid.id = 'projects-grid';
-    projectsGrid.style.cssText = `
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 40px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 15px;
-    `;
     
     // 项目数据
     const projectsData = [
@@ -1150,32 +1141,12 @@ function showProjectsGrid() {
         const projectItem = document.createElement('div');
         projectItem.className = 'project-item';
         projectItem.setAttribute('data-project', project.title);
-        projectItem.style.cssText = `
-            flex: 1;
-            max-width: 200px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        `;
         
         projectItem.innerHTML = `
-            <div class="project-image" style="
-                width: 100%;
-                height: 400px;
-                overflow: hidden;
-                background-color: #f5f5f5;
-                margin-bottom: 20px;
-                position: relative;
-            ">
-                <img src="${project.image}" alt="${project.title}" style="
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    filter: grayscale(100%);
-                    transition: filter 0.3s ease, transform 0.3s ease;
-                " onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:var(--font-primary);font-size:14px;\\'>${project.title}</div>'">
+            <div class="project-image">
+                <img src="${project.image}" alt="${project.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'project-fallback\\'>${project.title}</div>'">
             </div>
-            <div class="project-info" style="display: none;">
+            <div class="project-info">
                 <h3 class="project-title">${project.title}</h3>
                 <p class="project-category">${project.category}</p>
                 <p class="project-year">${project.year}</p>
@@ -1188,21 +1159,11 @@ function showProjectsGrid() {
         
         // 添加悬停效果
         projectItem.addEventListener('mouseenter', function() {
-            const img = this.querySelector('img');
-            if (img) {
-                img.style.filter = 'grayscale(0%)';
-                img.style.transform = 'scale(1.02)';
-            }
             // 设置自定义光标
             this.style.cursor = `url('${cursorSvg}'), pointer`;
         });
         
         projectItem.addEventListener('mouseleave', function() {
-            const img = this.querySelector('img');
-            if (img) {
-                img.style.filter = 'grayscale(100%)';
-                img.style.transform = 'scale(1)';
-            }
             // 恢复默认光标
             this.style.cursor = 'pointer';
         });
@@ -1216,46 +1177,10 @@ function showProjectsGrid() {
     });
     
     detailContent.appendChild(projectsGrid);
-    
-    // 添加响应式处理
-    window.handleProjectsResize = function() {
-        if (window.innerWidth <= 768) {
-            projectsGrid.style.flexDirection = 'column';
-            projectsGrid.style.alignItems = 'center';
-            projectsGrid.style.padding = '20px';
-            projectsGrid.style.gap = '40px';
-            // 调整项目图片高度
-            const projectImages = projectsGrid.querySelectorAll('.project-image');
-            projectImages.forEach(img => {
-                img.style.height = '350px';
-            });
-            const projectItems = projectsGrid.querySelectorAll('.project-item');
-            projectItems.forEach(item => {
-                item.style.maxWidth = '300px';
-            });
-        } else {
-            projectsGrid.style.flexDirection = 'row';
-            projectsGrid.style.alignItems = 'flex-start';
-            projectsGrid.style.padding = '40px';
-            projectsGrid.style.gap = '15px';
-            // 恢复项目图片高度
-            const projectImages = projectsGrid.querySelectorAll('.project-image');
-            projectImages.forEach(img => {
-                img.style.height = '400px';
-            });
-            const projectItems = projectsGrid.querySelectorAll('.project-item');
-            projectItems.forEach(item => {
-                item.style.maxWidth = '200px';
-            });
-        }
-    };
-    
-    window.handleProjectsResize();
-    window.addEventListener('resize', window.handleProjectsResize);
 }
 
 // ============ 联系页面显示函数 ============
-function showKontaktContent() {
+async function showKontaktContent() {
     // 创建或获取详情页内容容器
     let detailContent = utils.getElement('detail-content');
     if (!detailContent) {
@@ -1270,267 +1195,50 @@ function showKontaktContent() {
     // 清空现有内容
     detailContent.innerHTML = '';
     
-    // 创建联系页面容器
-    const kontaktContainer = document.createElement('div');
-    kontaktContainer.id = 'kontakt-content';
-    kontaktContainer.style.cssText = `
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 80px;
-    `;
-    
-    kontaktContainer.innerHTML = `
-        <section class="contact-info">
-            <h1 class="page-title" style="
-                font-family: var(--font-primary);
-                font-size: 32px;
-                font-weight: 500;
-                margin: 0 0 40px 0;
-                letter-spacing: 2px;
-            ">KONTAKT</h1>
-            
-            <div class="contact-details" style="
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-            ">
-                <div class="contact-item">
-                    <h3 style="
-                        font-family: var(--font-primary);
-                        font-size: 16px;
-                        font-weight: 500;
-                        margin: 0 0 8px 0;
-                        color: var(--color-black);
-                    ">Email</h3>
-                    <p style="
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        margin: 0;
-                        color: var(--color-gray);
-                        line-height: 1.4;
-                    "><a href="mailto:yingxun@example.com" style="
-                        color: var(--color-black);
-                        text-decoration: none;
-                        transition: opacity 0.3s ease;
-                    " onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">yingxun@example.com</a></p>
-                </div>
-                
-                <div class="contact-item">
-                    <h3 style="
-                        font-family: var(--font-primary);
-                        font-size: 16px;
-                        font-weight: 500;
-                        margin: 0 0 8px 0;
-                        color: var(--color-black);
-                    ">LinkedIn</h3>
-                    <p style="
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        margin: 0;
-                        color: var(--color-gray);
-                        line-height: 1.4;
-                    "><a href="https://linkedin.com/in/yingxun" target="_blank" style="
-                        color: var(--color-black);
-                        text-decoration: none;
-                        transition: opacity 0.3s ease;
-                    " onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">linkedin.com/in/yingxun</a></p>
-                </div>
-                
-                <div class="contact-item">
-                    <h3 style="
-                        font-family: var(--font-primary);
-                        font-size: 16px;
-                        font-weight: 500;
-                        margin: 0 0 8px 0;
-                        color: var(--color-black);
-                    ">Location</h3>
-                    <p style="
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        margin: 0;
-                        color: var(--color-gray);
-                        line-height: 1.4;
-                    ">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</p>
-                </div>
-                
-                <div class="contact-item">
-                    <h3 style="
-                        font-family: var(--font-primary);
-                        font-size: 16px;
-                        font-weight: 500;
-                        margin: 0 0 8px 0;
-                        color: var(--color-black);
-                    ">Verfügbarkeit</h3>
-                    <p style="
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        margin: 0;
-                        color: var(--color-gray);
-                        line-height: 1.4;
-                    ">Für Freelance-Projekte und Vollzeitstellen verfügbar</p>
-                </div>
-            </div>
-        </section>
+    try {
+        // 加载HTML模板
+        const response = await fetch('kontakt.html');
+        const htmlContent = await response.text();
         
-        <section class="contact-form">
-            <h2 style="
-                font-family: var(--font-primary);
-                font-size: 20px;
-                font-weight: 500;
-                margin: 0 0 30px 0;
-                color: var(--color-black);
-            ">Nachricht senden</h2>
-            <form id="contact-form">
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="name" style="
-                        display: block;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        font-weight: 500;
-                        margin-bottom: 8px;
-                        color: var(--color-black);
-                    ">Name</label>
-                    <input type="text" id="name" name="name" required style="
-                        width: 100%;
-                        padding: 12px 16px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        color: var(--color-black);
-                        background-color: white;
-                        transition: border-color 0.3s ease;
-                        box-sizing: border-box;
-                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'">
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="email" style="
-                        display: block;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        font-weight: 500;
-                        margin-bottom: 8px;
-                        color: var(--color-black);
-                    ">E-Mail</label>
-                    <input type="email" id="email" name="email" required style="
-                        width: 100%;
-                        padding: 12px 16px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        color: var(--color-black);
-                        background-color: white;
-                        transition: border-color 0.3s ease;
-                        box-sizing: border-box;
-                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'">
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="subject" style="
-                        display: block;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        font-weight: 500;
-                        margin-bottom: 8px;
-                        color: var(--color-black);
-                    ">Betreff</label>
-                    <input type="text" id="subject" name="subject" required style="
-                        width: 100%;
-                        padding: 12px 16px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        color: var(--color-black);
-                        background-color: white;
-                        transition: border-color 0.3s ease;
-                        box-sizing: border-box;
-                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'">
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="message" style="
-                        display: block;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        font-weight: 500;
-                        margin-bottom: 8px;
-                        color: var(--color-black);
-                    ">Nachricht</label>
-                    <textarea id="message" name="message" rows="6" required style="
-                        width: 100%;
-                        padding: 12px 16px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        font-family: var(--font-primary);
-                        font-size: 14px;
-                        color: var(--color-black);
-                        background-color: white;
-                        transition: border-color 0.3s ease;
-                        box-sizing: border-box;
-                        resize: vertical;
-                        min-height: 120px;
-                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'"></textarea>
-                </div>
-                
-                <button type="submit" class="submit-btn" style="
-                    background-color: var(--color-black);
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    font-family: var(--font-primary);
-                    font-size: 14px;
-                    cursor: pointer;
-                    transition: opacity 0.3s ease;
-                    border-radius: 4px;
-                " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Nachricht senden</button>
-            </form>
-        </section>
-    `;
-    
-    detailContent.appendChild(kontaktContainer);
-    
-    // 添加表单提交处理
-    const form = kontaktContainer.querySelector('#contact-form');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+        // 插入HTML内容
+        detailContent.innerHTML = htmlContent;
         
-        const formData = new FormData(form);
-        const name = formData.get('name');
-        const email = formData.get('email');
-        const subject = formData.get('subject');
-        const message = formData.get('message');
-        
-        const mailtoLink = `mailto:yingxun@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Von: ${name} (${email})\n\n${message}`)}`;
-        window.location.href = mailtoLink;
-        
-        form.reset();
-    });
-    
-    // 添加响应式处理
-    window.handleKontaktResize = function() {
-        if (window.innerWidth <= 768) {
-            kontaktContainer.style.gridTemplateColumns = '1fr';
-            kontaktContainer.style.gap = '50px';
-            kontaktContainer.style.padding = '20px';
-            const pageTitle = kontaktContainer.querySelector('.page-title');
-            if (pageTitle) pageTitle.style.fontSize = '24px';
-        } else {
-            kontaktContainer.style.gridTemplateColumns = '1fr 1fr';
-            kontaktContainer.style.gap = '80px';
-            kontaktContainer.style.padding = '40px';
-            const pageTitle = kontaktContainer.querySelector('.page-title');
-            if (pageTitle) pageTitle.style.fontSize = '32px';
+        // 添加表单提交处理
+        const form = detailContent.querySelector('#contact-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const name = formData.get('name');
+                const email = formData.get('email');
+                const subject = formData.get('subject');
+                const message = formData.get('message');
+                
+                const mailtoLink = `mailto:yingxun@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Von: ${name} (${email})\n\n${message}`)}`;
+                window.location.href = mailtoLink;
+                
+                form.reset();
+            });
         }
-    };
-    
-    window.handleKontaktResize();
-    window.addEventListener('resize', window.handleKontaktResize);
+        
+    } catch (error) {
+        console.error('Error loading contact template:', error);
+        // 备用方案：创建基本的联系信息
+        detailContent.innerHTML = `
+            <div id="kontakt-content">
+                <section class="contact-info">
+                    <h1 class="page-title">KONTAKT</h1>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <h3>Email</h3>
+                            <p><a href="mailto:yingxun@example.com">yingxun@example.com</a></p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        `;
+    }
 }
 
 // ============ 窗口大小调整函数 ============
