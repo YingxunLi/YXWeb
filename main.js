@@ -397,6 +397,8 @@ function exitDetailMode() {
 // ============ 时间轴相关函数 ============
 // 创建时间轴
 function createTimeline() {
+    console.log('createTimeline() called, isDetailMode:', isDetailMode, 'currentState:', currentState);
+    
     // 检查是否已存在时间轴容器
     if (timelineContainer) {
         removeTimeline();
@@ -620,11 +622,8 @@ function removeTimeline() {
         timelineContainer = null;
     }
     
-    // 隐藏详情页内容容器
-    const detailContent = utils.getElement('detail-content');
-    if (detailContent) {
-        detailContent.className = '';
-    }
+    // 清空详情页内容容器
+    clearDetailContent();
     
     // 移除滚动事件监听
     removeTimelineScrollEvents();
@@ -959,6 +958,7 @@ function addNavbarEvents() {
     // 为每个导航项添加点击事件
     if (navItems.yingxun) {
         navItems.yingxun.addEventListener('click', () => {
+            console.log('Clicked nav-yingxun, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
             if (isDetailMode && !isRotating) {
                 switchToState(1); // 切换到状态1: Yingxun
             }
@@ -967,6 +967,7 @@ function addNavbarEvents() {
     
     if (navItems.projekte) {
         navItems.projekte.addEventListener('click', () => {
+            console.log('Clicked nav-projekte, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
             if (isDetailMode && !isRotating) {
                 switchToState(2); // 切换到状态2: Projekte
             }
@@ -975,6 +976,7 @@ function addNavbarEvents() {
     
     if (navItems.kontakt) {
         navItems.kontakt.addEventListener('click', () => {
+            console.log('Clicked nav-kontakt, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
             if (isDetailMode && !isRotating) {
                 switchToState(3); // 切换到状态3: Kontakt
             }
@@ -998,24 +1000,35 @@ function switchToState(newState) {
         targetRotationX = 0;
         targetRotationY = 0;
         targetRotationZ = 0;
+        // 移除其他内容，准备显示时间轴
+        removeTimeline(); // 确保清理所有内容
         // 如果在详情页模式下，创建时间轴
         if (isDetailMode) {
-            setTimeout(() => createTimeline(), 500); // 等待旋转完成后创建
+            setTimeout(() => {
+                console.log('Creating timeline after switching to yingxun state');
+                createTimeline();
+            }, 500); // 等待旋转完成后创建
         }
     } else if (newState === 2) {
         // 状态2: Projekte - Y轴旋转90度
         targetRotationX = 0;
         targetRotationY = Math.PI / 2;
         targetRotationZ = 0;
-        // 移除时间轴
+        // 移除时间轴，显示项目页面
         removeTimeline();
+        if (isDetailMode) {
+            setTimeout(() => showProjectsGrid(), 500); // 等待旋转完成后显示项目网格
+        }
     } else if (newState === 3) {
         // 状态3: Kontakt - X轴和Y轴复合旋转
         targetRotationX = -Math.PI / 2;
         targetRotationY = Math.PI / 2 + Math.PI / 4;
         targetRotationZ = 0;
-        // 移除时间轴
+        // 移除时间轴，显示联系页面
         removeTimeline();
+        if (isDetailMode) {
+            setTimeout(() => showKontaktContent(), 500); // 等待旋转完成后显示联系页面
+        }
     }
     
     console.log('Target rotation set to:', {
@@ -1023,6 +1036,447 @@ function switchToState(newState) {
         y: targetRotationY,
         z: targetRotationZ
     });
+    
+    // 立即更新导航栏显示状态
+    updateNavbar();
+}
+
+// ============ 项目网格显示函数 ============
+function showProjectsGrid() {
+    const detailContent = utils.getElement('detail-content');
+    if (!detailContent) return;
+    
+    // 清空现有内容
+    detailContent.innerHTML = '';
+    detailContent.className = 'visible';
+    
+    // 创建项目网格容器
+    const projectsGrid = document.createElement('div');
+    projectsGrid.id = 'projects-grid';
+    projectsGrid.style.cssText = `
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 60px 40px;
+    `;
+    
+    // 项目数据
+    const projectsData = [
+        {
+            id: 'interactive-dashboard',
+            title: 'Interactive Dashboard',
+            category: 'UI/UX Design',
+            year: '2024',
+            image: 'projects/images/dashboard-cover.jpg'
+        },
+        {
+            id: 'mobile-app',
+            title: 'Mobile Learning App',
+            category: 'App Design',
+            year: '2024',
+            image: 'projects/images/mobile-app-cover.jpg'
+        },
+        {
+            id: 'brand-identity',
+            title: 'Brand Identity System',
+            category: 'Branding',
+            year: '2023',
+            image: 'projects/images/brand-cover.jpg'
+        },
+        {
+            id: 'web-platform',
+            title: 'E-Learning Platform',
+            category: 'Web Design',
+            year: '2023',
+            image: 'projects/images/web-platform-cover.jpg'
+        },
+        {
+            id: 'smart-device',
+            title: 'Smart Device Interface',
+            category: 'IoT Design',
+            year: '2022',
+            image: 'projects/images/smart-device-cover.jpg'
+        },
+        {
+            id: 'data-visualization',
+            title: 'Data Visualization Tool',
+            category: 'Information Design',
+            year: '2022',
+            image: 'projects/images/data-viz-cover.jpg'
+        }
+    ];
+    
+    // 创建项目卡片
+    projectsData.forEach(project => {
+        const projectItem = document.createElement('div');
+        projectItem.className = 'project-item';
+        projectItem.style.cssText = `
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        `;
+        
+        projectItem.innerHTML = `
+            <div class="project-image" style="
+                width: 100%;
+                height: 280px;
+                overflow: hidden;
+                background-color: #f5f5f5;
+                margin-bottom: 20px;
+            ">
+                <img src="${project.image}" alt="${project.title}" style="
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s ease;
+                " onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f0f0f0';">
+            </div>
+            <div class="project-info" style="padding: 0 5px;">
+                <h3 class="project-title" style="
+                    font-family: var(--font-primary);
+                    font-size: 18px;
+                    font-weight: 500;
+                    margin: 0 0 8px 0;
+                    color: var(--color-black);
+                ">${project.title}</h3>
+                <p class="project-category" style="
+                    font-family: var(--font-primary);
+                    font-size: 14px;
+                    color: var(--color-gray);
+                    margin: 0 0 4px 0;
+                ">${project.category}</p>
+                <p class="project-year" style="
+                    font-family: var(--font-primary);
+                    font-size: 12px;
+                    color: #999;
+                    margin: 0;
+                ">${project.year}</p>
+            </div>
+        `;
+        
+        // 添加悬停效果
+        projectItem.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+            this.style.opacity = '0.9';
+            const img = this.querySelector('img');
+            if (img) img.style.transform = 'scale(1.02)';
+        });
+        
+        projectItem.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.opacity = '1';
+            const img = this.querySelector('img');
+            if (img) img.style.transform = 'scale(1)';
+        });
+        
+        // 添加点击事件
+        projectItem.addEventListener('click', function() {
+            showProjectDetail(project);
+        });
+        
+        projectsGrid.appendChild(projectItem);
+    });
+    
+    detailContent.appendChild(projectsGrid);
+    
+    // 添加响应式处理
+    window.handleProjectsResize = function() {
+        if (window.innerWidth <= 768) {
+            projectsGrid.style.gridTemplateColumns = '1fr';
+            projectsGrid.style.padding = '20px';
+            projectsGrid.style.gap = '40px';
+            // 调整项目图片高度
+            const projectImages = projectsGrid.querySelectorAll('.project-image');
+            projectImages.forEach(img => {
+                img.style.height = '240px';
+            });
+        } else {
+            projectsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(350px, 1fr))';
+            projectsGrid.style.padding = '40px';
+            projectsGrid.style.gap = '60px 40px';
+            // 恢复项目图片高度
+            const projectImages = projectsGrid.querySelectorAll('.project-image');
+            projectImages.forEach(img => {
+                img.style.height = '280px';
+            });
+        }
+    };
+    
+    window.handleProjectsResize();
+    window.addEventListener('resize', window.handleProjectsResize);
+}
+
+// ============ 联系页面显示函数 ============
+function showKontaktContent() {
+    const detailContent = utils.getElement('detail-content');
+    if (!detailContent) return;
+    
+    // 清空现有内容
+    detailContent.innerHTML = '';
+    detailContent.className = 'visible';
+    
+    // 创建联系页面容器
+    const kontaktContainer = document.createElement('div');
+    kontaktContainer.id = 'kontakt-content';
+    kontaktContainer.style.cssText = `
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+    `;
+    
+    kontaktContainer.innerHTML = `
+        <section class="contact-info">
+            <h1 class="page-title" style="
+                font-family: var(--font-primary);
+                font-size: 32px;
+                font-weight: 500;
+                margin: 0 0 40px 0;
+                letter-spacing: 2px;
+            ">KONTAKT</h1>
+            
+            <div class="contact-details" style="
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+            ">
+                <div class="contact-item">
+                    <h3 style="
+                        font-family: var(--font-primary);
+                        font-size: 16px;
+                        font-weight: 500;
+                        margin: 0 0 8px 0;
+                        color: var(--color-black);
+                    ">Email</h3>
+                    <p style="
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        margin: 0;
+                        color: var(--color-gray);
+                        line-height: 1.4;
+                    "><a href="mailto:yingxun@example.com" style="
+                        color: var(--color-black);
+                        text-decoration: none;
+                        transition: opacity 0.3s ease;
+                    " onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">yingxun@example.com</a></p>
+                </div>
+                
+                <div class="contact-item">
+                    <h3 style="
+                        font-family: var(--font-primary);
+                        font-size: 16px;
+                        font-weight: 500;
+                        margin: 0 0 8px 0;
+                        color: var(--color-black);
+                    ">LinkedIn</h3>
+                    <p style="
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        margin: 0;
+                        color: var(--color-gray);
+                        line-height: 1.4;
+                    "><a href="https://linkedin.com/in/yingxun" target="_blank" style="
+                        color: var(--color-black);
+                        text-decoration: none;
+                        transition: opacity 0.3s ease;
+                    " onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">linkedin.com/in/yingxun</a></p>
+                </div>
+                
+                <div class="contact-item">
+                    <h3 style="
+                        font-family: var(--font-primary);
+                        font-size: 16px;
+                        font-weight: 500;
+                        margin: 0 0 8px 0;
+                        color: var(--color-black);
+                    ">Location</h3>
+                    <p style="
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        margin: 0;
+                        color: var(--color-gray);
+                        line-height: 1.4;
+                    ">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</p>
+                </div>
+                
+                <div class="contact-item">
+                    <h3 style="
+                        font-family: var(--font-primary);
+                        font-size: 16px;
+                        font-weight: 500;
+                        margin: 0 0 8px 0;
+                        color: var(--color-black);
+                    ">Verfügbarkeit</h3>
+                    <p style="
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        margin: 0;
+                        color: var(--color-gray);
+                        line-height: 1.4;
+                    ">Für Freelance-Projekte und Vollzeitstellen verfügbar</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="contact-form">
+            <h2 style="
+                font-family: var(--font-primary);
+                font-size: 20px;
+                font-weight: 500;
+                margin: 0 0 30px 0;
+                color: var(--color-black);
+            ">Nachricht senden</h2>
+            <form id="contact-form">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="name" style="
+                        display: block;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        font-weight: 500;
+                        margin-bottom: 8px;
+                        color: var(--color-black);
+                    ">Name</label>
+                    <input type="text" id="name" name="name" required style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        color: var(--color-black);
+                        background-color: white;
+                        transition: border-color 0.3s ease;
+                        box-sizing: border-box;
+                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="email" style="
+                        display: block;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        font-weight: 500;
+                        margin-bottom: 8px;
+                        color: var(--color-black);
+                    ">E-Mail</label>
+                    <input type="email" id="email" name="email" required style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        color: var(--color-black);
+                        background-color: white;
+                        transition: border-color 0.3s ease;
+                        box-sizing: border-box;
+                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="subject" style="
+                        display: block;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        font-weight: 500;
+                        margin-bottom: 8px;
+                        color: var(--color-black);
+                    ">Betreff</label>
+                    <input type="text" id="subject" name="subject" required style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        color: var(--color-black);
+                        background-color: white;
+                        transition: border-color 0.3s ease;
+                        box-sizing: border-box;
+                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="message" style="
+                        display: block;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        font-weight: 500;
+                        margin-bottom: 8px;
+                        color: var(--color-black);
+                    ">Nachricht</label>
+                    <textarea id="message" name="message" rows="6" required style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        font-family: var(--font-primary);
+                        font-size: 14px;
+                        color: var(--color-black);
+                        background-color: white;
+                        transition: border-color 0.3s ease;
+                        box-sizing: border-box;
+                        resize: vertical;
+                        min-height: 120px;
+                    " onfocus="this.style.borderColor='var(--color-black)'" onblur="this.style.borderColor='#ddd'"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn" style="
+                    background-color: var(--color-black);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    font-family: var(--font-primary);
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: opacity 0.3s ease;
+                    border-radius: 4px;
+                " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Nachricht senden</button>
+            </form>
+        </section>
+    `;
+    
+    detailContent.appendChild(kontaktContainer);
+    
+    // 添加表单提交处理
+    const form = kontaktContainer.querySelector('#contact-form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const name = formData.get('name');
+        const email = formData.get('email');
+        const subject = formData.get('subject');
+        const message = formData.get('message');
+        
+        const mailtoLink = `mailto:yingxun@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Von: ${name} (${email})\n\n${message}`)}`;
+        window.location.href = mailtoLink;
+        
+        form.reset();
+    });
+    
+    // 添加响应式处理
+    window.handleKontaktResize = function() {
+        if (window.innerWidth <= 768) {
+            kontaktContainer.style.gridTemplateColumns = '1fr';
+            kontaktContainer.style.gap = '50px';
+            kontaktContainer.style.padding = '20px';
+            const pageTitle = kontaktContainer.querySelector('.page-title');
+            if (pageTitle) pageTitle.style.fontSize = '24px';
+        } else {
+            kontaktContainer.style.gridTemplateColumns = '1fr 1fr';
+            kontaktContainer.style.gap = '80px';
+            kontaktContainer.style.padding = '40px';
+            const pageTitle = kontaktContainer.querySelector('.page-title');
+            if (pageTitle) pageTitle.style.fontSize = '32px';
+        }
+    };
+    
+    window.handleKontaktResize();
+    window.addEventListener('resize', window.handleKontaktResize);
 }
 
 // ============ 窗口大小调整函数 ============
@@ -1102,6 +1556,162 @@ function updateNavbar() {
             singleText.textContent = stateNames[currentState];
             singleText.style.opacity = 1;
         }
+    }
+}
+
+// ============ 项目详情显示函数 ============
+function showProjectDetail(project) {
+    const detailContent = utils.getElement('detail-content');
+    if (!detailContent) return;
+    
+    // 清空现有内容
+    detailContent.innerHTML = '';
+    detailContent.className = 'visible';
+    
+    // 创建项目详情容器
+    const projectDetail = document.createElement('div');
+    projectDetail.id = 'project-detail';
+    projectDetail.style.cssText = `
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px;
+    `;
+    
+    projectDetail.innerHTML = `
+        <div class="project-nav" style="
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        ">
+            <button onclick="showProjectsGrid()" style="
+                background: none;
+                border: none;
+                font-family: var(--font-primary);
+                font-size: 14px;
+                color: var(--color-black);
+                cursor: pointer;
+                transition: opacity 0.3s ease;
+            " onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">← 返回项目列表</button>
+        </div>
+        
+        <header class="project-header" style="margin-bottom: 80px;">
+            <div class="project-meta" style="margin-bottom: 40px;">
+                <h1 class="project-title" style="
+                    font-family: var(--font-primary);
+                    font-size: 32px;
+                    font-weight: 500;
+                    margin: 0 0 20px 0;
+                    line-height: 1.2;
+                ">${project.title}</h1>
+                <div class="project-details" style="
+                    display: flex;
+                    gap: 30px;
+                    font-family: var(--font-primary);
+                    font-size: 14px;
+                ">
+                    <span class="project-category" style="
+                        color: var(--color-black);
+                        font-weight: 500;
+                    ">${project.category}</span>
+                    <span class="project-year" style="
+                        color: var(--color-gray);
+                    ">${project.year}</span>
+                    <span class="project-duration" style="
+                        color: var(--color-gray);
+                    ">3 Monate</span>
+                </div>
+            </div>
+            <div class="project-description" style="
+                font-family: var(--font-primary);
+                font-size: 16px;
+                line-height: 1.6;
+                color: var(--color-gray);
+                max-width: 600px;
+            ">
+                <p>Ein innovatives Projekt, das moderne Designprinzipien mit benutzerfreundlicher Funktionalität verbindet. Dieses Projekt zeigt meine Fähigkeiten in der Entwicklung durchdachter Benutzererfahrungen.</p>
+            </div>
+        </header>
+        
+        <section class="project-gallery" style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 80px;
+        ">
+            <div class="gallery-item" style="
+                grid-column: 1 / -1;
+                overflow: hidden;
+            ">
+                <img src="${project.image}" alt="${project.title}" style="
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                " onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'height:300px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;\\'>Bild wird geladen...</div>'">
+            </div>
+            
+            <div class="text-section" style="
+                grid-column: 1 / -1;
+                max-width: 600px;
+                margin: 40px 0;
+            ">
+                <h3 style="
+                    font-family: var(--font-primary);
+                    font-size: 20px;
+                    font-weight: 500;
+                    margin: 0 0 16px 0;
+                    color: var(--color-black);
+                ">Design Herausforderung</h3>
+                <p style="
+                    font-family: var(--font-primary);
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: var(--color-gray);
+                    margin: 0;
+                ">Die Hauptherausforderung dieses Projekts lag darin, komplexe Anforderungen in eine intuitive und ansprechende Lösung zu übersetzen. Durch iterative Designprozesse und Benutzerfeedback konnte eine optimale Balance zwischen Funktionalität und Ästhetik erreicht werden.</p>
+            </div>
+            
+            <div class="text-section" style="
+                grid-column: 1 / -1;
+                max-width: 600px;
+                margin: 40px 0;
+            ">
+                <h3 style="
+                    font-family: var(--font-primary);
+                    font-size: 20px;
+                    font-weight: 500;
+                    margin: 0 0 16px 0;
+                    color: var(--color-black);
+                ">Lösung & Ergebnisse</h3>
+                <p style="
+                    font-family: var(--font-primary);
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: var(--color-gray);
+                    margin: 0;
+                ">Das finale Ergebnis übertraf die Erwartungen und führte zu einer signifikanten Verbesserung der Benutzererfahrung. Die Lösung wurde erfolgreich implementiert und erhielt positives Feedback von Nutzern und Stakeholdern.</p>
+            </div>
+        </section>
+    `;
+    
+    detailContent.appendChild(projectDetail);
+}
+
+// ============ 内容清理函数 ============
+function clearDetailContent() {
+    const detailContent = utils.getElement('detail-content');
+    if (detailContent) {
+        // 移除所有事件监听器
+        const resizeHandlers = ['handleProjectsResize', 'handleKontaktResize'];
+        resizeHandlers.forEach(handler => {
+            if (window[handler]) {
+                window.removeEventListener('resize', window[handler]);
+                delete window[handler];
+            }
+        });
+        
+        detailContent.innerHTML = '';
+        detailContent.className = '';
     }
 }
 
