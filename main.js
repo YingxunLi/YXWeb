@@ -1182,27 +1182,9 @@ function showProjectsGrid() {
             </div>
         `;
         
-        // 添加悬停时显示项目名称的标签
-        const nameLabel = document.createElement('div');
-        nameLabel.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: var(--font-primary, Arial, sans-serif);
-            font-size: 14px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 10;
-            white-space: nowrap;
-        `;
-        nameLabel.textContent = project.title;
-        projectItem.appendChild(nameLabel);
+        // 添加自定义光标效果
+        const projectTitle = project.title;
+        const cursorSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="30" viewBox="0 0 120 30"><rect width="120" height="30" fill="black" rx="15"/><text x="60" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12">${projectTitle}</text></svg>`;
         
         // 添加悬停效果
         projectItem.addEventListener('mouseenter', function() {
@@ -1211,7 +1193,8 @@ function showProjectsGrid() {
                 img.style.filter = 'grayscale(0%)';
                 img.style.transform = 'scale(1.02)';
             }
-            nameLabel.style.opacity = '1';
+            // 设置自定义光标
+            this.style.cursor = `url('${cursorSvg}'), pointer`;
         });
         
         projectItem.addEventListener('mouseleave', function() {
@@ -1220,7 +1203,8 @@ function showProjectsGrid() {
                 img.style.filter = 'grayscale(100%)';
                 img.style.transform = 'scale(1)';
             }
-            nameLabel.style.opacity = '0';
+            // 恢复默认光标
+            this.style.cursor = 'pointer';
         });
         
         // 添加点击事件
