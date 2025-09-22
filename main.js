@@ -1521,7 +1521,7 @@ function setBackgroundTransparency(isTransparent) {
             if (element) {
                 element.style.opacity = isTransparent ? '0' : '';
                 element.style.transition = 'opacity 0.6s ease';
-                // 禁用鼠标事件，防止被点击或hover
+                // 禁用/恢复鼠标事件
                 element.style.pointerEvents = isTransparent ? 'none' : '';
             }
         });
@@ -1531,10 +1531,18 @@ function setBackgroundTransparency(isTransparent) {
     const projectItems = document.querySelectorAll('.project-item');
     projectItems.forEach(item => {
         if (item) {
-            item.style.opacity = isTransparent ? '0' : '';
-            item.style.transition = 'opacity 0.6s ease';
-            // 完全禁用项目item的交互
-            item.style.pointerEvents = isTransparent ? 'none' : '';
+            if (isTransparent) {
+                // 详情页打开时：隐藏并禁用交互
+                item.style.opacity = '0';
+                item.style.pointerEvents = 'none';
+            } else {
+                // 详情页关闭时：恢复可见性和交互
+                item.style.opacity = '';
+                item.style.pointerEvents = '';
+                // 确保也移除任何挤压变换
+                item.style.transform = '';
+            }
+            item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         }
     });
 }
@@ -1542,7 +1550,7 @@ function setBackgroundTransparency(isTransparent) {
 // 动画化其他项目的挤压/恢复效果
 function animateOtherProjects(clickedItem, action) {
     const allItems = document.querySelectorAll('.project-item');
-    const clickedIndex = Array.from(allItems).indexOf(clickedItem);
+    const clickedIndex = clickedItem ? Array.from(allItems).indexOf(clickedItem) : -1;
     
     allItems.forEach((item, index) => {
         if (item === clickedItem) return;
@@ -1560,11 +1568,14 @@ function animateOtherProjects(clickedItem, action) {
             // 禁用交互
             item.style.pointerEvents = 'none';
         } else {
-            // 恢复原状
+            // 完全恢复原状
             item.style.transform = '';
             item.style.opacity = '';
-            // 恢复交互
             item.style.pointerEvents = '';
+            // 确保过渡效果也被重置
+            setTimeout(() => {
+                item.style.transition = '';
+            }, 600);
         }
         item.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     });
@@ -1604,6 +1615,12 @@ function closeProjectDetail(detailOverlay, navArrows, closeBtn) {
     
     // 恢复背景内容透明度
     setBackgroundTransparency(false);
+    
+    // 移除背景覆盖层
+    const backgroundOverlay = document.getElementById('project-detail-background');
+    if (backgroundOverlay) {
+        backgroundOverlay.remove();
+    }
     
     // 添加关闭动画
     detailOverlay.style.opacity = '0';
@@ -1667,6 +1684,13 @@ function navigateProject(newIndex, currentOverlay, currentNavArrows, currentClos
         if (currentCloseBtn && currentCloseBtn.parentNode) {
             currentCloseBtn.parentNode.removeChild(currentCloseBtn);
         }
+        
+        // 移除当前的背景覆盖层
+        const backgroundOverlay = document.getElementById('project-detail-background');
+        if (backgroundOverlay) {
+            backgroundOverlay.remove();
+        }
+        
         // 不恢复背景和项目状态，直接打开新项目
         showProjectDetailDirect(newProject);
     }, 300);
@@ -1735,6 +1759,21 @@ function showProjectDetailDirect(project) {
     `;
     
     document.body.appendChild(detailOverlay);
+    
+    // 创建背景覆盖层，防止点击到背景内容
+    const backgroundOverlay = document.createElement('div');
+    backgroundOverlay.id = 'project-detail-background';
+    backgroundOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 999;
+        pointer-events: auto;
+        background: transparent;
+    `;
+    document.body.appendChild(backgroundOverlay);
     
     // 创建独立的导航箭头容器
     const navArrows = document.createElement('div');
