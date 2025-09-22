@@ -1359,8 +1359,371 @@ function updateNavbar() {
 
 // ============ 项目详情显示函数 ============
 function showProjectDetail(project) {
-    // 跳转到项目的独立详情页
-    window.location.href = `projects/${project.id}/index.html`;
+    const clickedItem = document.querySelector(`[data-project="${project.title}"]`);
+    const clickedImage = clickedItem.querySelector('.project-image img');
+    
+    // 获取点击项目的位置信息
+    const rect = clickedItem.getBoundingClientRect();
+    const currentIndex = getCurrentProjectIndex(project);
+    
+    // 创建项目详情容器
+    const detailOverlay = document.createElement('div');
+    detailOverlay.id = 'project-detail-overlay';
+    detailOverlay.className = 'project-detail-expanding';
+    
+    // 设置初始位置和大小（与点击的项目位置一致）
+    detailOverlay.style.cssText = `
+        position: fixed;
+        left: ${rect.left}px;
+        top: ${rect.top}px;
+        width: ${rect.width}px;
+        height: ${rect.height}px;
+        background: white;
+        z-index: 1000;
+        overflow: hidden;
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    `;
+    
+    // 创建详情页内容
+    detailOverlay.innerHTML = `
+        <div class="project-detail-content">
+            <div class="project-hero-image">
+                <img src="${project.image}" alt="${project.title}">
+            </div>
+            <div class="project-detail-body">
+                <div class="project-header">
+                    <h1 class="project-title">${project.title}</h1>
+                    <div class="project-meta">
+                        <span class="project-category">${project.category}</span>
+                        <span class="project-year">${project.year}</span>
+                    </div>
+                </div>
+                <div class="project-description">
+                    <p>这里是项目的详细描述内容。项目展示了设计理念、制作过程、技术实现等方面的信息。</p>
+                    <p>更多项目内容可以在这里展示，包括设计思路、制作流程、使用的技术栈等详细信息。</p>
+                    <p>这个区域可以包含更多的文字描述、图片展示、视频内容等，为用户提供完整的项目信息。</p>
+                </div>
+                <div class="project-gallery">
+                    <h3>项目展示</h3>
+                    <div class="gallery-grid">
+                        <div class="gallery-item"><div class="placeholder">图片1</div></div>
+                        <div class="gallery-item"><div class="placeholder">图片2</div></div>
+                        <div class="gallery-item"><div class="placeholder">图片3</div></div>
+                        <div class="gallery-item"><div class="placeholder">图片4</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 关闭按钮 -->
+            <div class="project-close-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(detailOverlay);
+    
+    // 创建独立的导航箭头容器（在详情页外侧）
+    const navArrows = document.createElement('div');
+    navArrows.id = 'project-nav-arrows';
+    navArrows.innerHTML = `
+        <div class="nav-arrow nav-prev ${currentIndex === 0 ? 'disabled' : ''}" data-direction="prev">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="nav-arrow nav-next ${currentIndex === 5 ? 'disabled' : ''}" data-direction="next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    `;
+    document.body.appendChild(navArrows);
+    
+    // 执行其他项目的挤压动画
+    animateOtherProjects(clickedItem, 'compress');
+    
+    // 将背景内容设置为透明
+    setBackgroundTransparency(true);
+    
+    // 稍微延迟后开始展开动画
+    setTimeout(() => {
+        const isMobile = window.innerWidth <= 768;
+        const leftMargin = isMobile ? 60 : 120;
+        const totalMargin = isMobile ? 120 : 240;
+        
+        detailOverlay.style.cssText = `
+            position: fixed;
+            left: ${leftMargin}px;
+            top: 0;
+            width: calc(100vw - ${totalMargin}px);
+            height: 100vh;
+            background: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        `;
+        detailOverlay.classList.remove('project-detail-expanding');
+        detailOverlay.classList.add('project-detail-expanded');
+    }, 50);
+    
+    // 添加事件监听器
+    addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex);
+}
+
+// 获取当前项目在数组中的索引
+function getCurrentProjectIndex(project) {
+    const projectsData = [
+        { id: 'project-1', title: '项目 1' },
+        { id: 'project-2', title: '项目 2' },
+        { id: 'project-3', title: '项目 3' },
+        { id: 'project-4', title: '项目 4' },
+        { id: 'project-5', title: '项目 5' },
+        { id: 'project-6', title: '项目 6' }
+    ];
+    return projectsData.findIndex(p => p.id === project.id);
+}
+
+// 设置背景内容透明度
+function setBackgroundTransparency(isTransparent) {
+    const elementsToHide = [
+        '#container canvas',
+        '#logo-container', 
+        '#timeline-container',
+        '#detail-content:not(#project-detail-overlay)'
+    ];
+    
+    elementsToHide.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            if (element) {
+                element.style.opacity = isTransparent ? '0' : '';
+                element.style.transition = 'opacity 0.6s ease';
+            }
+        });
+    });
+}
+
+// 动画化其他项目的挤压/恢复效果
+function animateOtherProjects(clickedItem, action) {
+    const allItems = document.querySelectorAll('.project-item');
+    const clickedIndex = Array.from(allItems).indexOf(clickedItem);
+    
+    allItems.forEach((item, index) => {
+        if (item === clickedItem) return;
+        
+        if (action === 'compress') {
+            if (index < clickedIndex) {
+                // 左侧项目向左挤压
+                item.style.transform = 'translateX(-100px) scale(0.8)';
+                item.style.opacity = '0.3';
+            } else {
+                // 右侧项目向右挤压
+                item.style.transform = 'translateX(100px) scale(0.8)';
+                item.style.opacity = '0.3';
+            }
+        } else {
+            // 恢复原状
+            item.style.transform = '';
+            item.style.opacity = '';
+        }
+        item.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    });
+}
+
+// 添加项目详情页事件监听器
+function addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex) {
+    // 关闭按钮
+    const closeBtn = detailOverlay.querySelector('.project-close-btn');
+    closeBtn.addEventListener('click', () => closeProjectDetail(detailOverlay, navArrows));
+    
+    // 导航箭头（现在在独立的容器中）
+    const prevBtn = navArrows.querySelector('.nav-prev');
+    const nextBtn = navArrows.querySelector('.nav-next');
+    
+    if (!prevBtn.classList.contains('disabled')) {
+        prevBtn.addEventListener('click', () => navigateProject(currentIndex - 1, detailOverlay, navArrows));
+    }
+    
+    if (!nextBtn.classList.contains('disabled')) {
+        nextBtn.addEventListener('click', () => navigateProject(currentIndex + 1, detailOverlay, navArrows));
+    }
+    
+    // ESC键关闭
+    const handleKeyPress = (e) => {
+        if (e.key === 'Escape') {
+            closeProjectDetail(detailOverlay, navArrows);
+            document.removeEventListener('keydown', handleKeyPress);
+        }
+    };
+    document.addEventListener('keydown', handleKeyPress);
+}
+
+// 关闭项目详情页
+function closeProjectDetail(detailOverlay, navArrows) {
+    // 恢复其他项目的位置
+    animateOtherProjects(null, 'restore');
+    
+    // 恢复背景内容透明度
+    setBackgroundTransparency(false);
+    
+    // 添加关闭动画
+    detailOverlay.style.opacity = '0';
+    detailOverlay.style.transform = 'scale(0.95)';
+    
+    // 同时隐藏导航箭头
+    if (navArrows) {
+        navArrows.style.opacity = '0';
+    }
+    
+    setTimeout(() => {
+        if (detailOverlay.parentNode) {
+            detailOverlay.parentNode.removeChild(detailOverlay);
+        }
+        if (navArrows && navArrows.parentNode) {
+            navArrows.parentNode.removeChild(navArrows);
+        }
+    }, 300);
+}
+
+// 导航到其他项目
+function navigateProject(newIndex, currentOverlay, currentNavArrows) {
+    if (newIndex < 0 || newIndex > 5) return;
+    
+    const projectsData = [
+        { id: 'project-1', title: '项目 1', category: 'Design', year: '2024', image: 'projects/project-1/images/cover.png' },
+        { id: 'project-2', title: '项目 2', category: 'Design', year: '2024', image: 'projects/project-2/images/cover.png' },
+        { id: 'project-3', title: '项目 3', category: 'Design', year: '2023', image: 'projects/project-3/images/cover.png' },
+        { id: 'project-4', title: '项目 4', category: 'Design', year: '2023', image: 'projects/project-4/images/cover.png' },
+        { id: 'project-5', title: '项目 5', category: 'Design', year: '2022', image: 'projects/project-5/images/cover.png' },
+        { id: 'project-6', title: '项目 6', category: 'Design', year: '2022', image: 'projects/project-6/images/cover.png' }
+    ];
+    
+    const newProject = projectsData[newIndex];
+    
+    // 关闭当前详情页（但保持背景透明和项目挤压状态）
+    currentOverlay.style.opacity = '0';
+    currentOverlay.style.transform = 'scale(0.95)';
+    
+    // 同时隐藏当前导航箭头
+    if (currentNavArrows) {
+        currentNavArrows.style.opacity = '0';
+    }
+    
+    setTimeout(() => {
+        if (currentOverlay.parentNode) {
+            currentOverlay.parentNode.removeChild(currentOverlay);
+        }
+        if (currentNavArrows && currentNavArrows.parentNode) {
+            currentNavArrows.parentNode.removeChild(currentNavArrows);
+        }
+        // 不恢复背景和项目状态，直接打开新项目
+        showProjectDetailDirect(newProject);
+    }, 300);
+}
+
+// 直接显示项目详情（用于项目切换时）
+function showProjectDetailDirect(project) {
+    const currentIndex = getCurrentProjectIndex(project);
+    
+    // 创建项目详情容器
+    const detailOverlay = document.createElement('div');
+    detailOverlay.id = 'project-detail-overlay';
+    detailOverlay.className = 'project-detail-expanded';
+    
+    const isMobile = window.innerWidth <= 768;
+    const leftMargin = isMobile ? 60 : 120;
+    const totalMargin = isMobile ? 120 : 240;
+    
+    // 直接设置为展开状态
+    detailOverlay.style.cssText = `
+        position: fixed;
+        left: ${leftMargin}px;
+        top: 0;
+        width: calc(100vw - ${totalMargin}px);
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: all 0.3s ease;
+    `;
+    
+    // 创建详情页内容（与原函数相同的HTML）
+    detailOverlay.innerHTML = `
+        <div class="project-detail-content">
+            <div class="project-hero-image">
+                <img src="${project.image}" alt="${project.title}">
+            </div>
+            <div class="project-detail-body">
+                <div class="project-header">
+                    <h1 class="project-title">${project.title}</h1>
+                    <div class="project-meta">
+                        <span class="project-category">${project.category}</span>
+                        <span class="project-year">${project.year}</span>
+                    </div>
+                </div>
+                <div class="project-description">
+                    <p>这里是项目的详细描述内容。项目展示了设计理念、制作过程、技术实现等方面的信息。</p>
+                    <p>更多项目内容可以在这里展示，包括设计思路、制作流程、使用的技术栈等详细信息。</p>
+                    <p>这个区域可以包含更多的文字描述、图片展示、视频内容等，为用户提供完整的项目信息。</p>
+                </div>
+                <div class="project-gallery">
+                    <h3>项目展示</h3>
+                    <div class="gallery-grid">
+                        <div class="gallery-item"><div class="placeholder">图片1</div></div>
+                        <div class="gallery-item"><div class="placeholder">图片2</div></div>
+                        <div class="gallery-item"><div class="placeholder">图片3</div></div>
+                        <div class="gallery-item"><div class="placeholder">图片4</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 关闭按钮 -->
+            <div class="project-close-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(detailOverlay);
+    
+    // 创建独立的导航箭头容器
+    const navArrows = document.createElement('div');
+    navArrows.id = 'project-nav-arrows';
+    navArrows.style.opacity = '0';
+    navArrows.innerHTML = `
+        <div class="nav-arrow nav-prev ${currentIndex === 0 ? 'disabled' : ''}" data-direction="prev">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="nav-arrow nav-next ${currentIndex === 5 ? 'disabled' : ''}" data-direction="next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    `;
+    document.body.appendChild(navArrows);
+    
+    // 淡入动画
+    setTimeout(() => {
+        detailOverlay.style.opacity = '1';
+        detailOverlay.style.transform = 'scale(1)';
+        navArrows.style.opacity = '1';
+    }, 50);
+    
+    // 添加事件监听器
+    addProjectDetailEventListeners(detailOverlay, navArrows, currentIndex);
 }
 
 // ============ 内容清理函数 ============
