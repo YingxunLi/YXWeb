@@ -1082,199 +1082,139 @@ function showProjectsGrid() {
     } else {
         detailContent.className = 'visible';
     }
-    
+
     // 清空现有内容
     detailContent.innerHTML = '';
-    
-    // 创建项目网格容器
-    const projectsGrid = document.createElement('div');
-    projectsGrid.id = 'projects-grid';
-    
-    // 项目数据
+
+    // 项目基础数据（不含title）
     const projectsData = [
         {
             id: 'project-1',
-            title: '项目 1',
             category: 'Design',
             year: '2024',
-            image: 'projects/project-1/images/cover.png'
+            image: 'projects/project-1/images/cover.png',
+            titlePath: 'projects/project-1/title.txt'
         },
         {
             id: 'project-2',
-            title: '项目 2',
             category: 'Design',
             year: '2024',
-            image: 'projects/project-2/images/cover.png'
+            image: 'projects/project-2/images/cover.png',
+            titlePath: 'projects/project-2/title.txt'
         },
         {
             id: 'project-3',
-            title: '项目 3',
             category: 'Design',
             year: '2023',
-            image: 'projects/project-3/images/cover.png'
+            image: 'projects/project-3/images/cover.png',
+            titlePath: 'projects/project-3/title.txt'
         },
         {
             id: 'project-4',
-            title: '项目 4',
             category: 'Design',
             year: '2023',
-            image: 'projects/project-4/images/cover.png'
+            image: 'projects/project-4/images/cover.png',
+            titlePath: 'projects/project-4/title.txt'
         },
         {
             id: 'project-5',
-            title: '项目 5',
             category: 'Design',
             year: '2022',
-            image: 'projects/project-5/images/cover.png'
+            image: 'projects/project-5/images/cover.png',
+            titlePath: 'projects/project-5/title.txt'
         },
         {
             id: 'project-6',
-            title: '项目 6',
             category: 'Design',
             year: '2022',
-            image: 'projects/project-6/images/cover.png'
+            image: 'projects/project-6/images/cover.png',
+            titlePath: 'projects/project-6/title.txt'
         }
     ];
 
-    // 预加载所有图片
-    const preloadImages = projectsData.map(project => {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => resolve(null); // 即使失败也继续
+    // 预加载所有图片和title
+    const preloadAll = projectsData.map(project => {
+        return Promise.all([
+            fetch(project.titlePath).then(r => r.text()).catch(() => project.id),
+            new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = project.image;
+            })
+        ]).then(([title]) => {
+            return { ...project, title: title.trim() };
+        });
+    });
+
+    Promise.all(preloadAll).then(projectsWithTitle => {
+        const projectsGrid = document.createElement('div');
+        projectsGrid.id = 'projects-grid';
+        projectsWithTitle.forEach(project => {
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.setAttribute('data-project', project.title);
+            // 预创建图片元素以便预加载
+            const img = document.createElement('img');
             img.src = project.image;
-        });
-    });
-
-    // 等待图片预加载完成后再创建卡片
-    Promise.all(preloadImages).then((loadedImages) => {
-    
-    // 创建项目卡片
-    projectsData.forEach(project => {
-        const projectItem = document.createElement('div');
-        projectItem.className = 'project-item';
-        projectItem.setAttribute('data-project', project.title);
-        
-        // 预创建图片元素以便预加载
-        const img = document.createElement('img');
-        img.src = project.image;
-        img.alt = project.title;
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.filter = 'grayscale(100%)';
-        img.style.transition = 'filter 0.2s ease, transform 0.2s ease'; // 缩短过渡时间
-        img.style.willChange = 'filter, transform'; // 优化GPU加速
-        
-        img.onerror = function() {
-            this.style.display = 'none';
-            this.parentElement.innerHTML = `<div class='project-fallback'>${project.title}</div>`;
-        };
-        
-        const projectImageDiv = document.createElement('div');
-        projectImageDiv.className = 'project-image';
-        projectImageDiv.appendChild(img);
-        
-        const projectInfoDiv = document.createElement('div');
-        projectInfoDiv.className = 'project-info';
-        projectInfoDiv.innerHTML = `
-            <h3 class="project-title">${project.title}</h3>
-            <p class="project-category">${project.category}</p>
-            <p class="project-year">${project.year}</p>
-        `;
-        
-        projectItem.appendChild(projectImageDiv);
-        projectItem.appendChild(projectInfoDiv);
-        
-        // 预创建自定义光标SVG（避免每次hover重新生成）
-        const projectTitle = project.title;
-        const cursorSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="30" viewBox="0 0 120 30"><rect width="120" height="30" fill="black" rx="15"/><text x="60" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12">${projectTitle}</text></svg>`;
-        
-        // 添加悬停效果
-        projectItem.addEventListener('mouseenter', function() {
-            img.style.filter = 'grayscale(0%)';
-            img.style.transform = 'scale(1.02)';
-            this.style.cursor = `url('${cursorSvg}'), pointer`;
-        });
-        
-        projectItem.addEventListener('mouseleave', function() {
+            img.alt = project.title;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
             img.style.filter = 'grayscale(100%)';
-            img.style.transform = 'scale(1)';
-            this.style.cursor = 'pointer';
-        });
-        
-        // 添加点击事件
-        projectItem.addEventListener('click', function() {
-            showProjectDetail(project);
-        });
-        
-        projectsGrid.appendChild(projectItem);
-    });
-    
-    detailContent.appendChild(projectsGrid);
-    }); // 关闭 Promise.all.then
-}
-
-// ============ 联系页面显示函数 ============
-async function showKontaktContent() {
-    // 创建或获取详情页内容容器
-    let detailContent = utils.getElement('detail-content');
-    if (!detailContent) {
-        detailContent = document.createElement('div');
-        detailContent.id = 'detail-content';
-        detailContent.className = 'visible';
-        document.body.appendChild(detailContent);
-    } else {
-        detailContent.className = 'visible';
-    }
-    
-    // 清空现有内容
-    detailContent.innerHTML = '';
-    
-    try {
-        // 加载HTML模板
-        const response = await fetch('kontakt.html');
-        const htmlContent = await response.text();
-        
-        // 插入HTML内容
-        detailContent.innerHTML = htmlContent;
-        
-        // 添加表单提交处理
-        const form = detailContent.querySelector('#contact-form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(form);
-                const name = formData.get('name');
-                const email = formData.get('email');
-                const subject = formData.get('subject');
-                const message = formData.get('message');
-                
-                const mailtoLink = `mailto:yingxun@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Von: ${name} (${email})\n\n${message}`)}`;
-                window.location.href = mailtoLink;
-                
-                form.reset();
+            img.style.transition = 'filter 0.2s ease, transform 0.2s ease';
+            img.style.willChange = 'filter, transform';
+            img.onerror = function() {
+                this.style.display = 'none';
+                this.parentElement.innerHTML = `<div class='project-fallback'>${project.title}</div>`;
+            };
+            const projectImageDiv = document.createElement('div');
+            projectImageDiv.className = 'project-image';
+            projectImageDiv.appendChild(img);
+            const projectInfoDiv = document.createElement('div');
+            projectInfoDiv.className = 'project-info';
+            projectInfoDiv.innerHTML = `
+                <h3 class="project-title">${project.title}</h3>
+                <p class="project-category">${project.category}</p>
+                <p class="project-year">${project.year}</p>
+            `;
+            projectItem.appendChild(projectImageDiv);
+            projectItem.appendChild(projectInfoDiv);
+            // 预创建自定义光标SVG
+            const projectTitle = project.title;
+            // 动态计算文本宽度并生成SVG
+            function getCursorSvg(title) {
+                // 创建canvas测量文本宽度
+                const ctx = document.createElement('canvas').getContext('2d');
+                ctx.font = '12px Arial';
+                const textWidth = ctx.measureText(title).width;
+                const padding = 32; // 左右内边距
+                const minWidth = 80;
+                const width = Math.max(minWidth, Math.ceil(textWidth + padding));
+                const height = 30;
+                // SVG字符串
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="black" rx="15"/><text x="${width/2}" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12">${title}</text></svg>`;
+                return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+            }
+            projectItem.addEventListener('mouseenter', function() {
+                img.style.filter = 'grayscale(0%)';
+                img.style.transform = 'scale(1.02)';
+                // 使用动态宽度SVG
+                this.style.cursor = `url('${getCursorSvg(projectTitle)}'), pointer`;
             });
-        }
-        
-    } catch (error) {
-        console.error('Error loading contact template:', error);
-        // 备用方案：创建基本的联系信息
-        detailContent.innerHTML = `
-            <div id="kontakt-content">
-                <section class="contact-info">
-                    <h1 class="page-title">KONTAKT</h1>
-                    <div class="contact-details">
-                        <div class="contact-item">
-                            <h3>Email</h3>
-                            <p><a href="mailto:yingxun@example.com">yingxun@example.com</a></p>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        `;
-    }
+            projectItem.addEventListener('mouseleave', function() {
+                img.style.filter = 'grayscale(100%)';
+                img.style.transform = 'scale(1)';
+                this.style.cursor = 'pointer';
+            });
+            // 点击事件
+            projectItem.addEventListener('click', function() {
+                showProjectDetail(project);
+            });
+            projectsGrid.appendChild(projectItem);
+        });
+        detailContent.appendChild(projectsGrid);
+    });
 }
 
 // ============ 窗口大小调整函数 ============
@@ -1468,15 +1408,9 @@ function showProjectDetail(project) {
 
 // 获取当前项目在数组中的索引
 function getCurrentProjectIndex(project) {
-    const projectsData = [
-        { id: 'project-1', title: '项目 1' },
-        { id: 'project-2', title: '项目 2' },
-        { id: 'project-3', title: '项目 3' },
-        { id: 'project-4', title: '项目 4' },
-        { id: 'project-5', title: '项目 5' },
-        { id: 'project-6', title: '项目 6' }
-    ];
-    return projectsData.findIndex(p => p.id === project.id);
+    // 只根据id查找索引
+    const ids = ['project-1','project-2','project-3','project-4','project-5','project-6'];
+    return ids.findIndex(id => id === project.id);
 }
 
 // 设置背景内容透明度
@@ -1623,30 +1557,29 @@ function closeProjectDetail(detailOverlay, navArrows, closeBtn) {
 // 导航到其他项目
 function navigateProject(newIndex, currentOverlay, currentNavArrows, currentCloseBtn) {
     if (newIndex < 0 || newIndex > 5) return;
-    
-    const projectsData = [
-        { id: 'project-1', title: '项目 1', category: 'Design', year: '2024', image: 'projects/project-1/images/cover.png' },
-        { id: 'project-2', title: '项目 2', category: 'Design', year: '2024', image: 'projects/project-2/images/cover.png' },
-        { id: 'project-3', title: '项目 3', category: 'Design', year: '2023', image: 'projects/project-3/images/cover.png' },
-        { id: 'project-4', title: '项目 4', category: 'Design', year: '2023', image: 'projects/project-4/images/cover.png' },
-        { id: 'project-5', title: '项目 5', category: 'Design', year: '2022', image: 'projects/project-5/images/cover.png' },
-        { id: 'project-6', title: '项目 6', category: 'Design', year: '2022', image: 'projects/project-6/images/cover.png' }
+
+    // 新的项目基础数据
+    const baseProjects = [
+        { id: 'project-1', category: 'Design', year: '2024', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
+        { id: 'project-2', category: 'Design', year: '2024', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
+        { id: 'project-3', category: 'Design', year: '2023', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
+        { id: 'project-4', category: 'Design', year: '2023', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
+        { id: 'project-5', category: 'Design', year: '2022', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
+        { id: 'project-6', category: 'Design', year: '2022', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
     ];
-    
-    const newProject = projectsData[newIndex];
-    
+    const baseProject = baseProjects[newIndex];
+
     // 关闭当前详情页（但保持背景透明和项目挤压状态）
     currentOverlay.style.opacity = '0';
     currentOverlay.style.transform = 'scale(0.95)';
-    
-    // 同时隐藏当前导航箭头和关闭按钮
+
     if (currentNavArrows) {
         currentNavArrows.style.opacity = '0';
     }
     if (currentCloseBtn) {
         currentCloseBtn.style.opacity = '0';
     }
-    
+
     setTimeout(() => {
         if (currentOverlay.parentNode) {
             currentOverlay.parentNode.removeChild(currentOverlay);
@@ -1657,15 +1590,19 @@ function navigateProject(newIndex, currentOverlay, currentNavArrows, currentClos
         if (currentCloseBtn && currentCloseBtn.parentNode) {
             currentCloseBtn.parentNode.removeChild(currentCloseBtn);
         }
-        
+
         // 移除当前的背景覆盖层
         const backgroundOverlay = document.getElementById('project-detail-background');
         if (backgroundOverlay) {
             backgroundOverlay.remove();
         }
-        
-        // 不恢复背景和项目状态，直接打开新项目
-        showProjectDetailDirect(newProject);
+
+        // 动态读取 title.txt 后再打开新项目详情
+        fetch(baseProject.titlePath).then(r => r.text()).then(title => {
+            showProjectDetailDirect({ ...baseProject, title: title.trim() });
+        }).catch(() => {
+            showProjectDetailDirect({ ...baseProject, title: baseProject.id });
+        });
     }, 300);
 }
 
