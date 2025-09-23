@@ -1621,39 +1621,24 @@ function showProjectDetailDirect(project) {
         transition: all 0.3s ease;
     `;
     
-    // 创建详情页内容（与原函数相同的HTML）
-    detailOverlay.innerHTML = `
-        <div class="project-detail-content">
-            <div class="project-hero-image">
-                <img src="${project.image}" alt="${project.title}">
-            </div>
-            <div class="project-detail-body">
-                <div class="project-header">
-                    <h1 class="project-title">${project.title}</h1>
-                    <div class="project-meta">
-                        <span class="project-category">${project.category}</span>
-                        <span class="project-year">${project.year}</span>
-                    </div>
-                </div>
-                <div class="project-description">
-                    <p>这里是项目的详细描述内容。项目展示了设计理念、制作过程、技术实现等方面的信息。</p>
-                    <p>更多项目内容可以在这里展示，包括设计思路、制作流程、使用的技术栈等详细信息。</p>
-                    <p>这个区域可以包含更多的文字描述、图片展示、视频内容等，为用户提供完整的项目信息。</p>
-                </div>
-                <div class="project-gallery">
-                    <h3>项目展示</h3>
-                    <div class="gallery-grid">
-                        <div class="gallery-item"><div class="placeholder">图片1</div></div>
-                        <div class="gallery-item"><div class="placeholder">图片2</div></div>
-                        <div class="gallery-item"><div class="placeholder">图片3</div></div>
-                        <div class="gallery-item"><div class="placeholder">图片4</div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
+    // 创建详情页内容（先显示 loading）
+    detailOverlay.innerHTML = '<div class="project-detail-content"><div class="project-hero-image"><img src="'+project.image+'" alt="'+project.title+'"></div><div class="project-detail-body"><div class="project-header"><h1 class="project-title">'+project.title+'</h1><div class="project-meta"><span class="project-category">'+project.category+'</span><span class="project-year">'+project.year+'</span></div></div><div class="project-description loading">Loading…</div></div></div>';
     document.body.appendChild(detailOverlay);
+
+    // 动态加载 detail.html 内容
+    fetch(`projects/${project.id}/detail.html`)
+        .then(response => {
+            if (!response.ok) throw new Error('Not found');
+            return response.text();
+        })
+        .then(html => {
+            const desc = detailOverlay.querySelector('.project-description');
+            if(desc) desc.innerHTML = html;
+        })
+        .catch(() => {
+            const desc = detailOverlay.querySelector('.project-description');
+            if(desc) desc.innerHTML = '<div class="error">详情内容未找到</div>';
+        });
     
     // 创建背景覆盖层，防止点击到背景内容
     const backgroundOverlay = document.createElement('div');
