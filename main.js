@@ -324,7 +324,7 @@ function enterDetailMode() {
     
     // 设置logo目标状态
     logoTargetScale = ANIMATION_CONSTANTS.LOGO_DETAIL_SCALE; // 缩小到20%
-    logoTargetPosition.x = -moveDistance; // 动态计算移动距离
+    logoTargetPosition.x = -moveDistance * 1.2; // 动态计算移动距离
     
     // 精确计算导航栏对应的3D坐标位置
     const navbar = utils.getElement('navbar');
