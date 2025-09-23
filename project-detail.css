@@ -1,7 +1,16 @@
 /* 项目详情页样式 */
+:root {
+    --font-primary: 'Roboto', Arial, sans-serif;
+    --color-black: #000;
+    --color-gray: #333;
+    --color-light-gray: #ccc;
+    --transition-opacity-fast: opacity 0.2s ease;
+    --transition-opacity-normal: opacity 0.3s ease;
+}
+
 #project-detail-overlay {
     position: fixed;
-    background: rgb(141, 102, 102);
+    background: rgb(255, 255, 255);
     z-index: 1000;
     overflow-x: hidden;
     overflow-y: auto;
@@ -56,8 +65,8 @@
 
 .project-header .project-title {
     font-family: var(--font-primary);
+    font-weight: bold;
     font-size: 48px;
-    font-weight: 500;
     margin: 0 0 20px 0;
     color: var(--color-black);
     letter-spacing: 2px;

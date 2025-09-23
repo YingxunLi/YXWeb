@@ -1088,48 +1088,12 @@ function showProjectsGrid() {
 
     // 项目基础数据（不含title）
     const projectsData = [
-        {
-            id: 'project-1',
-            category: 'Design',
-            year: '2024',
-            image: 'projects/project-1/images/cover.png',
-            titlePath: 'projects/project-1/title.txt'
-        },
-        {
-            id: 'project-2',
-            category: 'Design',
-            year: '2024',
-            image: 'projects/project-2/images/cover.png',
-            titlePath: 'projects/project-2/title.txt'
-        },
-        {
-            id: 'project-3',
-            category: 'Design',
-            year: '2023',
-            image: 'projects/project-3/images/cover.png',
-            titlePath: 'projects/project-3/title.txt'
-        },
-        {
-            id: 'project-4',
-            category: 'Design',
-            year: '2023',
-            image: 'projects/project-4/images/cover.png',
-            titlePath: 'projects/project-4/title.txt'
-        },
-        {
-            id: 'project-5',
-            category: 'Design',
-            year: '2022',
-            image: 'projects/project-5/images/cover.png',
-            titlePath: 'projects/project-5/title.txt'
-        },
-        {
-            id: 'project-6',
-            category: 'Design',
-            year: '2022',
-            image: 'projects/project-6/images/cover.png',
-            titlePath: 'projects/project-6/title.txt'
-        }
+        { id: 'project-1', category: 'Datenvisualisierung', year: '2024', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
+        { id: 'project-2', category: 'UX design', year: '2024', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
+        { id: 'project-3', category: 'Interface Design', year: '2023', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
+        { id: 'project-4', category: 'UX Design', year: '2023', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
+        { id: 'project-5', category: 'Design Thinking', year: '2022', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
+        { id: 'project-6', category: 'Produkt Design', year: '2022', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
     ];
 
     // 预加载所有图片和title
@@ -1545,12 +1509,12 @@ function navigateProject(newIndex, currentOverlay, currentNavArrows, currentClos
 
     // 新的项目基础数据
     const baseProjects = [
-        { id: 'project-1', category: 'Design', year: '2024', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
-        { id: 'project-2', category: 'Design', year: '2024', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
-        { id: 'project-3', category: 'Design', year: '2023', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
-        { id: 'project-4', category: 'Design', year: '2023', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
-        { id: 'project-5', category: 'Design', year: '2022', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
-        { id: 'project-6', category: 'Design', year: '2022', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
+    { id: 'project-1', category: 'Datenvisualisierung', year: '2024', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
+    { id: 'project-2', category: 'UX design', year: '2024', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
+    { id: 'project-3', category: 'Interface Design', year: '2023', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
+    { id: 'project-4', category: 'UX Design', year: '2023', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
+    { id: 'project-5', category: 'Design Thinking', year: '2022', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
+    { id: 'project-6', category: 'Produkt Design', year: '2022', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
     ];
     const baseProject = baseProjects[newIndex];
 
