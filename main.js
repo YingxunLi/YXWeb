@@ -1371,18 +1371,7 @@ function showProjectDetail(project) {
     detailOverlay.id = 'project-detail-overlay';
     detailOverlay.className = 'project-detail-expanding';
     
-    // 设置初始位置和大小（与点击的项目位置一致）
-    detailOverlay.style.cssText = `
-        position: fixed;
-        left: ${rect.left}px;
-        top: ${rect.top}px;
-        width: ${rect.width}px;
-        height: ${rect.height}px;
-        background: white;
-        z-index: 1000;
-        overflow: hidden;
-        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    `;
+    // 初始动画可选，布局权威交由 setProjectDetailOverlayLayout 控制
     
     // 创建详情页内容
     detailOverlay.innerHTML = `
@@ -1468,23 +1457,7 @@ function showProjectDetail(project) {
     
     // 稍微延迟后开始展开动画
     setTimeout(() => {
-        const isMobile = window.innerWidth <= 768;
-        const leftMargin = isMobile ? 60 : 120;
-        const totalMargin = isMobile ? 120 : 240;
-        
-        detailOverlay.style.cssText = `
-            position: fixed;
-            left: ${leftMargin}px;
-            top: 0;
-            width: calc(100vw - ${totalMargin}px);
-            height: 100vh;
-            background: white;
-            z-index: 1000;
-            overflow-y: auto;
-            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        `;
+        setProjectDetailOverlayLayout(detailOverlay);
         detailOverlay.classList.remove('project-detail-expanding');
         detailOverlay.classList.add('project-detail-expanded');
     }, 50);
@@ -1814,6 +1787,23 @@ function showProjectDetailDirect(project) {
     
     // 添加事件监听器
     addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex);
+}
+
+// 统一设置详情浮层宽度和边距的函数
+function setProjectDetailOverlayLayout(detailOverlay) {
+    const isMobile = window.innerWidth <= 768;
+    const sideMargin = isMobile ? 60 : 200; // 你可以调整这个值
+    detailOverlay.style.left = sideMargin + 'px';
+    detailOverlay.style.right = sideMargin + 'px';
+    detailOverlay.style.top = '0';
+    detailOverlay.style.height = '100vh';
+    detailOverlay.style.position = 'fixed';
+    detailOverlay.style.background = 'white';
+    detailOverlay.style.zIndex = '1000';
+    detailOverlay.style.overflowY = 'auto';
+    detailOverlay.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    detailOverlay.style.scrollbarWidth = 'none';
+    detailOverlay.style.msOverflowStyle = 'none';
 }
 
 // ============ 内容清理函数 ============

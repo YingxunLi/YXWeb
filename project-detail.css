@@ -43,7 +43,7 @@
 /* 项目详情内容区域 */
 .project-detail-body {
     padding: 60px 80px;
-    max-width: 1200px;
+    /* max-width去掉，内容区宽度随浮层自适应 */
     margin: 0 auto;
     background: white;
 }
@@ -128,9 +128,8 @@
 }
 
 .nav-arrow {
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 0, 0, 0.8);
+    width: 3%;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -138,13 +137,13 @@
     cursor: pointer;
     transition: all 0.3s ease;
     pointer-events: auto;
-    color: white;
+    color: rgb(0, 0, 0);
     position: absolute;
     top: 0;
 }
 
 .nav-arrow:hover {
-    background: rgba(0, 0, 0, 0.9);
+    /* background: rgba(0, 0, 0, 0.9); */
     transform: scale(1.1);
 }
 
@@ -172,9 +171,8 @@
     position: fixed; /* 改回fixed定位，与右箭头对齐 */
     top: 40px;
     right: 30px; /* 与右箭头相同的right值 */
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 0, 0, 0.8);
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -182,11 +180,11 @@
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 1002;
-    color: white;
+    color: rgb(0, 0, 0);
 }
 
 .project-close-btn:hover {
-    background: rgba(0, 0, 0, 0.9);
+    /* background: rgba(0, 0, 0, 0.1); */
     transform: scale(1.1);
 }
 
@@ -216,10 +214,11 @@ body:has(#project-detail-overlay) #navbar {
     }
     
     /* 在移动端使用更小的边距 */
-    #project-detail-overlay.project-detail-expanded {
-        left: 60px !important;
-        width: calc(100vw - 120px) !important;
-    }
+    /* 移除JS动态宽度的CSS覆盖，权威宽度交由JS控制 */
+    /* #project-detail-overlay.project-detail-expanded {
+        left: 60px;
+        width: calc(100vw - 120px);
+    } */
     
     .nav-prev {
         left: 15px;
