@@ -1267,31 +1267,29 @@ function updateNavbar() {
 
 // ============ 项目详情显示函数 ============
 function showProjectDetail(project) {
-    // 找到点击的项目元素和cover图片
     const clickedItem = document.querySelector(`[data-project="${project.title}"]`);
     const coverImg = clickedItem.querySelector('.project-image img');
     const rect = coverImg.getBoundingClientRect();
 
-    // 其他项目挤压动画
     animateOtherProjects(clickedItem, 'compress');
 
     // 创建详情页浮层
     const detailOverlay = document.createElement('div');
     detailOverlay.id = 'project-detail-overlay';
     detailOverlay.className = 'project-detail-expanding';
-    detailOverlay.style.position = 'fixed';
+    // 初始定位，动画交由CSS
     detailOverlay.style.left = rect.left + 'px';
     detailOverlay.style.top = rect.top + 'px';
     detailOverlay.style.width = rect.width + 'px';
     detailOverlay.style.height = rect.height + 'px';
+    detailOverlay.style.position = 'fixed';
     detailOverlay.style.zIndex = '1000';
     detailOverlay.style.overflow = 'hidden';
     detailOverlay.style.background = 'white';
-    detailOverlay.style.transition = 'all 0.6s cubic-bezier(0.25,0.46,0.45,0.94)';
     detailOverlay.innerHTML = `
         <div class="project-detail-content">
-            <div class="project-hero-image" style="height:100%;">
-                <img src="${project.image}" alt="${project.title}" style="width:100%;height:100%;object-fit:cover;">
+            <div class="project-hero-image">
+                <img src="${project.image}" alt="${project.title}">
             </div>
             <div class="project-detail-body" style="opacity:0;">
                 <div class="project-header">
@@ -1304,7 +1302,6 @@ function showProjectDetail(project) {
     `;
     document.body.appendChild(detailOverlay);
 
-    // 动态加载详情内容
     fetch(`projects/${project.id}/detail.html`)
         .then(r => r.ok ? r.text() : Promise.reject())
         .then(html => {
@@ -1316,16 +1313,20 @@ function showProjectDetail(project) {
             if (desc) desc.innerHTML = '<div class="error">详情内容未找到</div>';
         });
 
-    // 创建左右箭头和关闭按钮
+    // 创建左右箭头和关闭按钮（样式由CSS控制）
     const currentIndex = getCurrentProjectIndex(project);
     const navArrows = document.createElement('div');
     navArrows.id = 'project-nav-arrows';
     navArrows.innerHTML = `
         <div class="nav-arrow nav-prev ${currentIndex === 0 ? 'disabled' : ''}" data-direction="prev">
-            <svg width="24" height="24"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
         <div class="nav-arrow nav-next ${currentIndex === 5 ? 'disabled' : ''}" data-direction="next">
-            <svg width="24" height="24"><path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
     `;
     document.body.appendChild(navArrows);
@@ -1335,36 +1336,36 @@ function showProjectDetail(project) {
     closeBtn.innerHTML = `<svg width="24" height="24"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2"/></svg>`;
     document.body.appendChild(closeBtn);
 
-    // 背景透明
     setBackgroundTransparency(true);
 
-    // 展开动画：下一帧切换到expanded状态
+    // 展开动画，切换class，cover和箭头布局交由CSS
     setTimeout(() => {
-        // 计算目标位置和尺寸
-        const isMobile = window.innerWidth <= 768;
-        const leftMargin = isMobile ? 60 : 200;
-        const rightMargin = isMobile ? 60 : 200;
-        detailOverlay.style.left = leftMargin + 'px';
-        detailOverlay.style.top = '0';
-        detailOverlay.style.width = `calc(100vw - ${leftMargin + rightMargin}px)`;
-        detailOverlay.style.height = '100vh';
-        detailOverlay.style.borderRadius = '0';
-        detailOverlay.style.overflowY = 'auto';
         detailOverlay.classList.remove('project-detail-expanding');
         detailOverlay.classList.add('project-detail-expanded');
-        // cover图片高度变为100vh，内容区淡入
+        detailOverlay.style.left = '';
+        detailOverlay.style.top = '';
+        detailOverlay.style.width = '';
+        detailOverlay.style.height = '';
+        detailOverlay.style.position = '';
+        detailOverlay.style.overflow = '';
+        // 内容区淡入
         const body = detailOverlay.querySelector('.project-detail-body');
         if (body) setTimeout(() => { body.style.opacity = '1'; }, 400);
     }, 40);
 
     // 关闭动画
     closeBtn.onclick = () => {
-        detailOverlay.style.transition = 'all 0.5s cubic-bezier(0.25,0.46,0.45,0.94)';
+        detailOverlay.classList.remove('project-detail-expanded');
+        detailOverlay.classList.add('project-detail-expanding');
+        // 恢复初始定位
         detailOverlay.style.left = rect.left + 'px';
         detailOverlay.style.top = rect.top + 'px';
         detailOverlay.style.width = rect.width + 'px';
         detailOverlay.style.height = rect.height + 'px';
-        detailOverlay.style.opacity = '0';
+        detailOverlay.style.position = 'fixed';
+        detailOverlay.style.overflow = 'hidden';
+        detailOverlay.style.background = 'white';
+        detailOverlay.querySelector('.project-detail-body').style.opacity = '0';
         navArrows.style.opacity = '0';
         closeBtn.style.opacity = '0';
         setTimeout(() => {
@@ -1376,22 +1377,33 @@ function showProjectDetail(project) {
         }, 500);
     };
 
-    // 箭头切换项目
+    // 箭头切换项目（不退出动画，直接切换内容）
     navArrows.onclick = (e) => {
-        const dir = e.target.closest('.nav-arrow')?.dataset.direction;
-        if (!dir || e.target.closest('.nav-arrow').classList.contains('disabled')) return;
+        const arrow = e.target.closest('.nav-arrow');
+        if (!arrow || arrow.classList.contains('disabled')) return;
+        const dir = arrow.dataset.direction;
         const ids = ['project-1','project-2','project-3','project-4','project-5','project-6'];
         let idx = currentIndex + (dir === 'next' ? 1 : -1);
         if (idx < 0 || idx >= ids.length) return;
-        // 关闭当前详情页，展开下一个
-        closeBtn.onclick();
-        setTimeout(() => {
-            fetch(projectsData[idx].titlePath).then(r => r.text()).then(title => {
-                fetch(projectsData[idx].categoryPath).then(r => r.text()).then(category => {
-                    showProjectDetail({ ...projectsData[idx], title: title.trim(), category: category.trim() });
-                });
+        // 获取新项目数据并复用动画
+        fetch('projects/' + ids[idx] + '/title.txt').then(r => r.text()).then(title => {
+            fetch('projects/' + ids[idx] + '/typ.txt').then(r => r.text()).then(category => {
+                // 关闭当前详情页，展开下一个（动画复用）
+                detailOverlay.remove();
+                navArrows.remove();
+                closeBtn.remove();
+                setBackgroundTransparency(false);
+                animateOtherProjects(clickedItem, 'reset');
+                setTimeout(() => {
+                    showProjectDetail({
+                        id: ids[idx],
+                        image: 'projects/' + ids[idx] + '/images/cover.png',
+                        title: title.trim(),
+                        category: category.trim()
+                    });
+                }, 50);
             });
-        }, 520);
+        });
     };
 }
 
@@ -1476,13 +1488,13 @@ function showProjectDetailDirect(project) {
     detailOverlay.className = 'project-detail-expanded';
     
     const isMobile = window.innerWidth <= 768;
-    const leftMargin = isMobile ? 60 : 120;
+    const sideMargin = isMobile ? 60 : 120;
     const totalMargin = isMobile ? 120 : 240;
     
     // 直接设置为展开状态
     detailOverlay.style.cssText = `
         position: fixed;
-        left: ${leftMargin}px;
+        left: ${sideMargin}px;
         top: 0;
         width: calc(100vw - ${totalMargin}px);
         height: 100vh;
