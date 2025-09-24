@@ -2,7 +2,7 @@
 :root {
     --font-primary: 'Roboto', Arial, sans-serif;
     --color-black: #000;
-    --color-gray: #333;
+    --color-gray: #a3a3a3;
     --color-light-gray: #ccc;
     --transition-opacity-fast: opacity 0.2s ease;
     --transition-opacity-normal: opacity 0.3s ease;
@@ -53,7 +53,6 @@
 /* 项目详情内容区域 */
 .project-detail-body {
     padding: 60px 80px;
-    /* max-width去掉，内容区宽度随浮层自适应 */
     margin: 0 auto;
     background: white;
     transition: opacity 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
@@ -62,7 +61,6 @@
 
 .project-header {
     margin-bottom: 40px;
-    border-bottom: 1px solid #eee;
     padding-bottom: 30px;
 }
 
@@ -88,11 +86,45 @@
     line-height: 1.8;
     font-family: var(--font-primary);
     font-size: 16px;
-    color: var(--color-gray);
+    color: var(--color-black);
 }
 
 .project-description p {
     margin-bottom: 20px;
+}
+
+.project-description img {
+    display: block;
+    width: 100%;
+    max-width: 100%; 
+    margin: 30px auto;  
+}
+
+.demo-link {
+    text-align: center!important;
+    font-weight: 300;    
+    font-size: 14px;
+    color: var(--color-gray);             
+    text-decoration: underline;
+    font-family: var(--font-primary);
+    letter-spacing: 1px;     
+}
+
+.qr-image {
+    display: block;
+    margin: 24px auto 8px auto; 
+    width: 160px !important;
+    max-width: 40vw;           
+}
+
+.qr-tip {
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-gray);
+    margin-bottom: 24px;
+    font-family: var(--font-primary);
+    font-weight: 300;
+    letter-spacing: 0.5px;
 }
 
 /* 项目画廊 */
@@ -114,7 +146,6 @@
 .gallery-item {
     aspect-ratio: 16/10;
     background: #f5f5f5;
-    border-radius: 8px;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -209,7 +240,6 @@ body:has(#project-detail-overlay) #navbar {
 /* 展开动画的初始状态（从cover位置和尺寸开始） */
 #project-detail-overlay.project-detail-expanding {
     transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
-    border-radius: 16px;
     overflow: hidden;
     opacity: 1;
     z-index: 1000;
@@ -223,7 +253,6 @@ body:has(#project-detail-overlay) #navbar {
     top: 0;
     width: calc(100vw - 400px);
     height: 100vh;
-    border-radius: 0;
     opacity: 1;
     z-index: 1000;
     overflow-y: auto;
@@ -238,13 +267,6 @@ body:has(#project-detail-overlay) #navbar {
     .project-header .project-title {
         font-size: 32px;
     }
-    
-    /* 在移动端使用更小的边距 */
-    /* 移除JS动态宽度的CSS覆盖，权威宽度交由JS控制 */
-    /* #project-detail-overlay.project-detail-expanded {
-        left: 60px;
-        width: calc(100vw - 120px);
-    } */
     
     .nav-prev {
         left: 15px;
