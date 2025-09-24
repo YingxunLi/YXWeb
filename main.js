@@ -1366,7 +1366,7 @@ function getCurrentProjectIndex(project) {
     return ids.findIndex(id => id === project.id);
 }
 
-// 设置背景内容透明度
+// setBackgroundTransparency 函数优化
 function setBackgroundTransparency(isTransparent) {
     const elementsToHide = [
         '#container canvas',
@@ -1380,8 +1380,7 @@ function setBackgroundTransparency(isTransparent) {
         elements.forEach(element => {
             if (element) {
                 element.style.opacity = isTransparent ? '0' : '';
-                element.style.transition = 'opacity 0.6s ease';
-                // 禁用/恢复鼠标事件
+                element.style.transition = ''; // 由CSS统一管理
                 element.style.pointerEvents = isTransparent ? 'none' : '';
             }
         });
@@ -1392,22 +1391,19 @@ function setBackgroundTransparency(isTransparent) {
     projectItems.forEach(item => {
         if (item) {
             if (isTransparent) {
-                // 详情页打开时：隐藏并禁用交互
                 item.style.opacity = '0';
                 item.style.pointerEvents = 'none';
             } else {
-                // 详情页关闭时：恢复可见性和交互
                 item.style.opacity = '';
                 item.style.pointerEvents = '';
-                // 确保也移除任何挤压变换
                 item.style.transform = '';
             }
-            item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            item.style.transition = ''; // 由CSS统一管理
         }
     });
 }
 
-// 动画化其他项目的挤压/恢复效果
+// animateOtherProjects 函数优化
 function animateOtherProjects(clickedItem, action) {
     const allItems = document.querySelectorAll('.project-item');
     const clickedIndex = clickedItem ? Array.from(allItems).indexOf(clickedItem) : -1;
@@ -1417,149 +1413,24 @@ function animateOtherProjects(clickedItem, action) {
         
         if (action === 'compress') {
             if (index < clickedIndex) {
-                // 左侧项目向左挤压
                 item.style.transform = 'translateX(-100px) scale(0.8)';
                 item.style.opacity = '0.3';
             } else {
-                // 右侧项目向右挤压
                 item.style.transform = 'translateX(100px) scale(0.8)';
                 item.style.opacity = '0.3';
             }
-            // 禁用交互
             item.style.pointerEvents = 'none';
         } else {
-            // 完全恢复原状
             item.style.transform = '';
             item.style.opacity = '';
             item.style.pointerEvents = '';
-            // 确保过渡效果也被重置
-            setTimeout(() => {
-                item.style.transition = '';
-            }, 600);
+            // 移除 transition 设置
         }
-        item.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        item.style.transition = ''; // 由CSS统一管理
     });
 }
 
-// 添加项目详情页事件监听器
-function addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex) {
-    // 关闭按钮（现在是独立的元素）
-    closeBtn.addEventListener('click', () => closeProjectDetail(detailOverlay, navArrows, closeBtn));
-    
-    // 导航箭头（现在在独立的容器中）
-    const prevBtn = navArrows.querySelector('.nav-prev');
-    const nextBtn = navArrows.querySelector('.nav-next');
-    
-    if (!prevBtn.classList.contains('disabled')) {
-        prevBtn.addEventListener('click', () => navigateProject(currentIndex - 1, detailOverlay, navArrows, closeBtn));
-    }
-    
-    if (!nextBtn.classList.contains('disabled')) {
-        nextBtn.addEventListener('click', () => navigateProject(currentIndex + 1, detailOverlay, navArrows, closeBtn));
-    }
-    
-    // ESC键关闭
-    const handleKeyPress = (e) => {
-        if (e.key === 'Escape') {
-            closeProjectDetail(detailOverlay, navArrows, closeBtn);
-            document.removeEventListener('keydown', handleKeyPress);
-        }
-    };
-    document.addEventListener('keydown', handleKeyPress);
-}
-
-// 关闭项目详情页
-function closeProjectDetail(detailOverlay, navArrows, closeBtn) {
-    // 恢复其他项目的位置
-    animateOtherProjects(null, 'restore');
-    
-    // 恢复背景内容透明度
-    setBackgroundTransparency(false);
-    
-    // 移除背景覆盖层
-    const backgroundOverlay = document.getElementById('project-detail-background');
-    if (backgroundOverlay) {
-        backgroundOverlay.remove();
-    }
-    
-    // 添加关闭动画
-    detailOverlay.style.opacity = '0';
-    detailOverlay.style.transform = 'scale(0.95)';
-    
-    // 同时隐藏导航箭头和关闭按钮
-    if (navArrows) {
-        navArrows.style.opacity = '0';
-    }
-    if (closeBtn) {
-        closeBtn.style.opacity = '0';
-    }
-    
-    setTimeout(() => {
-        if (detailOverlay.parentNode) {
-            detailOverlay.parentNode.removeChild(detailOverlay);
-        }
-        if (navArrows && navArrows.parentNode) {
-            navArrows.parentNode.removeChild(navArrows);
-        }
-        if (closeBtn && closeBtn.parentNode) {
-            closeBtn.parentNode.removeChild(closeBtn);
-        }
-    }, 300);
-}
-
-// 导航到其他项目
-function navigateProject(newIndex, currentOverlay, currentNavArrows, currentCloseBtn) {
-    if (newIndex < 0 || newIndex > 5) return;
-
-    // 新的项目基础数据
-    const baseProjects = [
-    { id: 'project-1', category: 'Datenvisualisierung', year: '2024', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
-    { id: 'project-2', category: 'UX design', year: '2024', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
-    { id: 'project-3', category: 'Interface Design', year: '2023', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
-    { id: 'project-4', category: 'UX Design', year: '2023', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
-    { id: 'project-5', category: 'Design Thinking', year: '2022', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
-    { id: 'project-6', category: 'Produkt Design', year: '2022', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
-    ];
-    const baseProject = baseProjects[newIndex];
-
-    // 关闭当前详情页（但保持背景透明和项目挤压状态）
-    currentOverlay.style.opacity = '0';
-    currentOverlay.style.transform = 'scale(0.95)';
-
-    if (currentNavArrows) {
-        currentNavArrows.style.opacity = '0';
-    }
-    if (currentCloseBtn) {
-        currentCloseBtn.style.opacity = '0';
-    }
-
-    setTimeout(() => {
-        if (currentOverlay.parentNode) {
-            currentOverlay.parentNode.removeChild(currentOverlay);
-        }
-        if (currentNavArrows && currentNavArrows.parentNode) {
-            currentNavArrows.parentNode.removeChild(currentNavArrows);
-        }
-        if (currentCloseBtn && currentCloseBtn.parentNode) {
-            currentCloseBtn.parentNode.removeChild(currentCloseBtn);
-        }
-
-        // 移除当前的背景覆盖层
-        const backgroundOverlay = document.getElementById('project-detail-background');
-        if (backgroundOverlay) {
-            backgroundOverlay.remove();
-        }
-
-        // 动态读取 title.txt 后再打开新项目详情
-        fetch(baseProject.titlePath).then(r => r.text()).then(title => {
-            showProjectDetailDirect({ ...baseProject, title: title.trim() });
-        }).catch(() => {
-            showProjectDetailDirect({ ...baseProject, title: baseProject.id });
-        });
-    }, 300);
-}
-
-// 直接显示项目详情（用于项目切换时）
+// showProjectDetailDirect/detailOverlay样式优化
 function showProjectDetailDirect(project) {
     const currentIndex = getCurrentProjectIndex(project);
     
@@ -1586,7 +1457,7 @@ function showProjectDetailDirect(project) {
         -ms-overflow-style: none;
         opacity: 0;
         transform: scale(0.95);
-        transition: all 0.3s ease;
+        /* transition 由CSS统一管理 */
     `;
     
     // 创建详情页内容（先显示 loading）
@@ -1667,7 +1538,7 @@ function showProjectDetailDirect(project) {
 // 统一设置详情浮层宽度和边距的函数
 function setProjectDetailOverlayLayout(detailOverlay) {
     const isMobile = window.innerWidth <= 768;
-    const sideMargin = isMobile ? 60 : 200; // 你可以调整这个值
+    const sideMargin = isMobile ? 60 : 200;
     detailOverlay.style.left = sideMargin + 'px';
     detailOverlay.style.right = sideMargin + 'px';
     detailOverlay.style.top = '0';
@@ -1676,7 +1547,7 @@ function setProjectDetailOverlayLayout(detailOverlay) {
     detailOverlay.style.background = 'white';
     detailOverlay.style.zIndex = '1000';
     detailOverlay.style.overflowY = 'auto';
-    detailOverlay.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    // transition 由CSS统一管理
     detailOverlay.style.scrollbarWidth = 'none';
     detailOverlay.style.msOverflowStyle = 'none';
 }
