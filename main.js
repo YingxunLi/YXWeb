@@ -1140,7 +1140,6 @@ function showProjectsGrid() {
             projectInfoDiv.innerHTML = `
                 <h3 class="project-title">${project.title}</h3>
                 <p class="project-category">${project.category}</p>
-                <p class="project-year">${project.year}</p>
             `;
             projectItem.appendChild(projectImageDiv);
             projectItem.appendChild(projectInfoDiv);
@@ -1283,7 +1282,7 @@ function showProjectDetail(project) {
     // 初始动画可选，布局权威交由 setProjectDetailOverlayLayout 控制
     
     // 创建详情页内容（先显示 loading）
-    detailOverlay.innerHTML = '<div class="project-detail-content"><div class="project-hero-image"><img src="'+project.image+'" alt="'+project.title+'"></div><div class="project-detail-body"><div class="project-header"><h1 class="project-title">'+project.title+'</h1><div class="project-meta"><span class="project-category">'+project.category+'</span><span class="project-year">'+project.year+'</span></div></div><div class="project-description loading">Loading…</div></div></div>';
+    detailOverlay.innerHTML = '<div class="project-detail-content"><div class="project-hero-image"><img src="'+project.image+'" alt="'+project.title+'"></div><div class="project-detail-body"><div class="project-header"><h1 class="project-title">'+project.title+'</h1><div class="project-meta"><span class="project-category">'+project.category+'</span><!-- <span class="project-year">'+project.year+'</span> --></div></div><div class="project-description loading">Loading…</div></div></div>';
     document.body.appendChild(detailOverlay);
 
     // 动态加载 detail.html 内容
@@ -1591,7 +1590,7 @@ function showProjectDetailDirect(project) {
     `;
     
     // 创建详情页内容（先显示 loading）
-    detailOverlay.innerHTML = '<div class="project-detail-content"><div class="project-hero-image"><img src="'+project.image+'" alt="'+project.title+'"></div><div class="project-detail-body"><div class="project-header"><h1 class="project-title">'+project.title+'</h1><div class="project-meta"><span class="project-category">'+project.category+'</span><span class="project-year">'+project.year+'</span></div></div><div class="project-description loading">Loading…</div></div></div>';
+    detailOverlay.innerHTML = '<div class="project-detail-content"><div class="project-hero-image"><img src="'+project.image+'" alt="'+project.title+'"></div><div class="project-detail-body"><div class="project-header"><h1 class="project-title">'+project.title+'</h1><div class="project-meta"><span class="project-category">'+project.category+'</span><!-- <span class="project-year">'+project.year+'</span> --></div></div><div class="project-description loading">Loading…</div></div></div>';
     document.body.appendChild(detailOverlay);
 
     // 动态加载 detail.html 内容
