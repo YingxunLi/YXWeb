@@ -136,7 +136,11 @@
     font-weight: var(--font-weight-small);
     letter-spacing: 0.5px;
 }
-
+.author {
+    color: var(--color-gray);
+    font-size: var(--font-size-small);
+    margin-bottom: 1em;
+}
 .responsive-video {
     position: relative;
     width: 100%;
