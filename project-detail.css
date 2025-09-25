@@ -1,9 +1,17 @@
-/* 项目详情页样式 */
 :root {
     --font-primary: 'Roboto', Arial, sans-serif;
+    --font-size-title: 40px;
+    --font-size-title-mobile: 30px;
+    --font-size-subtitle: 24px;
+    --font-size-body: 16px;
+    --font-size-small: 14px;
+
+    --font-weight-title: 700;
+    --font-weight-subtitle: 600;
+    --font-weight-body: 400;
+    --font-weight-small: 300;
     --color-black: #000;
     --color-gray: #a3a3a3;
-    --color-light-gray: #ccc;
     --transition-opacity-fast: opacity 0.2s ease;
     --transition-opacity-normal: opacity 0.3s ease;
 }
@@ -15,9 +23,8 @@
     overflow-x: hidden;
     overflow-y: auto;
     scroll-behavior: smooth;
-    /* 隐藏滚动条 */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
 }
 
 /* Webkit browsers (Chrome, Safari) */
@@ -28,10 +35,9 @@
 .project-detail-content {
     width: 100%;
     min-height: 100vh;
-    position: relative; /* 确保关闭按钮正确定位 */
+    position: relative;
 }
 
-/* 项目封面图片 */
 .project-hero-image {
     width: 100%;
     height: 100vh;
@@ -44,15 +50,14 @@
 }
 
 .project-hero-image img {
-    width: 100%;
-    height: 100%;
+    width: 90%;
+    height: 90%;
     object-fit: cover;
     filter: grayscale(0%);
 }
 
-/* 项目详情内容区域 */
 .project-detail-body {
-    padding: 60px 80px;
+    padding: 20px 70px;
     margin: 0 auto;
     background: white;
     transition: opacity 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
@@ -60,24 +65,24 @@
 }
 
 .project-header {
-    margin-bottom: 40px;
-    padding-bottom: 30px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
 }
 
 .project-header .project-title {
     font-family: var(--font-primary);
-    font-weight: bold;
-    font-size: 48px;
-    margin: 0 0 20px 0;
+    font-weight: var(--font-weight-title);
+    font-size: var(--font-size-title);
+    margin: 0 0 8px 0;
     color: var(--color-black);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .project-meta {
     display: flex;
     gap: 30px;
     font-family: var(--font-primary);
-    font-size: 16px;
+    font-size: var(--font-size-small);
     color: var(--color-gray);
 }
 
@@ -85,7 +90,7 @@
     margin-bottom: 60px;
     line-height: 1.8;
     font-family: var(--font-primary);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     color: var(--color-black);
 }
 
@@ -97,38 +102,43 @@
     display: block;
     width: 100%;
     max-width: 100%; 
-    margin: 30px auto;  
+    margin: 60px auto;  
 }
 
 .demo-link {
-    text-align: center!important;
-    font-weight: 300;    
-    font-size: 14px;
-    color: var(--color-gray);             
+    text-align: center;
+    margin: 60px 0 0 0;
+}
+
+.demo-link a,
+.demo-link a:visited {
+    color: var(--color-gray);
+    font-weight: var(--font-weight-small);
+    font-size: var(--font-size-small);
     text-decoration: underline;
     font-family: var(--font-primary);
-    letter-spacing: 1px;     
+    letter-spacing: 0.5px;
 }
 
 .qr-image {
     display: block;
-    margin: 24px auto 8px auto; 
+    margin: 100px auto 0px auto!important;
     width: 160px !important;
     max-width: 40vw;           
 }
 
 .qr-tip {
     text-align: center;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     color: var(--color-gray);
     margin-bottom: 24px;
     font-family: var(--font-primary);
-    font-weight: 300;
+    font-weight: var(--font-weight-small);
     letter-spacing: 0.5px;
 }
 
-/* 项目画廊 */
-.project-gallery h3 {
+/* gallery unter, monmentan brauch noch nicht */
+/* .project-gallery h3 {
     font-family: var(--font-primary);
     font-size: 24px;
     font-weight: 500;
@@ -156,9 +166,8 @@
     color: #999;
     font-family: var(--font-primary);
     font-size: 14px;
-}
+} */
 
-/* 导航箭头 */
 #project-nav-arrows {
     position: fixed;
     top: 50%;
@@ -186,9 +195,9 @@
 }
 
 .nav-arrow:hover {
-    /* background: rgba(0, 0, 0, 0.9); */
     transform: scale(1.1);
 }
+
 
 .nav-arrow.disabled {
     opacity: 0.3;
@@ -196,24 +205,19 @@
     pointer-events: none;
 }
 
-/* 确保箭头在详情页外侧 */
 .nav-prev {
-    left: 30px; /* 距离屏幕左边30px */
+    left: 60px; 
 }
 
 .nav-next {
-    right: 30px; /* 距离屏幕右边30px */
+    right: 60px;
 }
 
-.nav-arrow:hover:not(.disabled) {
-    transform: scale(1.1);
-}
 
-/* 关闭按钮 */
 .project-close-btn {
-    position: fixed; /* 改回fixed定位，与右箭头对齐 */
+    position: fixed; 
     top: 40px;
-    right: 30px; /* 与右箭头相同的right值 */
+    right: 60px; 
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -227,7 +231,6 @@
 }
 
 .project-close-btn:hover {
-    /* background: rgba(0, 0, 0, 0.1); */
     transform: scale(1.1);
 }
 
@@ -248,17 +251,16 @@ body:has(#project-detail-overlay) #navbar {
 /* 展开后的状态（全屏内嵌页） */
 #project-detail-overlay.project-detail-expanded {
     transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
-    left: 200px;
-    right: 200px;
+    left: 100px;
+    right: 100px;
     top: 0;
-    width: calc(100vw - 400px);
+    /* width: calc(100vw - 200px); */
     height: 100vh;
     opacity: 1;
     z-index: 1000;
     overflow-y: auto;
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
     .project-detail-body {
         padding: 40px 20px;
@@ -283,7 +285,7 @@ body:has(#project-detail-overlay) #navbar {
     
     .project-close-btn {
         top: 20px;
-        right: 15px; /* 与右箭头对齐 */
+        right: 15px; 
         width: 40px;
         height: 40px;
     }
@@ -300,7 +302,7 @@ body:has(#project-detail-overlay) #navbar {
 }
 
 /* 项目网格的过渡动画优化 */
-.project-item {
+/* .project-item {
     transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform, opacity;
-}
+} */
