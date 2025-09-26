@@ -1088,12 +1088,12 @@ function showProjectsGrid() {
 
     // 项目基础数据（不含title）
     const projectsData = [
-    { id: 'project-1', categoryPath: 'projects/project-1/typ.txt', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
-    { id: 'project-2', categoryPath: 'projects/project-2/typ.txt', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
-    { id: 'project-3', categoryPath: 'projects/project-3/typ.txt', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
-    { id: 'project-4', categoryPath: 'projects/project-4/typ.txt', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
-    { id: 'project-5', categoryPath: 'projects/project-5/typ.txt', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
-    { id: 'project-6', categoryPath: 'projects/project-6/typ.txt', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
+    { id: 'project-1', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
+    { id: 'project-2', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
+    { id: 'project-3', image: 'projects/project-3/images/cover.png', titlePath: 'projects/project-3/title.txt' },
+    { id: 'project-4', image: 'projects/project-4/images/cover.png', titlePath: 'projects/project-4/title.txt' },
+    { id: 'project-5', image: 'projects/project-5/images/cover.png', titlePath: 'projects/project-5/title.txt' },
+    { id: 'project-6', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
     ];
 
     // 预加载所有图片和title
@@ -1139,7 +1139,6 @@ function showProjectsGrid() {
             projectInfoDiv.className = 'project-info';
             projectInfoDiv.innerHTML = `
                 <h3 class="project-title">${project.title}</h3>
-                <p class="project-category">${project.category}</p>
             `;
             projectItem.appendChild(projectImageDiv);
             projectItem.appendChild(projectInfoDiv);
@@ -1172,13 +1171,15 @@ function showProjectsGrid() {
             });
             // 点击事件
             projectItem.addEventListener('click', function() {
-                Promise.all([
-                    fetch(project.titlePath).then(r => r.text()).then(title => title.trim()).catch(() => project.id),
-                    fetch(project.categoryPath).then(r => r.text()).then(category => category.trim()).catch(() => '')
-                ]).then(([title, category]) => {
-                    showProjectDetail({ ...project, title, category });
+                fetch(project.titlePath)
+                .then(r => r.text())
+                .then(title => {
+                    showProjectDetail({ ...project, title: title.trim() });
+                })
+                .catch(() => {
+                    showProjectDetail({ ...project, title: project.id });
                 });
-            });
+        });
             projectsGrid.appendChild(projectItem);
         });
         detailContent.appendChild(projectsGrid);
@@ -1300,7 +1301,6 @@ function showProjectDetail(project) {
             <div class="project-detail-body" style="opacity:0;">
                 <div class="project-header">
                     <h1 class="project-title">${project.title}</h1>
-                    <div class="project-meta"><span class="project-category">${project.category}</span></div>
                 </div>
                 <div class="project-description loading">Loading…</div>
             </div>
@@ -1393,7 +1393,7 @@ function showProjectDetail(project) {
         if (idx < 0 || idx >= ids.length) return;
         // 获取新项目数据并复用动画
         fetch('projects/' + ids[idx] + '/title.txt').then(r => r.text()).then(title => {
-            fetch('projects/' + ids[idx] + '/typ.txt').then(r => r.text()).then(category => {
+            fetch('projects/' + ids[idx]).then(r => r.text()).then(() => {
                 // 关闭当前详情页，展开下一个（动画复用）
                 detailOverlay.remove();
                 navArrows.remove();
@@ -1405,7 +1405,6 @@ function showProjectDetail(project) {
                         id: ids[idx],
                         image: 'projects/' + ids[idx] + '/images/cover.png',
                         title: title.trim(),
-                        category: category.trim()
                     });
                 }, 50);
             });
@@ -1515,7 +1514,20 @@ function showProjectDetailDirect(project) {
     `;
     
     // 创建详情页内容（先显示 loading）
-    detailOverlay.innerHTML = '<div class="project-detail-content"><div class="project-hero-image"><img src="'+project.image+'" alt="'+project.title+'"></div><div class="project-detail-body"><div class="project-header"><h1 class="project-title">'+project.title+'</h1><div class="project-meta"><span class="project-category">'+project.category+'</span><!-- <span class="project-year">'+project.year+'</span> --></div></div><div class="project-description loading">Loading…</div></div></div>';
+    detailOverlay.innerHTML = `
+        <div class="project-detail-content">
+            <div class="project-hero-image">
+                <img src="${project.image}" alt="${project.title}">
+            </div>
+            <div class="project-detail-body">
+                <div class="project-header">
+                    <h1 class="project-title">${project.title}</h1> -->
+            </div>
+            <div class="project-description loading">Loading…</div>
+        </div>
+    </div>
+    `;    
+
     document.body.appendChild(detailOverlay);
 
     // 动态加载 detail.html 内容
