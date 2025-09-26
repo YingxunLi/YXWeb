@@ -56,6 +56,17 @@
     filter: grayscale(0%);
 }
 
+.project-hero-image iframe {
+    width: 90%;
+    height: 90%;
+    display: block;
+    margin: 0 auto;
+    object-fit: cover;
+    aspect-ratio: 16/9;
+    background: #000;
+    border: none;
+}
+
 .project-detail-body {
     padding: 20px 70px;
     margin: 0 auto;

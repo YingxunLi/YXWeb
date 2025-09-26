@@ -1289,7 +1289,13 @@ function showProjectDetail(project) {
     detailOverlay.innerHTML = `
         <div class="project-detail-content">
             <div class="project-hero-image">
-                <img src="${project.image}" alt="${project.title}">
+                                ${
+                                    project.id === 'project-1' ? `<iframe src="https://www.youtube.com/embed/oI59ZiLBVEc" title="YouTube video player" allowfullscreen style="border:0;"></iframe>` :
+                                    project.id === 'project-2' ? `<iframe src="https://www.youtube.com/embed/OFShII4HHCA" title="YouTube video player" allowfullscreen style="border:0;"></iframe>` :
+                                    project.id === 'project-4' ? `<iframe src="https://www.youtube.com/embed/kM82E3flrgI" title="YouTube video player" allowfullscreen style="border:0;"></iframe>` :
+                                    project.id === 'project-6' ? `<iframe src="https://www.youtube.com/embed/XRp4K4O8NwU" title="YouTube video player" allowfullscreen style="border:0;"></iframe>` :
+                                    `<img src="${project.image}" alt="${project.title}">`
+                                }
             </div>
             <div class="project-detail-body" style="opacity:0;">
                 <div class="project-header">
