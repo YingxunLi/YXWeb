@@ -1612,13 +1612,13 @@ function setAusprobierenBubble(body, projectId) {
     if (!['project-1', 'project-2', 'project-4'].includes(projectId)) return;
     let bubble = null;
     const ausprobierenLinks = {
-        'project-1': 'https://yingxun.net/ausprobieren/project-1',
-        'project-2': 'https://yingxun.net/ausprobieren/project-2',
-        'project-4': 'https://yingxun.net/ausprobieren/project-4'
+        'project-1': 'https://yingxunli.github.io/foodcost2.0/',
+        'project-2': 'https://yingxunli.github.io/WatchFaces_UX/3.Zeitfluss/index.html',
+        'project-4': 'https://yingxunli.github.io/WatchFaces_UX/4.Zeitfluss/index.html'
     };
 
     function showBubble(e) {
-        body.style.cursor = 'none'; // 隐藏系统cursor
+        body.style.cursor = 'none';
         if (!bubble) {
             bubble = document.createElement('div');
             bubble.className = 'ausprobieren-bubble';
@@ -1648,7 +1648,7 @@ function setAusprobierenBubble(body, projectId) {
     }
 
     function hideBubble() {
-        body.style.cursor = ''; // 恢复系统cursor
+        body.style.cursor = '';
         if (bubble) {
             bubble.remove();
             bubble = null;
@@ -1658,10 +1658,8 @@ function setAusprobierenBubble(body, projectId) {
     body.addEventListener('mouseenter', showBubble);
     body.addEventListener('mousemove', moveBubble);
     body.addEventListener('mouseleave', hideBubble);
-    body.addEventListener('click', function(e) {
-        if (e.target === body || e.target.closest('.project-header')) {
-            window.open(ausprobierenLinks[projectId], '_blank');
-        }
+    body.addEventListener('click', function() {
+        window.open(ausprobierenLinks[projectId], '_blank');
     });
 }
 
