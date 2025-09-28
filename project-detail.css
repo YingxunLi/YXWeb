@@ -1,3 +1,22 @@
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 14px;
+    row-gap: 6px;
+    margin: 0 !important;
+    width: 100%;
+    padding: 0 !important;
+}
+
+.image-grid img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 0px !important;
+    margin-bottom: 14px !important;
+}
+
+
 :root {
     --font-primary: 'Nunito', Arial, sans-serif;
     --font-size-title: 40px;
@@ -90,11 +109,10 @@
 }
 
 .project-meta {
-    margin: 0;
     padding: 0;
     color: var(--color-gray);
     font-size: var(--font-size-small);
-    line-height: 1.5;
+    line-height: 1.8;
 }
 
 .project-description {
@@ -113,7 +131,7 @@
     display: block;
     width: 100%;
     max-width: 100%; 
-    margin: 60px auto;  
+    margin: 20px auto;  
 }
 
 .demo-link {
