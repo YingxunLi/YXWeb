@@ -1357,6 +1357,8 @@ function showProjectDetail(project) {
         // 内容区淡入
         const body = detailOverlay.querySelector('.project-detail-body');
         if (body) setTimeout(() => { body.style.opacity = '1'; }, 400);
+        // 新增：绑定气泡提示
+        setAusprobierenBubble(body, project.id);
     }, 40);
 
     // 关闭动画
@@ -1595,10 +1597,72 @@ function showProjectDetailDirect(project) {
         detailOverlay.style.transform = 'scale(1)';
         navArrows.style.opacity = '1';
         closeBtn.style.opacity = '1';
+        // 新增：绑定气泡提示
+        const body = detailOverlay.querySelector('.project-detail-body');
+        setAusprobierenBubble(body, project.id);
     }, 50);
     
     // 添加事件监听器
     addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex);
+}
+
+// 新增：气泡提示函数（非SVG，DOM绘制）
+function setAusprobierenBubble(body, projectId) {
+    if (!body) return;
+    if (!['project-1', 'project-2', 'project-4'].includes(projectId)) return;
+    let bubble = null;
+    const ausprobierenLinks = {
+        'project-1': 'https://yingxun.net/ausprobieren/project-1',
+        'project-2': 'https://yingxun.net/ausprobieren/project-2',
+        'project-4': 'https://yingxun.net/ausprobieren/project-4'
+    };
+
+    function showBubble(e) {
+        body.style.cursor = 'none'; // 隐藏系统cursor
+        if (!bubble) {
+            bubble = document.createElement('div');
+            bubble.className = 'ausprobieren-bubble';
+            bubble.textContent = 'ausprobieren';
+            bubble.style.position = 'fixed';
+            bubble.style.pointerEvents = 'none';
+            bubble.style.zIndex = '2000';
+            bubble.style.background = '#222';
+            bubble.style.color = '#fff';
+            bubble.style.fontSize = '18px';
+            bubble.style.fontFamily = 'Arial, sans-serif';
+            bubble.style.padding = '8px 22px';
+            bubble.style.borderRadius = '22px';
+            bubble.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)';
+            bubble.style.transition = 'opacity 0.2s';
+            bubble.style.opacity = '0.95';
+            document.body.appendChild(bubble);
+        }
+        moveBubble(e);
+    }
+
+    function moveBubble(e) {
+        if (bubble) {
+            bubble.style.left = (e.clientX + 18) + 'px';
+            bubble.style.top = (e.clientY - 32) + 'px';
+        }
+    }
+
+    function hideBubble() {
+        body.style.cursor = ''; // 恢复系统cursor
+        if (bubble) {
+            bubble.remove();
+            bubble = null;
+        }
+    }
+
+    body.addEventListener('mouseenter', showBubble);
+    body.addEventListener('mousemove', moveBubble);
+    body.addEventListener('mouseleave', hideBubble);
+    body.addEventListener('click', function(e) {
+        if (e.target === body || e.target.closest('.project-header')) {
+            window.open(ausprobierenLinks[projectId], '_blank');
+        }
+    });
 }
 
 // 统一设置详情浮层宽度和边距的函数

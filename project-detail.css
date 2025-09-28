@@ -310,6 +310,21 @@ body:has(#project-detail-overlay) #navbar {
     overflow-y: auto;
 }
 
+.ausprobieren-bubble {
+    position: fixed;
+    background: #222;
+    color: #fff;
+    font-size: 18px;
+    font-family: Arial, sans-serif;
+    padding: 8px 22px;
+    border-radius: 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    opacity: 0.95;
+    pointer-events: none;
+    z-index: 2000;
+    transition: opacity 0.2s;
+}
+
 @media (max-width: 768px) {
     .project-detail-body {
         padding: 40px 20px;
@@ -343,7 +358,7 @@ body:has(#project-detail-overlay) #navbar {
         grid-template-columns: 1fr;
     }
     
-    #project-detail-overlay.project-detail-expanded {
+    #project-detail-overlay.project.detail-expanded {
         left: 60px;
         right: 60px;
         width: calc(100vw - 120px);
