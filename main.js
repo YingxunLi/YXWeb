@@ -1,5 +1,21 @@
 // ============ 全局变量区域 ============
 // === 常量定义 ===
+// 建议放在文件顶部
+function getCursorSvg(text) {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = '14px Arial';
+    const textWidth = ctx.measureText(text).width;
+    const padding = 32;
+    const minWidth = 80;
+    const width = Math.max(minWidth, Math.ceil(textWidth + padding));
+    const height = 30;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+        <rect width="${width}" height="${height}" fill="black" rx="15"/>
+        <text x="${width/2}" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12">${text}</text>
+    </svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 const ANIMATION_CONSTANTS = {
     SCALE_THRESHOLD: 0.01,
     POSITION_THRESHOLD: 0.1,
@@ -1608,9 +1624,9 @@ function showProjectDetailDirect(project) {
 
 // 新增：气泡提示函数（非SVG，DOM绘制）
 function setAusprobierenBubble(body, projectId) {
-    if (!body) return;
+    const detailOverlay = document.getElementById('project-detail-overlay');
+    if (!detailOverlay) return;
     if (!['project-1', 'project-2', 'project-4'].includes(projectId)) return;
-    let bubble = null;
     const ausprobierenLinks = {
         'project-1': 'https://yingxunli.github.io/foodcost2.0/',
         'project-2': 'https://yingxunli.github.io/WatchFaces_UX/3.Zeitfluss/index.html',
@@ -1618,47 +1634,17 @@ function setAusprobierenBubble(body, projectId) {
     };
 
     function showBubble(e) {
-        body.style.cursor = 'none';
-        if (!bubble) {
-            bubble = document.createElement('div');
-            bubble.className = 'ausprobieren-bubble';
-            bubble.textContent = 'ausprobieren';
-            bubble.style.position = 'fixed';
-            bubble.style.pointerEvents = 'none';
-            bubble.style.zIndex = '2000';
-            bubble.style.background = '#222';
-            bubble.style.color = '#fff';
-            bubble.style.fontSize = '18px';
-            bubble.style.fontFamily = 'Arial, sans-serif';
-            bubble.style.padding = '8px 22px';
-            bubble.style.borderRadius = '22px';
-            bubble.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)';
-            bubble.style.transition = 'opacity 0.2s';
-            bubble.style.opacity = '0.95';
-            document.body.appendChild(bubble);
-        }
-        moveBubble(e);
-    }
-
-    function moveBubble(e) {
-        if (bubble) {
-            bubble.style.left = (e.clientX + 18) + 'px';
-            bubble.style.top = (e.clientY - 32) + 'px';
-        }
+        detailOverlay.style.cursor = `url('${getCursorSvg('ausprobieren')}'), pointer`;
     }
 
     function hideBubble() {
-        body.style.cursor = '';
-        if (bubble) {
-            bubble.remove();
-            bubble = null;
-        }
+        detailOverlay.style.cursor = '';
+
     }
 
-    body.addEventListener('mouseenter', showBubble);
-    body.addEventListener('mousemove', moveBubble);
-    body.addEventListener('mouseleave', hideBubble);
-    body.addEventListener('click', function() {
+    detailOverlay.addEventListener('mouseenter', showBubble);
+    detailOverlay.addEventListener('mouseleave', hideBubble);
+    detailOverlay.addEventListener('click', function() {
         window.open(ausprobierenLinks[projectId], '_blank');
     });
 }
