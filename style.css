@@ -279,3 +279,16 @@ canvas {
     color: #000;
     font-size: 14px;
 }
+
+/* 黑色进度条样式，覆盖在左侧灰色线上 */
+.timeline-progress-bar {
+    position: absolute;
+    left: 45%;
+    transform: translateX(-50%);
+    width: 2px;
+    background-color: #000;
+    height: 0px;
+    z-index: 102; /* 比灰色线高一层 */
+    transition: height 0.3s ease;
+    pointer-events: none;
+}

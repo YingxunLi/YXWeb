@@ -484,10 +484,17 @@ function createTimeline() {
         top: centerY + (originalTops[idx] - originalTops[0])
     }));
 
-    // 添加这几行：计算所需的容器高度
-    const maxTop = Math.max(...timelineData.map(item => item.top));
-    const containerHeight = maxTop; // 增加300px余量
-    timelineContainer.style.minHeight = `${containerHeight}px`;
+    // 找到09.2018的top值
+    const idx2018 = rawTimelineData.findIndex(item => item.time === '09.2018');
+    const top2018 = timelineData[idx2018].top;
+
+    // 创建黑色进度条元素
+    const progressBar = document.createElement('div');
+    progressBar.className = 'timeline-progress-bar';
+    progressBar.style.top = `${top2018}px`;
+    progressBar.style.height = '0px';
+    progressBar.id = 'timeline-progress-bar';
+    timelineContainer.appendChild(progressBar);
 
     // 创建标题
     const leftTitle = document.createElement('div');
@@ -853,6 +860,15 @@ function updateTimelineDisplay() {
     const lineHeight = maxVisibleHeight + 40; 
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
+    
+    // 黑色进度条逻辑
+    const progressBar = timelineContainer.querySelector('.timeline-progress-bar');
+    if (progressBar) {
+        // 最大高度固定为300px
+        const maxBarHeight = 300;
+        const barHeight = Math.min(maxBarHeight, timelineScrollProgress * maxBarHeight);
+        progressBar.style.height = `${barHeight}px`;
+    }
 }
 
 // ============ 鼠标事件处理函数 ============
@@ -1664,6 +1680,7 @@ function setProjectDetailOverlayLayout(detailOverlay) {
     detailOverlay.style.right = sideMargin + 'px';
     detailOverlay.style.top = '0';
     detailOverlay.style.height = '100vh';
+
     detailOverlay.style.position = 'fixed';
     detailOverlay.style.background = 'white';
     detailOverlay.style.zIndex = '1000';
