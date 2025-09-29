@@ -459,24 +459,34 @@ function createTimeline() {
     timelineContainer.appendChild(rightLine);
     
     // 定义时间轴数据 - 左右交替显示
-    const timelineData = [
-        { time: '09.2018', side: 'left', top: 80, title: 'Ausbildung' },
-        { time: '03.2022', side: 'right', top: 190, title: 'Berufserfahrung' },
-        { time: '06.2022', side: 'left', top: 380 },
-        { time: '05.2022', side: 'right', top: 340 },
-        { time: '07.2022', side: 'right', top: 420 },
-        { time: '09.2022', side: 'right', top: 570 },
-        { time: '08.2024', side: 'right', top: 650 },
-        { time: '10.2024', side: 'left', top: 810 },
-        { time: '11.2024', side: 'right', top: 850 },
-        { time: '12.2024', side: 'right', top: 890 },
-        { time: '06.2025', side: 'right', top: 1040 },
-        { time: '03.2028', side: 'left', top: 1110 }
+    const rawTimelineData = [
+        { time: '09.2018', side: 'left', title: 'Ausbildung' },
+        { time: '03.2022', side: 'right', title: 'Berufserfahrung' },
+        { time: '06.2022', side: 'left' },
+        { time: '05.2022', side: 'right' },
+        { time: '07.2022', side: 'right' },
+        { time: '09.2022', side: 'right' },
+        { time: '08.2024', side: 'right' },
+        { time: '10.2024', side: 'left' },
+        { time: '11.2024', side: 'right' },
+        { time: '12.2024', side: 'right' },
+        { time: '06.2025', side: 'right' },
+        { time: '03.2028', side: 'left' }
     ];
-    
+
+    // 计算初始居中top
+    const centerY = window.innerHeight * 0.3 + 30; // 15是为了让第一个点稍微向上偏移一点
+    // 原始top偏移量（保持原有间距，首个为0，后续为原始top差值）
+    const originalTops = [0, 110, 300, 260, 340, 490, 570, 730, 770, 810, 960, 1100];
+    // 构造新的timelineData，首个top为centerY，其余依次递增
+    const timelineData = rawTimelineData.map((item, idx) => ({
+        ...item,
+        top: centerY + (originalTops[idx] - originalTops[0])
+    }));
+
     // 添加这几行：计算所需的容器高度
     const maxTop = Math.max(...timelineData.map(item => item.top));
-    const containerHeight = maxTop + 300; // 增加300px余量
+    const containerHeight = maxTop; // 增加300px余量
     timelineContainer.style.minHeight = `${containerHeight}px`;
 
     // 创建标题
@@ -739,7 +749,7 @@ function updateTimelineDisplay() {
     const currentItemProgress = visibleItemsFloat - visibleItems;
     
     // 计算时间轴线的高度
-    let maxVisibleHeight = 40; // 最小高度
+    let maxVisibleHeight = 10; // 最小高度
     
     // 更新每个时间轴项目的显示状态
     allLabels.forEach((label, index) => {
@@ -839,8 +849,8 @@ function updateTimelineDisplay() {
         }
     });
     
-    // 应用计算出的高度到左右时间轴线 - 修改这里
-    const lineHeight = maxVisibleHeight - 40; // 减去时间轴线的起始位置(40px)
+    // timeline anfang lange
+    const lineHeight = maxVisibleHeight + 40; 
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
 }
@@ -982,9 +992,6 @@ function addMouseEvents() {
         }
     });
 }
-
-// ============ 导航栏点击事件处理函数 ============
-// 为详情页模式下的导航栏添加点击切换功能
 // ============ 导航栏点击事件处理函数 ============
 // 为详情页模式下的导航栏添加点击切换功能
 function addNavbarEvents() {
@@ -1630,7 +1637,7 @@ function setAusprobierenBubble(body, projectId) {
     const ausprobierenLinks = {
         'project-1': 'https://yingxunli.github.io/foodcost2.0/',
         'project-2': 'https://yingxunli.github.io/WatchFaces_UX/3.Zeitfluss/index.html',
-        'project-4': 'https://yingxunli.github.io/WatchFaces_UX/4.Zeitfluss/index.html'
+        'project-4': 'https://www.figma.com/proto/9YRQgwGVi8L8EWbic5hDy3/KisWake?node-id=105-176&p=f&t=Axgfse2ybSu2dRB9-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1'
     };
 
     function showBubble(e) {

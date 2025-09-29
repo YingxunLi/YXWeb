@@ -141,7 +141,7 @@ canvas {
 /* 左右两条时间轴线 */
 .timeline-line {
     position: absolute;
-    top: 40px;
+    top: 34vh; /* 居中起点 */
     width: 2px;
     background-color: var(--color-light-gray);
     height: 0px;
@@ -162,7 +162,7 @@ canvas {
 /* 时间轴标题 */
 .timeline-title {
     position: absolute;
-    top: 0;
+    top: 30vh; /* 居中起点，初始位置由JS动态设置 */
     font-family: var(--font-primary);
     font-size: 16px;
     color: var(--color-gray);
@@ -188,15 +188,9 @@ canvas {
 .timeline-label {
     position: absolute;
     left: 50%;
+    /* 居中显示，top由JS动态设置 */
     transform: translateX(-50%);
-    font-size: 14px;
-    font-family: var(--font-primary);
-    color: var(--color-black);
-    white-space: nowrap;
-    opacity: 0;
-    transition: var(--transition-opacity-normal);
-    text-align: center;
-    z-index: 104;
+    /* ...existing code... */
 }
 
 /* 时间点 - 分布在左右两侧 */
@@ -223,6 +217,7 @@ canvas {
 
 .timeline-content {
     position: absolute;
+    /* top由JS动态设置 */
     width: 480px;
     text-align: right;
     transition: opacity 0.3s ease;
