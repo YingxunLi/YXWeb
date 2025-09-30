@@ -453,11 +453,11 @@ function createTimeline() {
     const leftLine = document.createElement('div');
     leftLine.className = 'timeline-line left-line';
     timelineContainer.appendChild(leftLine);
-    
+
     const rightLine = document.createElement('div');
     rightLine.className = 'timeline-line right-line';
     timelineContainer.appendChild(rightLine);
-    
+
     // 定义时间轴数据 - 左右交替显示
     const rawTimelineData = [
         { time: '09.2018', side: 'left', title: 'Ausbildung' },
@@ -488,13 +488,72 @@ function createTimeline() {
     const idx2018 = rawTimelineData.findIndex(item => item.time === '09.2018');
     const top2018 = timelineData[idx2018].top;
 
-    // 创建黑色进度条元素
+    // 找到03.2022的top值
+    const idx2022 = rawTimelineData.findIndex(item => item.time === '03.2022');
+    const top2022 = timelineData[idx2022].top;
+
+    // 找到07.2022的top值
+    const idx072022 = rawTimelineData.findIndex(item => item.time === '07.2022');
+    const top072022 = timelineData[idx072022].top;
+
+    // 找到08.2024的top值
+    const idx082024 = rawTimelineData.findIndex(item => item.time === '08.2024');
+    const top082024 = timelineData[idx082024].top;
+
+    // 创建左侧黑色进度条元素
     const progressBar = document.createElement('div');
     progressBar.className = 'timeline-progress-bar';
     progressBar.style.top = `${top2018}px`;
     progressBar.style.height = '0px';
     progressBar.id = 'timeline-progress-bar';
     timelineContainer.appendChild(progressBar);
+
+    // 新增：右侧黑色进度条元素
+    const rightProgressBar = document.createElement('div');
+    rightProgressBar.className = 'timeline-progress-bar right-bar';
+    rightProgressBar.style.top = `${top2022}px`;
+    rightProgressBar.style.height = '0px';
+    rightProgressBar.id = 'timeline-progress-bar-right';
+    timelineContainer.appendChild(rightProgressBar);
+
+    // 新增：右侧黑色进度条（07.2022开始，150长）
+    const rightProgressBar072022 = document.createElement('div');
+    rightProgressBar072022.className = 'timeline-progress-bar right-bar right-bar-072022';
+    rightProgressBar072022.style.top = `${top072022}px`;
+    rightProgressBar072022.style.height = '0px';
+    rightProgressBar072022.id = 'timeline-progress-bar-right-072022';
+    timelineContainer.appendChild(rightProgressBar072022);
+
+    // 新增：右侧黑色进度条（08.2024开始，150长）
+    const rightProgressBar082024 = document.createElement('div');
+    rightProgressBar082024.className = 'timeline-progress-bar right-bar right-bar-082024';
+    rightProgressBar082024.style.top = `${top082024}px`;
+    rightProgressBar082024.style.height = '0px';
+    rightProgressBar082024.id = 'timeline-progress-bar-right-082024';
+    timelineContainer.appendChild(rightProgressBar082024);
+
+    // --- 关键：设置右侧进度条的水平位置 ---
+    // 等待 rightLine 渲染后获取其 left 坐标
+    setTimeout(() => {
+        const rightLineElem = timelineContainer.querySelector('.right-line');
+        if (rightLineElem) {
+            // rightLine 的中心点
+            const rightLineCenter = rightLineElem.offsetLeft + rightLineElem.offsetWidth / 2;
+            // 进度条宽度（如CSS设置，默认4px）
+            const progressBarWidth = rightProgressBar.offsetWidth || 4;
+            rightProgressBar.style.left = `${rightLineCenter - progressBarWidth / 2}px`;
+        }
+    }, 0);
+
+    // --- 设置右侧进度条的水平位置 ---
+    setTimeout(() => {
+        const rightLineElem = timelineContainer.querySelector('.right-line');
+        if (rightLineElem) {
+            const rightLineCenter = rightLineElem.offsetLeft + rightLineElem.offsetWidth / 2;
+            const progressBarWidth = rightProgressBar072022.offsetWidth || 4;
+            rightProgressBar072022.style.left = `${rightLineCenter - progressBarWidth / 2}px`;
+        }
+    }, 0);
 
     // 创建标题
     const leftTitle = document.createElement('div');
@@ -740,7 +799,7 @@ function handlePageScroll() {
 // 更新时间轴显示
 function updateTimelineDisplay() {
     if (!timelineContainer) return;
-    
+
     const leftLine = timelineContainer.querySelector('.left-line');
     const rightLine = timelineContainer.querySelector('.right-line');
     const allLabels = timelineContainer.querySelectorAll('.timeline-label');
@@ -762,6 +821,20 @@ function updateTimelineDisplay() {
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
         const content = allContents[index]; // 可能为null
+
+        // 判断内容的第一行是否开始出现
+        let firstLineVisible = false;
+        if (content) {
+            const firstLine = content.querySelector('.content-line[data-line="0"]');
+            if (firstLine) {
+                firstLineVisible = parseFloat(firstLine.style.opacity || '0') > 0;
+            }
+        }
+
+        // 控制时间点显示：内容第一行开始出现时就显示
+        if (point) {
+            point.style.opacity = firstLineVisible ? '1' : '0';
+        }
         
         if (index < visibleItems) {
             // 已完全显示的项目
@@ -856,18 +929,132 @@ function updateTimelineDisplay() {
         }
     });
     
+    // 找到09.2018和03.2022的索引
+    const idx2018 = Array.from(allLabels).findIndex(label => label.textContent === '09.2018');
+    const idx2022 = Array.from(allLabels).findIndex(label => label.textContent === '03.2022');
+
+    // 计算左侧进度条进度（与09.2018内容同步）
+    let leftProgress = 0;
+    if (visibleItems > idx2018) {
+        leftProgress = 1;
+    } else if (visibleItems === idx2018) {
+        const content = timelineContainer.querySelector(`#timeline-content-${idx2018}`);
+        if (content) {
+            const lines = content.querySelectorAll('.content-line');
+            let linesVisible = 0;
+            lines.forEach(line => {
+                const op = line.style.opacity;
+                if (parseFloat(op || '0') >= 1) linesVisible++;
+            });
+            leftProgress = lines.length ? linesVisible / lines.length : currentItemProgress;
+        } else {
+            leftProgress = currentItemProgress;
+        }
+    } else {
+        leftProgress = 0;
+    }
+
+    // 计算右侧进度条进度（与03.2022内容同步）
+    let rightProgress = 0;
+    if (visibleItems > idx2022) {
+        rightProgress = 1;
+    } else if (visibleItems === idx2022) {
+        const content = timelineContainer.querySelector(`#timeline-content-${idx2022}`);
+        if (content) {
+            const lines = content.querySelectorAll('.content-line');
+            let linesVisible = 0;
+            lines.forEach(line => {
+                const op = line.style.opacity;
+                if (parseFloat(op || '0') >= 1) linesVisible++;
+            });
+            rightProgress = lines.length ? linesVisible / lines.length : currentItemProgress;
+        } else {
+            rightProgress = currentItemProgress;
+        }
+    } else {
+        rightProgress = 0;
+    }
+
+    // 找到07.2022的索引
+    const idx072022 = Array.from(allLabels).findIndex(label => label.textContent === '07.2022');
+
+    // 计算右侧进度条进度（与07.2022内容同步）
+    let rightProgress072022 = 0;
+    if (visibleItems > idx072022) {
+        rightProgress072022 = 1;
+    } else if (visibleItems === idx072022) {
+        const content = timelineContainer.querySelector(`#timeline-content-${idx072022}`);
+        if (content) {
+            const lines = content.querySelectorAll('.content-line');
+            let linesVisible = 0;
+            lines.forEach(line => {
+                const op = line.style.opacity;
+                if (parseFloat(op || '0') >= 1) linesVisible++;
+            });
+            rightProgress072022 = lines.length ? linesVisible / lines.length : currentItemProgress;
+        } else {
+            rightProgress072022 = currentItemProgress;
+        }
+    } else {
+        rightProgress072022 = 0;
+    }
+
     // timeline anfang lange
-    const lineHeight = maxVisibleHeight + 40; 
+    const lineHeight = maxVisibleHeight + 40;
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
-    
-    // 黑色进度条逻辑
+
+    // 左侧黑色进度条
     const progressBar = timelineContainer.querySelector('.timeline-progress-bar');
     if (progressBar) {
-        // 最大高度固定为300px
         const maxBarHeight = 300;
-        const barHeight = Math.min(maxBarHeight, timelineScrollProgress * maxBarHeight);
+        const barHeight = Math.min(maxBarHeight, leftProgress * maxBarHeight);
         progressBar.style.height = `${barHeight}px`;
+    }
+
+    // 右侧黑色进度条
+    const rightProgressBar = timelineContainer.querySelector('.timeline-progress-bar.right-bar');
+    if (rightProgressBar) {
+        const maxRightBarHeight = 150;
+        const barHeight = Math.min(maxRightBarHeight, rightProgress * maxRightBarHeight);
+        rightProgressBar.style.height = `${barHeight}px`;
+    }
+
+    // 新增：右侧黑色进度条（07.2022）
+    const rightProgressBar072022 = timelineContainer.querySelector('.timeline-progress-bar.right-bar.right-bar-072022');
+    if (rightProgressBar072022) {
+        const maxBarHeight = 150;
+        const barHeight = Math.min(maxBarHeight, rightProgress072022 * maxBarHeight);
+        rightProgressBar072022.style.height = `${barHeight}px`;
+    }
+
+    // 新增：右侧黑色进度条（08.2024）
+    const rightProgressBar082024 = timelineContainer.querySelector('.timeline-progress-bar.right-bar.right-bar-082024');
+    if (rightProgressBar082024) {
+        const idx082024 = Array.from(allLabels).findIndex(label => label.textContent === '08.2024');
+        let rightProgress082024 = 0;
+        if (visibleItems > idx082024) {
+            rightProgress082024 = 1;
+        } else if (visibleItems === idx082024) {
+            const content = timelineContainer.querySelector(`#timeline-content-${idx082024}`);
+            if (content) {
+                const lines = content.querySelectorAll('.content-line');
+                let linesVisible = 0;
+                lines.forEach(line => {
+                    const op = line.style.opacity;
+                    if (parseFloat(op || '0') >= 1) linesVisible++;
+                });
+                rightProgress082024 = lines.length ? linesVisible / lines.length : currentItemProgress;
+            } else {
+                rightProgress082024 = currentItemProgress;
+            }
+        } else {
+            rightProgress082024 = 0;
+        }
+
+        const maxBarHeight = 150;
+        const barHeight = Math.min(maxBarHeight, rightProgress082024 * maxBarHeight);
+        rightProgressBar082024.style.height = `${barHeight}px`;
     }
 }
 
