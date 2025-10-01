@@ -1,6 +1,6 @@
-// ============ 全局变量区域 ============
-// === 常量定义 ===
-// 建议放在文件顶部
+// ============ base ============
+
+//cursor
 function getCursorSvg(text) {
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = '14px Arial';
@@ -39,9 +39,7 @@ const TIMEOUT_DELAYS = {
     TRIGGER_RESET: 500
 };
 
-// === 工具函数 ===
 const utils = {
-    // 缓存DOM元素
     domCache: {},
     getElement(id) {
         if (!this.domCache[id]) {
@@ -50,7 +48,6 @@ const utils = {
         return this.domCache[id];
     },
     
-    // 动画插值计算
     smoothTransition(current, target, factor = ANIMATION_CONSTANTS.INTERPOLATION_FACTOR) {
         const diff = target - current;
         if (Math.abs(diff) > ANIMATION_CONSTANTS.ROTATION_THRESHOLD) {
@@ -59,71 +56,62 @@ const utils = {
         return target;
     },
     
-    // 检查动画是否完成
     isAnimationComplete(diffs, threshold = ANIMATION_CONSTANTS.ROTATION_THRESHOLD) {
         return diffs.every(diff => Math.abs(diff) <= threshold);
     },
     
-    // 计算总差值
     calculateTotalDiff(...diffs) {
         return diffs.reduce((sum, diff) => sum + Math.abs(diff), 0);
     }
 };
 
-// Three.js 核心对象
+// Three.js logo
 let scene, camera, renderer, controls;
-let logo; // 3D logo模型对象
+let logo; 
 
-// 鼠标交互状态控制
-let isHovering = false; // 鼠标是否在canvas区域内
-let isHoveringLogo = false; // 鼠标是否精确悬停在logo上（通过射线检测）
+let isHovering = false; // canvas hover - label
+let isHoveringLogo = false; // logo hover - drehen
+let mouseX = 0;
+let lastMouseX = 0; 
 
-// 鼠标位置和移动追踪
-let mouseX = 0; // 当前鼠标X坐标（标准化为-1到1）
-let lastMouseX = 0; // 上一帧的鼠标X坐标，用于计算移动方向
+let targetRotationX = 0;
+let targetRotationY = 0;
+let targetRotationZ = 0;
+let currentRotationX = 0;
+let currentRotationY = 0;
+let currentRotationZ = 0;
 
-// 旋转控制变量
-let targetRotationX = 0; // X轴目标旋转角度（上下翻转）
-let targetRotationY = 0; // Y轴目标旋转角度（翻页效果）
-let targetRotationZ = 0; // Z轴目标旋转角度（垂直屏幕旋转）
-let currentRotationX = 0; // X轴当前旋转角度
-let currentRotationY = 0; // Y轴当前旋转角度
-let currentRotationZ = 0; // Z轴当前旋转角度
+let isRotating = false; 
+let interactionCount = 0; 
+let hasTriggered = false;
+let currentState = 1; 
+let targetState = 1; 
+let stateProgress = 1; 
 
-// 交互状态管理
-let isRotating = false; // 是否正在执行旋转动画
-let interactionCount = 0; // 交互次数计数器（用于控制Y轴/Z轴交替）
-let hasTriggered = false; // 防止重复触发标志
-let currentState = 1; // 当前状态：1=Yingxun, 2=Projekte, 3=Kontakt
-let targetState = 1; // 目标状态（用于渐变过渡）
-let stateProgress = 1; // 状态过渡进度（0到1）
+// subpage detail mode
+let isDetailMode = false; 
+let isTransitioningToDetail = false; 
+let logoTargetScale = 1; 
+let logoCurrentScale = 1;
+let logoTargetPosition = { x: 0, y: 0, z: 0 }; 
+let logoCurrentPosition = { x: 0, y: 0, z: 0 }; 
 
-// 详情页状态管理
-let isDetailMode = false; // 是否处于详情页模式
-let isTransitioningToDetail = false; // 是否正在过渡到详情页
-let logoTargetScale = 1; // logo目标缩放比例
-let logoCurrentScale = 1; // logo当前缩放比例
-let logoTargetPosition = { x: 0, y: 0, z: 0 }; // logo目标位置
-let logoCurrentPosition = { x: 0, y: 0, z: 0 }; // logo当前位置
+// timeline
+let timelineScrollProgress = 0; 
+let timelineContainer = null;
+let timelineMaxHeight = 1200;
+let hasScrollControl = false;
 
-// 时间轴相关变量
-let timelineScrollProgress = 0; // 时间轴滚动进度 (0-1)
-let timelineContainer = null; // 时间轴容器元素
-let timelineMaxHeight = 1200; // 时间轴最大高度，用于计算滚动范围
-let hasScrollControl = false; // 是否已接管页面滚动控制
+// mouse - raycaster
+let raycaster = new THREE.Raycaster(); 
+let mouse = new THREE.Vector2(); 
 
-// 射线检测相关对象
-let raycaster = new THREE.Raycaster(); // 用于精确检测鼠标与3D物体的交互
-let mouse = new THREE.Vector2(); // 标准化的鼠标坐标
-
-// ============ 初始化函数 ============
-// 设置Three.js场景、相机、渲染器等核心组件
+// scene,camera,renderer,controls init
 function init() {
-    // === 场景设置 ===
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff); // 白色背景
 
-    // === 相机设置（正交相机，实现等角投影效果）===
+    // camera
     const aspect = window.innerWidth / window.innerHeight;
     const frustumSize = 100;
     camera = new THREE.OrthographicCamera(
@@ -136,69 +124,56 @@ function init() {
     );
     camera.position.set(0, 0, 50);
 
-    // === 渲染器设置 ===
+    // renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = false; // 不使用阴影
+    renderer.shadowMap.enabled = false; // keine Schatten
     utils.getElement('logo-container').appendChild(renderer.domElement);
 
-    // === 控制器设置（允许用户手动旋转查看模型）===
+    // controls,selbst kontrollieren
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.screenSpacePanning = false;
 
-    // === 事件监听器设置 ===
     addMouseEvents();
 
-    // === 3D模型加载 ===
     loadSTL();
 
-    // === 启动渲染循环 ===
     animate();
 
-    // === UI更新 ===
     utils.getElement('loading').style.display = 'none';
     
-    // === 初始化导航栏 ===
+    // menu
     updateNavbar();
-    
-    // === 添加导航栏点击事件 ===
+    // menu klick events
     addNavbarEvents();
 }
 
-// ============ STL文件加载函数 ============
-// 负责加载和处理3D模型文件
+// ============ logo loading ============
 function loadSTL() {
     const loader = new THREE.STLLoader();
     
-    // 加载STL文件（请将'logo.stl'替换为您的文件路径）
     loader.load('logo.stl', function (geometry) {
-        // === 模型几何处理 ===
         geometry.computeBoundingBox();
         const box = geometry.boundingBox;
         const center = box.getCenter(new THREE.Vector3());
         
-        // 将几何体居中到原点
         geometry.translate(-center.x, -center.y, -center.z);
 
-        // === 材质创建 ===
         const material = new THREE.MeshBasicMaterial({ 
-            color: 0x000000, // 黑色
+            color: 0x000000, 
             side: THREE.DoubleSide
         });
 
-        // === 3D网格创建 ===
         logo = new THREE.Mesh(geometry, material);
         scene.add(logo);
 
-        // === 相机视野自适应调整 ===
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         
-        // 根据模型大小调整正交相机的视野范围
         const aspect = window.innerWidth / window.innerHeight;
-        const frustumSize = maxDim * 4.5; // 留一些边距，logo大小
+        const frustumSize = maxDim * 4.5; // logo groß anpassen, abstand vergrößern
         
         camera.left = frustumSize * aspect / -2;
         camera.right = frustumSize * aspect / 2;
@@ -206,7 +181,6 @@ function loadSTL() {
         camera.bottom = frustumSize / -2;
         camera.updateProjectionMatrix();
 
-        // === 相机位置和目标设置 ===
         camera.position.set(0, 0, 50);
         camera.lookAt(0, 0, 0);
         
@@ -214,32 +188,26 @@ function loadSTL() {
         controls.update();
 
     }, function (progress) {
-        // 加载进度回调
-        console.log('加载进度: ' + (progress.loaded / progress.total * 100) + '%');
+        console.log('speed: ' + (progress.loaded / progress.total * 100) + '%');
     }, function (error) {
-        // 加载失败回调
-        console.error('STL文件加载失败:', error);
-        utils.getElement('loading').textContent = '文件加载失败，请检查STL文件路径';
+        console.error('fail:', error);
+        utils.getElement('loading').textContent = 'Failed to load logo model.';
     });
 }
 
-// ============ 渲染循环函数 ============
-// 每帧调用，处理动画更新和渲染
+// ============ logo animation ============
 function animate() {
     requestAnimationFrame(animate);
     
     if (!isDetailMode && !isTransitioningToDetail) {
         controls.update();
     }    
-    // === 处理logo旋转动画效果 ===
     if (logo) {
-        // === 详情页模式的缩放和位置动画 ===
         if (isTransitioningToDetail || isDetailMode) {
-            // 处理缩放动画
+            // Groß/Klein und Position Animations
             const scaleDiff = logoTargetScale - logoCurrentScale;
             logoCurrentScale = utils.smoothTransition(logoCurrentScale, logoTargetScale, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
             
-            // 处理位置动画
             const positionDiffs = [
                 logoTargetPosition.x - logoCurrentPosition.x,
                 logoTargetPosition.y - logoCurrentPosition.y,
@@ -250,16 +218,15 @@ function animate() {
             logoCurrentPosition.y = utils.smoothTransition(logoCurrentPosition.y, logoTargetPosition.y, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
             logoCurrentPosition.z = utils.smoothTransition(logoCurrentPosition.z, logoTargetPosition.z, ANIMATION_CONSTANTS.INTERPOLATION_FACTOR);
             
-            // 应用缩放和位置到logo
             logo.scale.set(logoCurrentScale, logoCurrentScale, logoCurrentScale);
             logo.position.set(logoCurrentPosition.x, logoCurrentPosition.y, logoCurrentPosition.z);
             
-            // 调试信息：每30帧输出一次位置信息
-            if (Math.floor(Date.now() / 500) % 2 === 0) {
-                console.log('Logo position:', logoCurrentPosition, 'Scale:', logoCurrentScale);
-            }
+            // fur Test: Position ausdrucken
+            // if (Math.floor(Date.now() / 500) % 2 === 0) {
+            //     console.log('Logo position:', logoCurrentPosition, 'Scale:', logoCurrentScale);
+            // }
             
-            // 检查动画是否完成
+            // check
             const totalDiff = utils.calculateTotalDiff(scaleDiff, ...positionDiffs);
             if (totalDiff < ANIMATION_CONSTANTS.POSITION_THRESHOLD) {
                 isTransitioningToDetail = false;
@@ -322,8 +289,7 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// ============ 详情页模式函数 ============
-// 进入详情页模式的动画处理
+// ============ logo-->subpage detail ============
 function enterDetailMode() {
     if (isDetailMode || isTransitioningToDetail) return;
     
@@ -331,37 +297,32 @@ function enterDetailMode() {
     isTransitioningToDetail = true;
     isDetailMode = true;
     
-    // 禁用OrbitControls
+    // OrbitControls verboten
     controls.enabled = false;
     
-    // 根据当前相机的视野范围计算合适的移动距离
+    // bewegungsbereich berechnen 
     const cameraWidth = camera.right - camera.left;
-    const moveDistance = cameraWidth * ANIMATION_CONSTANTS.CAMERA_MOVE_FACTOR; // 移动到视野宽度的12%处
+    const moveDistance = cameraWidth * ANIMATION_CONSTANTS.CAMERA_MOVE_FACTOR; 
     
-    // 设置logo目标状态
-    logoTargetScale = ANIMATION_CONSTANTS.LOGO_DETAIL_SCALE; // 缩小到20%
-    logoTargetPosition.x = -moveDistance * 1.2; // 动态计算移动距离
+    // Ziel
+    logoTargetScale = ANIMATION_CONSTANTS.LOGO_DETAIL_SCALE; // scale
+    logoTargetPosition.x = -moveDistance * 1.2; // position
     
-    // 精确计算导航栏对应的3D坐标位置
     const navbar = utils.getElement('navbar');
     if (navbar) {
-        // 获取导航栏的实际DOM位置
+        // menu position
         const navbarRect = navbar.getBoundingClientRect();
-        const navbarCenterY = navbarRect.top + navbarRect.height / 2; // 导航栏中心Y坐标
+        const navbarCenterY = navbarRect.top + navbarRect.height / 2; 
         
-        // 使用Three.js的方法进行精确的屏幕坐标到世界坐标转换
         const vector = new THREE.Vector3();
-        
-        // 将屏幕坐标转换为标准化设备坐标
-        vector.x = 0; // X坐标不重要，我们只关心Y
-        vector.y = -(navbarCenterY / window.innerHeight) * 2 + 1; // NDC Y坐标
-        vector.z = 0; // Z坐标设为0（在相机平面上）
-        
-        // 使用相机的逆投影矩阵将NDC坐标转换为世界坐标
+
+        vector.x = 0;
+        vector.y = -(navbarCenterY / window.innerHeight) * 2 + 1;
+        vector.z = 0;
+
         vector.unproject(camera);
         
-        // 手动微调偏移量（根据需要调整这个值）
-        const manualOffset = 0; // 正值向上，负值向下，单位是3D世界坐标
+        const manualOffset = 0; 
         logoTargetPosition.y = vector.y + manualOffset;
         
         console.log('Navbar screen position:', navbarCenterY);
@@ -370,7 +331,6 @@ function enterDetailMode() {
         console.log('Unprojected world Y:', vector.y);
         console.log('Camera top/bottom:', camera.top, camera.bottom);
     } else {
-        // 备用方案：使用CSS的top值
         const cameraHeight = camera.top - camera.bottom;
         const navbarRelativePosition = (80 / window.innerHeight - 0.5) * -1;
         logoTargetPosition.y = navbarRelativePosition * cameraHeight;
@@ -383,24 +343,20 @@ function enterDetailMode() {
     console.log('Target position set to:', logoTargetPosition);
     console.log('Current position:', logoCurrentPosition);
     
-    // 根据当前状态创建对应的内容
     console.log('Current state when entering detail mode:', currentState);
+    // subpage wechseln
     if (currentState === 1) {
-        // Yingxun状态：创建时间轴
         createTimeline();
     } else if (currentState === 2) {
-        // Projekt状态：显示项目网格
         setTimeout(() => showProjectsGrid(), 100);
     } else if (currentState === 3) {
-        // Kontakt状态：显示联系页面
         setTimeout(() => showKontaktContent(), 100);
     }
     
-    // 更新导航栏状态
     updateNavbar();
 }
 
-// 退出详情页模式的动画处理
+// ============ subpage detail--> logo============
 function exitDetailMode() {
     if (!isDetailMode) return;
     
@@ -408,33 +364,27 @@ function exitDetailMode() {
     isTransitioningToDetail = true;
     isDetailMode = false;
     
-    // 重新启用OrbitControls
     controls.enabled = true;
     
-    // 恢复logo原始状态
     logoTargetScale = 1;
     logoTargetPosition.x = 0;
     logoTargetPosition.y = 0;
     logoTargetPosition.z = 0;
     
-    // 移除时间轴
     removeTimeline();
     
-    // 更新导航栏状态
     updateNavbar();
 }
 
-// ============ 时间轴相关函数 ============
-// 创建时间轴
+// ============ ⚠️timeline ============
 function createTimeline() {
     console.log('createTimeline() called, isDetailMode:', isDetailMode, 'currentState:', currentState);
     
-    // 检查是否已存在时间轴容器
     if (timelineContainer) {
         removeTimeline();
     }
     
-    // 创建详情页内容容器
+    // container
     let detailContent = utils.getElement('detail-content');
     if (!detailContent) {
         detailContent = document.createElement('div');
@@ -445,11 +395,10 @@ function createTimeline() {
         detailContent.className = 'visible';
     }
     
-    // 创建时间轴容器
     timelineContainer = document.createElement('div');
     timelineContainer.id = 'timeline-container';
     
-    // 创建左右两条时间轴线
+    // line
     const leftLine = document.createElement('div');
     leftLine.className = 'timeline-line left-line';
     timelineContainer.appendChild(leftLine);
@@ -458,7 +407,6 @@ function createTimeline() {
     rightLine.className = 'timeline-line right-line';
     timelineContainer.appendChild(rightLine);
 
-    // 定义时间轴数据 - 左右交替显示
     const rawTimelineData = [
         { time: '09.2018', side: 'left', title: 'Ausbildung' },
         { time: '03.2022', side: 'right', title: 'Berufserfahrung' },
@@ -474,33 +422,27 @@ function createTimeline() {
         { time: '03.2028', side: 'left' }
     ];
 
-    // 计算初始居中top
-    const centerY = window.innerHeight * 0.3 + 30; // 15是为了让第一个点稍微向上偏移一点
-    // 原始top偏移量（保持原有间距，首个为0，后续为原始top差值）
+    const centerY = window.innerHeight * 0.3 + 30;
+    // time point position
     const originalTops = [0, 110, 300, 260, 340, 490, 570, 730, 770, 810, 960, 1100];
-    // 构造新的timelineData，首个top为centerY，其余依次递增
     const timelineData = rawTimelineData.map((item, idx) => ({
         ...item,
         top: centerY + (originalTops[idx] - originalTops[0])
     }));
 
-    // 找到09.2018的top值
+    // black progress bar
     const idx2018 = rawTimelineData.findIndex(item => item.time === '09.2018');
     const top2018 = timelineData[idx2018].top;
 
-    // 找到03.2022的top值
     const idx2022 = rawTimelineData.findIndex(item => item.time === '03.2022');
     const top2022 = timelineData[idx2022].top;
 
-    // 找到07.2022的top值
     const idx072022 = rawTimelineData.findIndex(item => item.time === '07.2022');
     const top072022 = timelineData[idx072022].top;
 
-    // 找到08.2024的top值
     const idx082024 = rawTimelineData.findIndex(item => item.time === '08.2024');
     const top082024 = timelineData[idx082024].top;
 
-    // 创建左侧黑色进度条元素
     const progressBar = document.createElement('div');
     progressBar.className = 'timeline-progress-bar';
     progressBar.style.top = `${top2018}px`;
@@ -508,7 +450,6 @@ function createTimeline() {
     progressBar.id = 'timeline-progress-bar';
     timelineContainer.appendChild(progressBar);
 
-    // 新增：右侧黑色进度条元素
     const rightProgressBar = document.createElement('div');
     rightProgressBar.className = 'timeline-progress-bar right-bar';
     rightProgressBar.style.top = `${top2022}px`;
@@ -516,7 +457,6 @@ function createTimeline() {
     rightProgressBar.id = 'timeline-progress-bar-right';
     timelineContainer.appendChild(rightProgressBar);
 
-    // 新增：右侧黑色进度条（07.2022开始，150长）
     const rightProgressBar072022 = document.createElement('div');
     rightProgressBar072022.className = 'timeline-progress-bar right-bar right-bar-072022';
     rightProgressBar072022.style.top = `${top072022}px`;
@@ -524,7 +464,6 @@ function createTimeline() {
     rightProgressBar072022.id = 'timeline-progress-bar-right-072022';
     timelineContainer.appendChild(rightProgressBar072022);
 
-    // 新增：右侧黑色进度条（08.2024开始，150长）
     const rightProgressBar082024 = document.createElement('div');
     rightProgressBar082024.className = 'timeline-progress-bar right-bar right-bar-082024';
     rightProgressBar082024.style.top = `${top082024}px`;
@@ -532,20 +471,15 @@ function createTimeline() {
     rightProgressBar082024.id = 'timeline-progress-bar-right-082024';
     timelineContainer.appendChild(rightProgressBar082024);
 
-    // --- 关键：设置右侧进度条的水平位置 ---
-    // 等待 rightLine 渲染后获取其 left 坐标
     setTimeout(() => {
         const rightLineElem = timelineContainer.querySelector('.right-line');
         if (rightLineElem) {
-            // rightLine 的中心点
             const rightLineCenter = rightLineElem.offsetLeft + rightLineElem.offsetWidth / 2;
-            // 进度条宽度（如CSS设置，默认4px）
             const progressBarWidth = rightProgressBar.offsetWidth || 4;
             rightProgressBar.style.left = `${rightLineCenter - progressBarWidth / 2}px`;
         }
     }, 0);
 
-    // --- 设置右侧进度条的水平位置 ---
     setTimeout(() => {
         const rightLineElem = timelineContainer.querySelector('.right-line');
         if (rightLineElem) {
@@ -555,7 +489,15 @@ function createTimeline() {
         }
     }, 0);
 
-    // 创建标题
+    setTimeout(() => {
+        const rightLineElem = timelineContainer.querySelector('.right-line');
+        if (rightLineElem) {
+            const rightLineCenter = rightLineElem.offsetLeft + rightLineElem.offsetWidth / 2;
+            const progressBarWidth = rightProgressBar082024.offsetWidth || 4;
+            rightProgressBar082024.style.left = `${rightLineCenter - progressBarWidth / 2}px`;
+        }
+    }, 0);
+
     const leftTitle = document.createElement('div');
     leftTitle.className = 'timeline-title left-title';
     leftTitle.textContent = 'Ausbildung';
@@ -566,9 +508,7 @@ function createTimeline() {
     rightTitle.textContent = 'Berufserfahrung';
     timelineContainer.appendChild(rightTitle);
     
-    // 创建时间轴项目
     timelineData.forEach((item, index) => {
-        // 创建时间标签（始终在中央）
         const labelElement = document.createElement('div');
         labelElement.className = 'timeline-label';
         labelElement.textContent = item.time;
@@ -577,7 +517,7 @@ function createTimeline() {
         labelElement.id = `timeline-label-${index}`;
         timelineContainer.appendChild(labelElement);
         
-        // 创建时间点（在左右两侧）
+        // point
         const pointElement = document.createElement('div');
         pointElement.className = `timeline-point ${item.side}-point`;
         pointElement.style.top = `${item.top}px`;
@@ -585,7 +525,6 @@ function createTimeline() {
         pointElement.id = `timeline-point-${index}`;
         timelineContainer.appendChild(pointElement);
         
-        // 为09.2018项目添加内容
         if (item.time === '09.2018') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content left-content';
@@ -602,7 +541,6 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
         
-        // 为03.2022项目添加内容
         if (item.time === '03.2022') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
@@ -619,7 +557,6 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
         
-        // 为07.2022项目添加内容
         if (item.time === '07.2022') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
@@ -636,7 +573,6 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
         
-        // 为08.2024项目添加内容
         if (item.time === '08.2024') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
@@ -655,7 +591,6 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
         
-        // 为10.2024项目添加内容
         if (item.time === '10.2024') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content left-content';
@@ -672,7 +607,6 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
         
-        // 为12.2024项目添加内容
         if (item.time === '12.2024') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
@@ -689,7 +623,6 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
         
-        // 为06.2025项目添加内容
         if (item.time === '06.2025') {
             const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
@@ -710,57 +643,48 @@ function createTimeline() {
     
     detailContent.appendChild(timelineContainer);
     
-    // 重置滚动进度
     timelineScrollProgress = 0;
     updateTimelineDisplay();
     
-    // 添加滚动事件监听
     addTimelineScrollEvents();
 }
 
-// 移除时间轴
+// ============ timeline weg ============
 function removeTimeline() {
     if (timelineContainer) {
-        // 移除时间轴容器
         if (timelineContainer.parentNode) {
             timelineContainer.parentNode.removeChild(timelineContainer);
         }
         timelineContainer = null;
     }
     
-    // 清空详情页内容容器
     clearDetailContent();
     
-    // 移除滚动事件监听
     removeTimelineScrollEvents();
 }
 
-// 添加时间轴滚动事件
+// ============ timeline scrollen ============
 function addTimelineScrollEvents() {
     if (hasScrollControl) return;
     
     hasScrollControl = true;
     
-    // 监听详情页内容容器的滚动事件
     const detailContent = utils.getElement('detail-content');
     if (detailContent) {
         detailContent.addEventListener('scroll', handlePageScroll, { passive: true });
     }
     
-    // 重置滚动位置
     if (detailContent) {
         detailContent.scrollTop = 0;
     }
     timelineScrollProgress = 0;
 }
 
-// 移除时间轴滚动事件
 function removeTimelineScrollEvents() {
     if (!hasScrollControl) return;
     
     hasScrollControl = false;
     
-    // 移除详情页内容容器的滚动监听
     const detailContent = utils.getElement('detail-content');
     if (detailContent) {
         detailContent.removeEventListener('scroll', handlePageScroll);
@@ -768,7 +692,7 @@ function removeTimelineScrollEvents() {
     }
 }
 
-// 处理页面滚动
+// ============ page scrollen ============
 function handlePageScroll() {
     if (!isDetailMode || currentState !== 1 || !timelineContainer) return;
     
@@ -779,7 +703,6 @@ function handlePageScroll() {
     const containerHeight = timelineContainer.offsetHeight;
     const viewportHeight = detailContent.clientHeight;
     
-    // 简化滚动进度计算
     const scrollableHeight = containerHeight - viewportHeight;
     let newProgress = 0;
     
@@ -787,16 +710,12 @@ function handlePageScroll() {
         newProgress = Math.min(scrollTop / scrollableHeight, 1);
     }
     
-    // 允许进度减少（支持向上滚动）
-    // timelineScrollProgress = newProgress;
-    // 只有当进度增加时才更新（实现向下滚动时间轴出现，向上滚动不消失）
     if (newProgress > timelineScrollProgress) {
         timelineScrollProgress = newProgress;
     }
     updateTimelineDisplay();
 }
 
-// 更新时间轴显示
 function updateTimelineDisplay() {
     if (!timelineContainer) return;
 
@@ -808,14 +727,13 @@ function updateTimelineDisplay() {
     
     if (!leftLine || !rightLine || allLabels.length === 0) return;
     
-    // 计算当前可见的时间轴项目数量
     const totalItems = allLabels.length;
     const visibleItemsFloat = timelineScrollProgress * totalItems;
     const visibleItems = Math.floor(visibleItemsFloat);
     const currentItemProgress = visibleItemsFloat - visibleItems;
     
     // 计算时间轴线的高度
-    let maxVisibleHeight = 10; // 最小高度
+    let maxVisibleHeight = 10; 
     
     // 更新每个时间轴项目的显示状态
     allLabels.forEach((label, index) => {
@@ -1058,100 +976,85 @@ function updateTimelineDisplay() {
     }
 }
 
-// ============ 鼠标事件处理函数 ============
-// 控制用户与3D模型的交互
+// ============ 🧭 mouse events interaction logik ============
 function addMouseEvents() {
     const canvas = renderer.domElement;
     
-    // === 基础鼠标进入/离开事件 ===
     canvas.addEventListener('mouseenter', () => {
-        isHovering = true; // 鼠标进入canvas区域
+        isHovering = true; 
     });
     
     canvas.addEventListener('mouseleave', () => {
-        isHovering = false; // 鼠标离开canvas区域
+        isHovering = false; 
     });
     
-    // === 鼠标移动事件处理 ===
     canvas.addEventListener('mousemove', (event) => {
-        // --- 标准化鼠标坐标 ---
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         
-        // --- 区域检测：判断鼠标是否在画布中央70%区域内（用于导航栏显示）---
         const isInCenterArea = (Math.abs(mouse.x) <= ANIMATION_CONSTANTS.CENTER_AREA_SIZE && Math.abs(mouse.y) <= ANIMATION_CONSTANTS.CENTER_AREA_SIZE);
         
-        // --- 射线检测：精确判断鼠标悬停在logo上（用于旋转交互）---
+        // drehen (cursor)
         if (logo) {
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(logo);
             isHoveringLogo = intersects.length > 0;
             
-            // 简单的鼠标指针提示
             if (isDetailMode && isHoveringLogo) {
-                canvas.style.cursor = 'pointer'; // 详情页模式下hover时显示pointer
+                canvas.style.cursor = 'pointer'; 
             } else {
-                canvas.style.cursor = 'default'; // 其他情况显示默认指针
+                canvas.style.cursor = 'default'; 
             }
         }
         
-        // 控制导航栏显示/隐藏（基于中央70%区域）
+        // menu opacity
         const navbar = document.getElementById('navbar');
         if (navbar) {
             navbar.style.opacity = isInCenterArea ? '1' : '0';
         }
         
-        // --- 手势识别：检测从右向左的移动 ---
+        // interaction detection
         const currentMouseX = (event.clientX / window.innerWidth) * 2 - 1;
         
-        // 只有当鼠标悬停在logo上且不在详情页模式时才能进行交互
+        // nur wenn über dem Logo, nicht in der Detailansicht und nicht während einer Rotation
         if (isHoveringLogo && !isRotating && !isDetailMode && !isTransitioningToDetail) {
-            // 计算鼠标移动方向 (正值为向右，负值为向左)
             const deltaX = currentMouseX - lastMouseX;
             
-            // 只识别从右向左的移动 (deltaX < 0) 且移动幅度足够大
+            // nur linke Bewegung erkennen
             if (deltaX < -0.02 && !hasTriggered) {
-                console.log('触发左移交互，deltaX:', deltaX); // 调试信息
+                console.log(deltaX); 
                 
-                // --- 防重复触发机制 ---
                 hasTriggered = true;
                 isRotating = true;
                 interactionCount++;
-                
-                // --- 旋转逻辑控制 ---
+
+                // rotate direction and target state
                 if (interactionCount === 1) {
-                    // 第一次交互：Y轴旋转90度（翻页效果）
                     targetRotationY += Math.PI / 2;
-                    targetState = 2; // 设置目标状态2：Projekte
+                    targetState = 2;
                 } else if (interactionCount === 2) {
-                    // 第二次交互：X轴和Y轴复合旋转
                     targetRotationX -= Math.PI / 2;
                     targetRotationY += Math.PI / 4;
-                    targetState = 3; // 设置目标状态3：Kontakt
+                    targetState = 3; 
                 } else if (interactionCount === 3) {
-                    // 第三次交互：回到原始位置
                     targetRotationX = 0;
                     targetRotationY = 0;
                     targetRotationZ = 0;
-                    targetState = 1; // 设置目标状态1：Yingxun
+                    targetState = 1; 
                 } else {
-                    // 第4次及以后：循环前三种状态
-                    const cyclePosition = (interactionCount - 1) % 3 + 1; // 将交互次数映射到1,2,3循环
+                    const cyclePosition = (interactionCount - 1) % 3 + 1; 
                     
                     if (cyclePosition === 1) {
-                        // 相当于第一次：Y轴旋转90度
                         targetRotationX = 0;
                         targetRotationY = Math.PI / 2;
                         targetRotationZ = 0;
                         targetState = 2; // Projekte
                     } else if (cyclePosition === 2) {
-                        // 相当于第二次：X轴和Y轴复合旋转
                         targetRotationX = -Math.PI / 2;
                         targetRotationY = Math.PI / 2 + Math.PI / 4;
                         targetRotationZ = 0;
                         targetState = 3; // Kontakt
                     } else if (cyclePosition === 3) {
-                        // 相当于第三次：回到原始位置
                         targetRotationX = 0;
                         targetRotationY = 0;
                         targetRotationZ = 0;
@@ -1159,17 +1062,16 @@ function addMouseEvents() {
                     }
                 }
                 
-                // --- 延迟重置触发标志，防止连续触发 ---
+                // delay
                 setTimeout(() => {
                     hasTriggered = false;
                 }, 500);
                 
             } else if (deltaX > 0.02) {
-                console.log('检测到右移，不触发交互，deltaX:', deltaX); // 调试信息
+                console.log(deltaX);
             }
         }
         
-        // --- 始终更新上一次鼠标位置（用于计算移动方向）---
         lastMouseX = currentMouseX;
     });
     
@@ -1195,8 +1097,7 @@ function addMouseEvents() {
         }
     });
 }
-// ============ 导航栏点击事件处理函数 ============
-// 为详情页模式下的导航栏添加点击切换功能
+// ============ navigation bar click event ============
 function addNavbarEvents() {
     const navItems = {
         yingxun: document.getElementById('nav-yingxun'),
@@ -1204,16 +1105,14 @@ function addNavbarEvents() {
         kontakt: document.getElementById('nav-kontakt')
     };
     
-    // 为每个导航项添加点击事件
     if (navItems.yingxun) {
         navItems.yingxun.addEventListener('click', () => {
             console.log('Clicked nav-yingxun, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
             if (!isRotating) {
                 if (!isDetailMode) {
-                    // 如果不在详情模式，先进入详情模式
                     enterDetailMode();
                 }
-                switchToState(1); // 切换到状态1: Yingxun
+                switchToState(1); // Yingxun
             }
         });
     }
@@ -1223,10 +1122,9 @@ function addNavbarEvents() {
             console.log('Clicked nav-projekte, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
             if (!isRotating) {
                 if (!isDetailMode) {
-                    // 如果不在详情模式，先进入详情模式
                     enterDetailMode();
                 }
-                switchToState(2); // 切换到状态2: Projekte
+                switchToState(2); // Projekte
             }
         });
     }
@@ -1236,17 +1134,15 @@ function addNavbarEvents() {
             console.log('Clicked nav-kontakt, isDetailMode:', isDetailMode, 'isRotating:', isRotating);
             if (!isRotating) {
                 if (!isDetailMode) {
-                    // 如果不在详情模式，先进入详情模式
                     enterDetailMode();
                 }
-                switchToState(3); // 切换到状态3: Kontakt
+                switchToState(3); // Kontakt
             }
         });
     }
 }
 
-// ============ 状态切换函数 ============
-// 在详情页模式下切换到指定状态
+// ============ subpage wechseln ============
 function switchToState(newState) {
     if (currentState === newState || isRotating) return;
     
@@ -1255,35 +1151,30 @@ function switchToState(newState) {
     targetState = newState;
     isRotating = true;
     
-    // 根据目标状态设置旋转参数
     if (newState === 1) {
-        // 状态1: Yingxun - 原始位置
+        // Yingxun
         targetRotationX = 0;
         targetRotationY = 0;
         targetRotationZ = 0;
-        // 移除其他内容，准备显示时间轴
-        removeTimeline(); // 确保清理所有内容
-        // 创建时间轴
+        removeTimeline(); 
         setTimeout(() => {
             console.log('Creating timeline after switching to yingxun state');
             createTimeline();
-        }, 500); // 等待旋转完成后创建
+        }, 500); // nach der Rotation Zeit geben
     } else if (newState === 2) {
-        // 状态2: Projekte - Y轴旋转90度
+        // Projekte
         targetRotationX = 0;
         targetRotationY = Math.PI / 2;
         targetRotationZ = 0;
-        // 移除时间轴，显示项目页面
         removeTimeline();
-        setTimeout(() => showProjectsGrid(), 500); // 等待旋转完成后显示项目网格
+        setTimeout(() => showProjectsGrid(), 500);
     } else if (newState === 3) {
-        // 状态3: Kontakt - X轴和Y轴复合旋转
+        // Kontakt
         targetRotationX = -Math.PI / 2;
         targetRotationY = Math.PI / 2 + Math.PI / 4;
         targetRotationZ = 0;
-        // 移除时间轴，显示联系页面
         removeTimeline();
-        setTimeout(() => showKontaktContent(), 500); // 等待旋转完成后显示联系页面
+        setTimeout(() => showKontaktContent(), 500);
     }
     
     console.log('Target rotation set to:', {
@@ -1292,13 +1183,11 @@ function switchToState(newState) {
         z: targetRotationZ
     });
     
-    // 立即更新导航栏显示状态
     updateNavbar();
 }
 
-// ============ 项目网格显示函数 ============
+// ============ Projekt ============
 function showProjectsGrid() {
-    // 创建或获取详情页内容容器
     let detailContent = utils.getElement('detail-content');
     if (!detailContent) {
         detailContent = document.createElement('div');
@@ -1309,10 +1198,8 @@ function showProjectsGrid() {
         detailContent.className = 'visible';
     }
 
-    // 清空现有内容
     detailContent.innerHTML = '';
 
-    // 项目基础数据（不含title）
     const projectsData = [
     { id: 'project-1', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
     { id: 'project-2', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
@@ -1322,7 +1209,6 @@ function showProjectsGrid() {
     { id: 'project-6', image: 'projects/project-6/images/cover.png', titlePath: 'projects/project-6/title.txt' }
     ];
 
-    // 预加载所有图片和title
     const preloadAll = projectsData.map(project => {
         return Promise.all([
             fetch(project.titlePath).then(r => r.text()).catch(() => project.id),
@@ -1344,7 +1230,6 @@ function showProjectsGrid() {
             const projectItem = document.createElement('div');
             projectItem.className = 'project-item';
             projectItem.setAttribute('data-project', project.title);
-            // 预创建图片元素以便预加载
             const img = document.createElement('img');
             img.src = project.image;
             img.alt = project.title;
@@ -1368,26 +1253,21 @@ function showProjectsGrid() {
             `;
             projectItem.appendChild(projectImageDiv);
             projectItem.appendChild(projectInfoDiv);
-            // 预创建自定义光标SVG
             const projectTitle = project.title;
-            // 动态计算文本宽度并生成SVG
             function getCursorSvg(title) {
-                // 创建canvas测量文本宽度
                 const ctx = document.createElement('canvas').getContext('2d');
                 ctx.font = '12px Arial';
                 const textWidth = ctx.measureText(title).width;
-                const padding = 32; // 左右内边距
+                const padding = 32; // abstand links und rechts
                 const minWidth = 80;
                 const width = Math.max(minWidth, Math.ceil(textWidth + padding));
                 const height = 30;
-                // SVG字符串
                 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="black" rx="15"/><text x="${width/2}" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="12">${title}</text></svg>`;
                 return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
             }
             projectItem.addEventListener('mouseenter', function() {
                 img.style.filter = 'grayscale(0%)';
                 img.style.transform = 'scale(1.02)';
-                // 使用动态宽度SVG
                 this.style.cursor = `url('${getCursorSvg(projectTitle)}'), pointer`;
             });
             projectItem.addEventListener('mouseleave', function() {
@@ -1395,7 +1275,6 @@ function showProjectsGrid() {
                 img.style.transform = 'scale(1)';
                 this.style.cursor = 'pointer';
             });
-            // 点击事件
             projectItem.addEventListener('click', function() {
                 fetch(project.titlePath)
                 .then(r => r.text())
@@ -1412,25 +1291,21 @@ function showProjectsGrid() {
     });
 }
 
-// ============ 窗口大小调整函数 ============
-// 当窗口大小改变时调整渲染器和相机
+// ============ bildschirm anpassen ============
 function onWindowResize() {
     const aspect = window.innerWidth / window.innerHeight;
-    const frustumSize = 100; // 与初始化时保持一致
+    const frustumSize = 100; 
     
-    // 更新正交相机的视野参数
     camera.left = frustumSize * aspect / -2;
     camera.right = frustumSize * aspect / 2;
     camera.top = frustumSize / 2;
     camera.bottom = frustumSize / -2;
     camera.updateProjectionMatrix();
     
-    // 更新渲染器尺寸
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// ============ 导航栏更新函数 ============
-// 根据当前状态更新导航栏文字
+// ============ navbar aktualisieren ============
 function updateNavbar() {
     const navbar = document.getElementById('navbar');
     const singleText = navbar.querySelector('.single-text');
@@ -1446,15 +1321,12 @@ function updateNavbar() {
     }
     
     if (isDetailMode) {
-        // 详情页模式：显示所有三个状态，当前状态高亮，其他状态50%透明度
         navbar.classList.add('detail-mode');
         
-        // 移除所有active类
         navItems.yingxun.classList.remove('active');
         navItems.projekte.classList.remove('active');
         navItems.kontakt.classList.remove('active');
         
-        // 根据当前状态添加active类
         if (currentState === 1) {
             navItems.yingxun.classList.add('active');
         } else if (currentState === 2) {
@@ -1464,35 +1336,28 @@ function updateNavbar() {
         }
         
     } else {
-        // 正常模式：显示单个状态名称
         navbar.classList.remove('detail-mode');
-        
-        // 状态名称数组
-        const stateNames = ['', 'YINGXUN', 'PROJEKTE', 'KONTAKT'];
+                const stateNames = ['', 'YINGXUN', 'PROJEKTE', 'KONTAKT'];
 
         if (isRotating && currentState !== targetState) {
-            // 旋转中：根据进度混合显示两个状态的文字
             const fromState = currentState;
             const toState = targetState;
             
             if (stateProgress < 0.5) {
-                // 前半段：显示当前状态，逐渐变透明
                 singleText.textContent = stateNames[fromState];
-                singleText.style.opacity = 1 - stateProgress * 2; // 从1到0
+                singleText.style.opacity = 1 - stateProgress * 2; 
             } else {
-                // 后半段：显示目标状态，逐渐显现
                 singleText.textContent = stateNames[toState];
-                singleText.style.opacity = (stateProgress - 0.5) * 2; // 从0到1
+                singleText.style.opacity = (stateProgress - 0.5) * 2;
             }
         } else {
-            // 静止状态：正常显示当前状态
             singleText.textContent = stateNames[currentState];
             singleText.style.opacity = 1;
         }
     }
 }
 
-// ============ 项目详情显示函数 ============
+// ============ projekt detail page ============
 function showProjectDetail(project) {
     const clickedItem = document.querySelector(`[data-project="${project.title}"]`);
     const coverImg = clickedItem.querySelector('.project-image img');
@@ -1500,11 +1365,9 @@ function showProjectDetail(project) {
 
     animateOtherProjects(clickedItem, 'compress');
 
-    // 创建详情页浮层
     const detailOverlay = document.createElement('div');
     detailOverlay.id = 'project-detail-overlay';
     detailOverlay.className = 'project-detail-expanding';
-    // 初始定位，动画交由CSS
     detailOverlay.style.left = rect.left + 'px';
     detailOverlay.style.top = rect.top + 'px';
     detailOverlay.style.width = rect.width + 'px';
@@ -1545,7 +1408,7 @@ function showProjectDetail(project) {
             if (desc) desc.innerHTML = '<div class="error">详情内容未找到</div>';
         });
 
-    // 创建左右箭头和关闭按钮（样式由CSS控制）
+    // arrows and close button
     const currentIndex = getCurrentProjectIndex(project);
     const navArrows = document.createElement('div');
     navArrows.id = 'project-nav-arrows';
@@ -1570,7 +1433,7 @@ function showProjectDetail(project) {
 
     setBackgroundTransparency(true);
 
-    // 展开动画，切换class，cover和箭头布局交由CSS
+    // animation to expanded
     setTimeout(() => {
         detailOverlay.classList.remove('project-detail-expanding');
         detailOverlay.classList.add('project-detail-expanded');
@@ -1580,18 +1443,15 @@ function showProjectDetail(project) {
         detailOverlay.style.height = '';
         detailOverlay.style.position = '';
         detailOverlay.style.overflow = '';
-        // 内容区淡入
         const body = detailOverlay.querySelector('.project-detail-body');
         if (body) setTimeout(() => { body.style.opacity = '1'; }, 400);
-        // 新增：绑定气泡提示
         setAusprobierenBubble(body, project.id);
     }, 40);
 
-    // 关闭动画
+    // animation to close
     closeBtn.onclick = () => {
         detailOverlay.classList.remove('project-detail-expanded');
         detailOverlay.classList.add('project-detail-expanding');
-        // 恢复初始定位
         detailOverlay.style.left = rect.left + 'px';
         detailOverlay.style.top = rect.top + 'px';
         detailOverlay.style.width = rect.width + 'px';
@@ -1611,7 +1471,7 @@ function showProjectDetail(project) {
         }, 500);
     };
 
-    // 箭头切换项目（不退出动画，直接切换内容）
+    // wechseln zwischen projekten
     navArrows.onclick = (e) => {
         const arrow = e.target.closest('.nav-arrow');
         if (!arrow || arrow.classList.contains('disabled')) return;
@@ -1619,10 +1479,8 @@ function showProjectDetail(project) {
         const ids = ['project-1','project-2','project-3','project-4','project-5','project-6'];
         let idx = currentIndex + (dir === 'next' ? 1 : -1);
         if (idx < 0 || idx >= ids.length) return;
-        // 获取新项目数据并复用动画
         fetch('projects/' + ids[idx] + '/title.txt').then(r => r.text()).then(title => {
             fetch('projects/' + ids[idx]).then(r => r.text()).then(() => {
-                // 关闭当前详情页，展开下一个（动画复用）
                 detailOverlay.remove();
                 navArrows.remove();
                 closeBtn.remove();
@@ -1640,14 +1498,11 @@ function showProjectDetail(project) {
     };
 }
 
-// 获取当前项目在数组中的索引
 function getCurrentProjectIndex(project) {
-    // 只根据id查找索引
     const ids = ['project-1','project-2','project-3','project-4','project-5','project-6'];
     return ids.findIndex(id => id === project.id);
 }
 
-// setBackgroundTransparency 函数优化
 function setBackgroundTransparency(isTransparent) {
     const elementsToHide = [
         '#container canvas',
@@ -1661,13 +1516,12 @@ function setBackgroundTransparency(isTransparent) {
         elements.forEach(element => {
             if (element) {
                 element.style.opacity = isTransparent ? '0' : '';
-                element.style.transition = ''; // 由CSS统一管理
+                element.style.transition = '';
                 element.style.pointerEvents = isTransparent ? 'none' : '';
             }
         });
     });
     
-    // 特别处理项目网格中的所有项目
     const projectItems = document.querySelectorAll('.project-item');
     projectItems.forEach(item => {
         if (item) {
@@ -1679,12 +1533,11 @@ function setBackgroundTransparency(isTransparent) {
                 item.style.pointerEvents = '';
                 item.style.transform = '';
             }
-            item.style.transition = ''; // 由CSS统一管理
+            item.style.transition = '';
         }
     });
 }
 
-// animateOtherProjects 函数优化
 function animateOtherProjects(clickedItem, action) {
     const allItems = document.querySelectorAll('.project-item');
     const clickedIndex = clickedItem ? Array.from(allItems).indexOf(clickedItem) : -1;
@@ -1705,17 +1558,14 @@ function animateOtherProjects(clickedItem, action) {
             item.style.transform = '';
             item.style.opacity = '';
             item.style.pointerEvents = '';
-            // 移除 transition 设置
         }
-        item.style.transition = ''; // 由CSS统一管理
+        item.style.transition = ''; 
     });
 }
 
-// showProjectDetailDirect/detailOverlay样式优化
 function showProjectDetailDirect(project) {
     const currentIndex = getCurrentProjectIndex(project);
     
-    // 创建项目详情容器
     const detailOverlay = document.createElement('div');
     detailOverlay.id = 'project-detail-overlay';
     detailOverlay.className = 'project-detail-expanded';
@@ -1724,7 +1574,6 @@ function showProjectDetailDirect(project) {
     const sideMargin = isMobile ? 60 : 120;
     const totalMargin = isMobile ? 120 : 240;
     
-    // 直接设置为展开状态
     detailOverlay.style.cssText = `
         position: fixed;
         left: ${sideMargin}px;
@@ -1741,7 +1590,6 @@ function showProjectDetailDirect(project) {
         /* transition 由CSS统一管理 */
     `;
     
-    // 创建详情页内容（先显示 loading）
     detailOverlay.innerHTML = `
         <div class="project-detail-content">
             <div class="project-hero-image">
@@ -1758,7 +1606,6 @@ function showProjectDetailDirect(project) {
 
     document.body.appendChild(detailOverlay);
 
-    // 动态加载 detail.html 内容
     fetch(`projects/${project.id}/detail.html`)
         .then(response => {
             if (!response.ok) throw new Error('Not found');
@@ -1773,7 +1620,6 @@ function showProjectDetailDirect(project) {
             if(desc) desc.innerHTML = '<div class="error">详情内容未找到</div>';
         });
     
-    // 创建背景覆盖层，防止点击到背景内容
     const backgroundOverlay = document.createElement('div');
     backgroundOverlay.id = 'project-detail-background';
     backgroundOverlay.style.cssText = `
@@ -1788,7 +1634,6 @@ function showProjectDetailDirect(project) {
     `;
     document.body.appendChild(backgroundOverlay);
     
-    // 创建独立的导航箭头容器
     const navArrows = document.createElement('div');
     navArrows.id = 'project-nav-arrows';
     navArrows.style.opacity = '0';
@@ -1806,7 +1651,6 @@ function showProjectDetailDirect(project) {
     `;
     document.body.appendChild(navArrows);
     
-    // 创建独立的关闭按钮
     const closeBtn = document.createElement('div');
     closeBtn.className = 'project-close-btn';
     closeBtn.style.opacity = '0';
@@ -1817,22 +1661,18 @@ function showProjectDetailDirect(project) {
     `;
     document.body.appendChild(closeBtn);
     
-    // 淡入动画
     setTimeout(() => {
         detailOverlay.style.opacity = '1';
         detailOverlay.style.transform = 'scale(1)';
         navArrows.style.opacity = '1';
         closeBtn.style.opacity = '1';
-        // 新增：绑定气泡提示
         const body = detailOverlay.querySelector('.project-detail-body');
         setAusprobierenBubble(body, project.id);
     }, 50);
     
-    // 添加事件监听器
     addProjectDetailEventListeners(detailOverlay, navArrows, closeBtn, currentIndex);
 }
 
-// 新增：气泡提示函数（非SVG，DOM绘制）
 function setAusprobierenBubble(body, projectId) {
     const detailOverlay = document.getElementById('project-detail-overlay');
     if (!detailOverlay) return;
@@ -1859,7 +1699,6 @@ function setAusprobierenBubble(body, projectId) {
     });
 }
 
-// 统一设置详情浮层宽度和边距的函数
 function setProjectDetailOverlayLayout(detailOverlay) {
     const isMobile = window.innerWidth <= 768;
     const sideMargin = isMobile ? 60 : 200;
@@ -1872,16 +1711,13 @@ function setProjectDetailOverlayLayout(detailOverlay) {
     detailOverlay.style.background = 'white';
     detailOverlay.style.zIndex = '1000';
     detailOverlay.style.overflowY = 'auto';
-    // transition 由CSS统一管理
     detailOverlay.style.scrollbarWidth = 'none';
     detailOverlay.style.msOverflowStyle = 'none';
 }
 
-// ============ 内容清理函数 ============
 function clearDetailContent() {
     const detailContent = utils.getElement('detail-content');
     if (detailContent) {
-        // 移除所有事件监听器
         const resizeHandlers = ['handleProjectsResize', 'handleKontaktResize'];
         resizeHandlers.forEach(handler => {
             if (window[handler]) {
@@ -1895,7 +1731,5 @@ function clearDetailContent() {
     }
 }
 
-// ============ 事件监听器注册 ============
-// 注册全局事件监听器
-window.addEventListener('resize', onWindowResize); // 窗口大小改变事件
-window.addEventListener('load', init); // 页面加载完成事件
+window.addEventListener('resize', onWindowResize);
+window.addEventListener('load', init);
