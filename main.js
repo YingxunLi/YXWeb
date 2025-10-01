@@ -99,7 +99,7 @@ let logoCurrentPosition = { x: 0, y: 0, z: 0 };
 // timeline
 let timelineScrollProgress = 0; 
 let timelineContainer = null;
-let timelineMaxHeight = 1200;
+let timelineMaxHeight = 1000;
 let hasScrollControl = false;
 
 // mouse - raycaster
@@ -424,7 +424,7 @@ function createTimeline() {
 
     const centerY = window.innerHeight * 0.3 + 30;
     // time point position
-    const originalTops = [0, 110, 300, 260, 340, 490, 570, 730, 770, 810, 960, 1100];
+    const originalTops = [0, 110, 300, 260, 340, 490, 570, 730, 770, 810, 960, 1210];
     const timelineData = rawTimelineData.map((item, idx) => ({
         ...item,
         top: centerY + (originalTops[idx] - originalTops[0])
@@ -443,12 +443,25 @@ function createTimeline() {
     const idx082024 = rawTimelineData.findIndex(item => item.time === '08.2024');
     const top082024 = timelineData[idx082024].top;
 
+    const idx122024 = rawTimelineData.findIndex(item => item.time === '12.2024');
+    const top122024 = timelineData[idx122024].top;
+
+    const idx102024 = rawTimelineData.findIndex(item => item.time === '10.2024');
+    const top102024 = timelineData[idx102024].top;
+
     const progressBar = document.createElement('div');
     progressBar.className = 'timeline-progress-bar';
     progressBar.style.top = `${top2018}px`;
     progressBar.style.height = '0px';
     progressBar.id = 'timeline-progress-bar';
     timelineContainer.appendChild(progressBar);
+
+    const progressBar102024 = document.createElement('div');
+    progressBar102024.className = 'timeline-progress-bar left-bar left-bar-102024';
+    progressBar102024.style.top = `${top102024}px`;
+    progressBar102024.style.height = '0px';
+    progressBar102024.id = 'timeline-progress-bar-102024';
+    timelineContainer.appendChild(progressBar102024);
 
     const rightProgressBar = document.createElement('div');
     rightProgressBar.className = 'timeline-progress-bar right-bar';
@@ -471,6 +484,14 @@ function createTimeline() {
     rightProgressBar082024.id = 'timeline-progress-bar-right-082024';
     timelineContainer.appendChild(rightProgressBar082024);
 
+    const rightProgressBar122024 = document.createElement('div');
+    rightProgressBar122024.className = 'timeline-progress-bar right-bar right-bar-122024';
+    rightProgressBar122024.style.top = `${top122024}px`;
+    rightProgressBar122024.style.height = '0px';
+    rightProgressBar122024.id = 'timeline-progress-bar-right-122024';
+    timelineContainer.appendChild(rightProgressBar122024);
+
+    
     setTimeout(() => {
         const rightLineElem = timelineContainer.querySelector('.right-line');
         if (rightLineElem) {
@@ -497,6 +518,16 @@ function createTimeline() {
             rightProgressBar082024.style.left = `${rightLineCenter - progressBarWidth / 2}px`;
         }
     }, 0);
+
+    setTimeout(() => {
+        const rightLineElem = timelineContainer.querySelector('.right-line');
+        if (rightLineElem) {
+            const rightLineCenter = rightLineElem.offsetLeft + rightLineElem.offsetWidth / 2;
+            const progressBarWidth = rightProgressBar122024.offsetWidth || 4;
+            rightProgressBar122024.style.left = `${rightLineCenter - progressBarWidth / 2}px`;
+        }
+    }, 0);
+
 
     const leftTitle = document.createElement('div');
     leftTitle.className = 'timeline-title left-title';
@@ -893,7 +924,6 @@ function updateTimelineDisplay() {
         rightProgress = 0;
     }
 
-    // 找到07.2022的索引
     const idx072022 = Array.from(allLabels).findIndex(label => label.textContent === '07.2022');
 
     // 计算右侧进度条进度（与07.2022内容同步）
@@ -918,7 +948,9 @@ function updateTimelineDisplay() {
     }
 
     // timeline anfang lange
-    const lineHeight = maxVisibleHeight + 40;
+    // const lineHeight = maxVisibleHeight;
+    // const lineHeight = Math.max(maxVisibleHeight, 910);
+    const lineHeight = 1210;
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
 
@@ -928,6 +960,33 @@ function updateTimelineDisplay() {
         const maxBarHeight = 300;
         const barHeight = Math.min(maxBarHeight, leftProgress * maxBarHeight);
         progressBar.style.height = `${barHeight}px`;
+    }
+
+    const leftProgressBar102024 = timelineContainer.querySelector('.timeline-progress-bar.left-bar.left-bar-102024');
+    if (leftProgressBar102024) {
+        const idx102024 = Array.from(allLabels).findIndex(label => label.textContent === '10.2024');
+        let leftProgress102024 = 0;
+        if (visibleItems > idx102024) {
+            leftProgress102024 = 1;
+        } else if (visibleItems === idx102024) {
+            const content = timelineContainer.querySelector(`#timeline-content-${idx102024}`);
+            if (content) {
+                const lines = content.querySelectorAll('.content-line');
+                let linesVisible = 0;
+                lines.forEach(line => {
+                    const op = line.style.opacity;
+                    if (parseFloat(op || '0') >= 1) linesVisible++;
+                });
+                leftProgress102024 = lines.length ? linesVisible / lines.length : currentItemProgress;
+            } else {
+                leftProgress102024 = currentItemProgress;
+            }
+        } else {
+            leftProgress102024 = 0;
+        }
+        const maxBarHeight = 480;
+        const barHeight = Math.min(maxBarHeight, leftProgress102024 * maxBarHeight);
+        leftProgressBar102024.style.height = `${barHeight}px`;
     }
 
     // 右侧黑色进度条
@@ -970,9 +1029,38 @@ function updateTimelineDisplay() {
             rightProgress082024 = 0;
         }
 
-        const maxBarHeight = 150;
+        const maxBarHeight = 200;
         const barHeight = Math.min(maxBarHeight, rightProgress082024 * maxBarHeight);
         rightProgressBar082024.style.height = `${barHeight}px`;
+    }
+
+    // 新增：右侧黑色进度条（12.2024）
+    const rightProgressBar122024 = timelineContainer.querySelector('.timeline-progress-bar.right-bar.right-bar-122024');
+    if (rightProgressBar122024) {
+        const idx122024 = Array.from(allLabels).findIndex(label => label.textContent === '12.2024');
+        let rightProgress122024 = 0;
+        if (visibleItems > idx122024) {
+            rightProgress122024 = 1;
+        } else if (visibleItems === idx122024) {
+            const content = timelineContainer.querySelector(`#timeline-content-${idx122024}`);
+            if (content) {
+                const lines = content.querySelectorAll('.content-line');
+                let linesVisible = 0;
+                lines.forEach(line => {
+                    const op = line.style.opacity;
+                    if (parseFloat(op || '0') >= 1) linesVisible++;
+                });
+                rightProgress122024 = lines.length ? linesVisible / lines.length : currentItemProgress;
+            } else {
+                rightProgress122024 = currentItemProgress;
+            }
+        } else {
+            rightProgress122024 = 0;
+        }
+
+        const maxBarHeight = 400;
+        const barHeight = Math.min(maxBarHeight, rightProgress122024 * maxBarHeight);
+        rightProgressBar122024.style.height = `${barHeight}px`;
     }
 }
 
