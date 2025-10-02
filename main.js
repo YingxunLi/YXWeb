@@ -556,61 +556,78 @@ function createTimeline() {
         pointElement.id = `timeline-point-${index}`;
         timelineContainer.appendChild(pointElement);
         
+        let contentElement = null;
+        let bubbleText = '';
+        let hasBubble = false;
+
+        // 左侧内容（学校类）
         if (item.time === '09.2018') {
-            const contentElement = document.createElement('div');
+            contentElement = document.createElement('div');
             contentElement.className = 'timeline-content left-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
-            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Zhejiang University of Technology</div>
                 <div class="content-line content-location" data-line="1">Hangzhou, Zhejiang, China</div>
                 <div class="content-line content-degree" data-line="2">Industrie Design, Bachelor of Engineering</div>
             `;
-            
             timelineContainer.appendChild(contentElement);
+            bubbleText = 'UI';
+            hasBubble = true;
         }
-        
+        if (item.time === '10.2024') {
+            contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content left-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Hochschule für Gestaltung Schwäbisch Gmünd</div>
+                <div class="content-line content-location" data-line="1">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</div>
+                <div class="content-line content-degree" data-line="2">Interaktiongestaltung, Bachelor of Arts</div>
+            `;
+            timelineContainer.appendChild(contentElement);
+            bubbleText = 'UX';
+            hasBubble = true;
+        }
+        // 右侧内容（职位类）
         if (item.time === '03.2022') {
-            const contentElement = document.createElement('div');
+            contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
-            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Produktmanager Praktikant</div>
                 <div class="content-line content-location" data-line="1">Hangzhou Zhixiao Technology Co. ｜ Hangzhou, Zhejiang, China ｜ Vor Ort</div>
                 <div class="content-line content-description" data-line="2">Erstellung von PRD sowie Web- und Mobil-Prototypen eines Jobsuchprodukts für Studierende</div>
             `;
-            
             timelineContainer.appendChild(contentElement);
+            bubbleText = 'PM';
+            hasBubble = true;
         }
-        
         if (item.time === '07.2022') {
-            const contentElement = document.createElement('div');
+            contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
-            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Produktmanager</div>
                 <div class="content-line content-location" data-line="1">Chaozhou Three-circle Group Co., Ltd. ｜ Chaozhou, Guangdong, China ｜ Vor Ort</div>
                 <div class="content-line content-description" data-line="2">Erstellung von Designspezifikationen für CNC-Bearbeitung smarter Produkte</div>
             `;
-            
             timelineContainer.appendChild(contentElement);
+            bubbleText = 'Design';
+            hasBubble = true;
         }
-        
         if (item.time === '08.2024') {
-            const contentElement = document.createElement('div');
+            contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
-            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Content Marketing Praktikant</div>
                 <div class="content-line content-location" data-line="1">Education Victory ｜ Portland, Oregon, Vereinigte Staaten von Amerika ｜ Remote</div>
@@ -618,57 +635,68 @@ function createTimeline() {
                 <div class="content-line content-description" data-line="3">Entwurf interaktiver 3D-Prototypen für Systemdesign-Strukturen</div>
                 <div class="content-line content-description" data-line="4">Marktforschung zu Jobsuche-Tools und Entwicklung kreativer Ideen</div>
             `;
-            
             timelineContainer.appendChild(contentElement);
+            bubbleText = 'Content';
+            hasBubble = true;
         }
-        
-        if (item.time === '10.2024') {
-            const contentElement = document.createElement('div');
-            contentElement.className = 'timeline-content left-content';
-            contentElement.style.top = `${item.top}px`;
-            contentElement.style.opacity = '0';
-            contentElement.id = `timeline-content-${index}`;
-            
-            contentElement.innerHTML = `
-                <div class="content-line content-title" data-line="0">Hochschule für Gestaltung Schwäbisch Gmünd</div>
-                <div class="content-line content-location" data-line="1">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</div>
-                <div class="content-line content-degree" data-line="2">Interaktiongestaltung, Bachelor of Arts</div>
-            `;
-            
-            timelineContainer.appendChild(contentElement);
-        }
-        
         if (item.time === '12.2024') {
-            const contentElement = document.createElement('div');
+            contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
-            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Freiwilliger für Content-Management</div>
                 <div class="content-line content-location" data-line="1">Weltladen Schwäbisch Gmünd｜Schwäbisch Gmünd, Baden-Württemberg, Deutschland｜Vor Ort</div>
                 <div class="content-line content-description" data-line="2">Promotion auf Instagram: Videoaufnahme, Fotografie, Nachbearbeitung</div>
             `;
-            
             timelineContainer.appendChild(contentElement);
+            bubbleText = 'Social';
+            hasBubble = true;
         }
-        
         if (item.time === '06.2025') {
-            const contentElement = document.createElement('div');
+            contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
-            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Kommunikationsdesigner (Studentische Hiwi)</div>
                 <div class="content-line content-location" data-line="1">open science for open societies｜Ludwigsburg, Baden-Württemberg｜Deutschland · Remote</div>
                 <div class="content-line content-description" data-line="2">Mitarbeit am Parkli-Boje-Projekt: Gestaltung von Visual-Postern, Unterstützung bei der Erstellung von Leitfäden</div>
                 <div class="content-line content-description" data-line="3">Mitarbeit am FEAST-Projekt: Gestaltung von Postern, Flyern, interaktiven Materialien für die FEAST Summer School 2025</div>
             `;
-            
             timelineContainer.appendChild(contentElement);
+            bubbleText = 'Visual';
+            hasBubble = true;
+        }
+
+        // 只为有内容的项生成气泡
+        if (hasBubble) {
+            const bubbleSize = 40 + Math.random() * 20; // 40~60px
+            // 水平位置随机偏移
+            const horizontalRand = (Math.random() - 0.5) * 60; // -30~30px
+            const bubbleOffsetY = 12; // 内容区块底部向下偏移
+            const bubble = document.createElement('div');
+            bubble.className = `timeline-bubble bubble-below`;
+            bubble.textContent = bubbleText;
+            bubble.style.width = bubble.style.height = `${bubbleSize}px`;
+            bubble.style.lineHeight = `${bubbleSize}px`;
+            bubble.style.opacity = '0';
+            bubble.style.position = 'absolute';
+            bubble.style.transform = `scale(0.7)`;
+            // 计算内容区块底部位置
+            let contentLines = contentElement ? contentElement.querySelectorAll('.content-line').length : 3;
+            let contentHeight = contentLines * 18 + 8;
+            let bubbleTop = item.top + contentHeight + bubbleOffsetY;
+            bubble.style.top = `${bubbleTop}px`;
+            // 水平位置：左侧内容往左偏，右侧内容往右偏
+            if (contentElement && contentElement.classList.contains('left-content')) {
+                bubble.style.right = `calc(50% + 100px + ${horizontalRand}px)`;
+            } else if (contentElement && contentElement.classList.contains('right-content')) {
+                bubble.style.left = `calc(50% + 100px + ${horizontalRand}px)`;
+            }
+            timelineContainer.appendChild(bubble);
         }
     });
     
@@ -755,6 +783,7 @@ function updateTimelineDisplay() {
     const allLabels = timelineContainer.querySelectorAll('.timeline-label');
     const allPoints = timelineContainer.querySelectorAll('.timeline-point');
     const allContents = timelineContainer.querySelectorAll('.timeline-content');
+    const allBubbles = timelineContainer.querySelectorAll('.timeline-bubble');
     
     if (!leftLine || !rightLine || allLabels.length === 0) return;
     
@@ -770,6 +799,7 @@ function updateTimelineDisplay() {
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
         const content = allContents[index]; // 可能为null
+        const bubble = allBubbles[index];
 
         // 判断内容的第一行是否开始出现
         let firstLineVisible = false;
@@ -797,6 +827,20 @@ function updateTimelineDisplay() {
                     line.style.opacity = '1';
                     line.style.transform = 'translateX(0)';
                 });
+            }
+            if (bubble) {
+                // 首次渐显时自动渐隐
+                if (!bubble.__autoFade) {
+                    bubble.style.opacity = '1';
+                    bubble.style.transform = 'scale(1)';
+                    bubble.__autoFade = true;
+                    setTimeout(() => {
+                        bubble.style.opacity = '0';
+                        bubble.style.transform = 'scale(0.7)';
+                        // 允许再次渐显（如重新滚动）
+                        setTimeout(() => { bubble.__autoFade = false; }, 600);
+                    }, 1200); // 1.2秒后开始渐隐
+                }
             }
             
             // 更新最大高度
@@ -850,8 +894,20 @@ function updateTimelineDisplay() {
                     }
                 });
             }
-            
-            // 更新最大高度（渐进式）
+            if (bubble) {
+                bubble.style.opacity = currentItemProgress.toString();
+                bubble.style.transform = `scale(${0.7 + 0.3 * currentItemProgress})`;
+                // 只在完全渐显后自动渐隐
+                if (!bubble.__autoFade && currentItemProgress > 0.99) {
+                    bubble.__autoFade = true;
+                    setTimeout(() => {
+                        bubble.style.opacity = '0';
+                        bubble.style.transform = 'scale(0.7)';
+                        setTimeout(() => { bubble.__autoFade = false; }, 600);
+                    }, 1200);
+                }
+            }
+            // 更新最大高度
             const itemTop = parseFloat(label.style.top) || 0;
             maxVisibleHeight = Math.max(maxVisibleHeight, itemTop + 50); 
         } else {
@@ -874,6 +930,11 @@ function updateTimelineDisplay() {
                         line.style.transform = 'translateX(50px)';
                     }
                 });
+            }
+            if (bubble) {
+                bubble.style.opacity = '0';
+                bubble.style.transform = 'scale(0.7)';
+                bubble.__autoFade = false;
             }
         }
     });
@@ -1539,7 +1600,7 @@ function showProjectDetail(project) {
     // animation to close
     closeBtn.onclick = () => {
         detailOverlay.classList.remove('project-detail-expanded');
-        detailOverlay.classList.add('project-detail-expanding');
+        detailOverlay.classList.add('project-detail_expanding');
         detailOverlay.style.left = rect.left + 'px';
         detailOverlay.style.top = rect.top + 'px';
         detailOverlay.style.width = rect.width + 'px';
@@ -1685,11 +1746,11 @@ function showProjectDetailDirect(project) {
             </div>
             <div class="project-detail-body">
                 <div class="project-header">
-                    <h1 class="project-title">${project.title}</h1> -->
+                    <h1 class="project-title">${project.title}</h1>
+                </div>
+                <div class="project-description loading">Loading…</div>
             </div>
-            <div class="project-description loading">Loading…</div>
         </div>
-    </div>
     `;    
 
     document.body.appendChild(detailOverlay);
@@ -1738,7 +1799,7 @@ function showProjectDetailDirect(project) {
         </div>
     `;
     document.body.appendChild(navArrows);
-    
+
     const closeBtn = document.createElement('div');
     closeBtn.className = 'project-close-btn';
     closeBtn.style.opacity = '0';
