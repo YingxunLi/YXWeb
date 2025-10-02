@@ -788,274 +788,104 @@ function updateTimelineDisplay() {
     const visibleItemsFloat = timelineScrollProgress * totalItems;
     const visibleItems = Math.floor(visibleItemsFloat);
     const currentItemProgress = visibleItemsFloat - visibleItems;
-    
-    // 计算时间轴线的高度
-    let maxVisibleHeight = 10; 
+
+    // 辅助函数：计算与内容显示同步的进度
+    const calculateContentProgress = (itemIndex) => {
+        if (visibleItems > itemIndex) return 1;
+        if (visibleItems < itemIndex) return 0;
+        
+        const content = document.getElementById(`timeline-content-${itemIndex}`);
+        if (!content) return currentItemProgress;
+
+        const lines = content.querySelectorAll('.content-line');
+        if (lines.length === 0) return currentItemProgress;
+
+        const lineProgress = currentItemProgress * lines.length;
+        let visibleLines = 0;
+        lines.forEach((line, lineIndex) => {
+            if (lineProgress > lineIndex + 1) {
+                visibleLines++;
+            } else if (lineProgress > lineIndex) {
+                visibleLines += lineProgress - lineIndex;
+            }
+        });
+        return visibleLines / lines.length;
+    };
     
     // 更新每个时间轴项目的显示状态
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
-        const content = allContents[index]; // 可能为null
-        const bubble = allBubbles[index];
+        const content = document.getElementById(`timeline-content-${index}`);
+        const bubble = allBubbles[index]; // 假设bubble和content一一对应
 
-        // 统一的显示逻辑
-        let isVisible = index < visibleItems;
-        let itemProgress = (index === visibleItems) ? currentItemProgress : (isVisible ? 1 : 0);
+        const isVisible = index <= visibleItems;
+        const itemProgress = isVisible ? ((index < visibleItems) ? 1 : currentItemProgress) : 0;
 
-        // 默认隐藏
-        label.style.opacity = '0';
-        if (point) point.style.opacity = '0';
-        if (content) content.style.opacity = '0';
-        if (bubble) bubble.style.opacity = '0';
+        // 1. Label 和 Point 的显示逻辑: 项目开始出现时即显示
+        const showLabelAndPoint = itemProgress > 0;
+        label.style.opacity = showLabelAndPoint ? '1' : '0';
+        if (point) point.style.opacity = showLabelAndPoint ? '1' : '0';
 
-        if (itemProgress > 0) {
-            // 当内容开始出现时，标签和点就完全显示
-            label.style.opacity = '1';
-            if (point) point.style.opacity = '1';
+        // 2. Content 的显示逻辑: 逐行显示
+        if (content) {
+            content.style.opacity = showLabelAndPoint ? '1' : '0';
+            const contentLines = content.querySelectorAll('.content-line');
+            const totalLines = contentLines.length;
+            const lineProgress = itemProgress * totalLines;
+            const isRightContent = content.classList.contains('right-content');
 
-            if (content) {
-                content.style.opacity = '1'; // 容器本身可见
-                const contentLines = content.querySelectorAll('.content-line');
-                const totalLines = contentLines.length;
-                const lineProgress = itemProgress * totalLines;
-                const isRightContent = content.classList.contains('right-content');
+            contentLines.forEach((line, lineIndex) => {
+                const currentLineProgress = Math.max(0, Math.min(1, lineProgress - lineIndex));
+                line.style.opacity = currentLineProgress.toString();
+                
+                const slideDistance = 50;
+                const translateX = (1 - currentLineProgress) * (isRightContent ? -slideDistance : slideDistance);
+                line.style.transform = `translateX(${translateX}px)`;
+            });
+        }
 
-                contentLines.forEach((line, lineIndex) => {
-                    const currentLineProgress = Math.max(0, Math.min(1, lineProgress - lineIndex));
-                    line.style.opacity = currentLineProgress.toString();
-                    
-                    const slideDistance = 50;
-                    const translateX = (1 - currentLineProgress) * (isRightContent ? -slideDistance : slideDistance);
-                    line.style.transform = `translateX(${translateX}px)`;
-                });
-            }
+        // 3. Bubble 的显示逻辑: 内容完全显示后出现
+        if (bubble) {
+            const contentProgress = calculateContentProgress(index);
+            const showBubble = contentProgress >= 1;
+            
+            bubble.style.opacity = showBubble ? '1' : '0';
+            bubble.style.transform = `scale(${showBubble ? '1' : '0.7'})`;
 
-            if (bubble) {
-                // 气泡与内容同步出现
-                bubble.style.opacity = itemProgress.toString();
-                bubble.style.transform = `scale(${0.7 + 0.3 * itemProgress})`;
-
-                // 自动渐隐逻辑
-                if (!bubble.__autoFade && itemProgress > 0.99) {
-                    bubble.__autoFade = true;
-                    setTimeout(() => {
-                        bubble.style.opacity = '0';
-                        bubble.style.transform = 'scale(0.7)';
-                        // 允许再次触发
-                        setTimeout(() => { bubble.__autoFade = false; }, 600);
-                    }, 1200);
-                } else if (itemProgress < 0.99) {
-                    // 如果滚动回去，重置状态
-                    bubble.__autoFade = false;
-                }
-            }
-        } else {
-            // 未显示的项目，确保所有内容行都已重置
-            if (content) {
-                const contentLines = content.querySelectorAll('.content-line');
-                const isRightContent = content.classList.contains('right-content');
-                contentLines.forEach(line => {
-                    line.style.opacity = '0';
-                    line.style.transform = `translateX(${isRightContent ? -50 : 50}px)`;
-                });
-            }
-            if (bubble) {
-                bubble.style.transform = 'scale(0.7)';
+            if (!bubble.__autoFade && showBubble) {
+                bubble.__autoFade = true;
+                setTimeout(() => {
+                    bubble.style.opacity = '0';
+                    bubble.style.transform = 'scale(0.7)';
+                    setTimeout(() => { bubble.__autoFade = false; }, 600);
+                }, 1200);
+            } else if (!showBubble) {
                 bubble.__autoFade = false;
             }
         }
-        
-        // 更新最大高度
-        if (itemProgress > 0) {
-            const itemTop = parseFloat(label.style.top) || 0;
-            maxVisibleHeight = Math.max(maxVisibleHeight, itemTop + 50);
-        }
     });
     
-    // 找到09.2018和03.2022的索引
-    const idx2018 = Array.from(allLabels).findIndex(label => label.textContent === '09.2018');
-    const idx2022 = Array.from(allLabels).findIndex(label => label.textContent === '03.2022');
-
-    // 计算左侧进度条进度（与09.2018内容同步）
-    let leftProgress = 0;
-    if (visibleItems > idx2018) {
-        leftProgress = 1;
-    } else if (visibleItems === idx2018) {
-        const content = timelineContainer.querySelector(`#timeline-content-${idx2018}`);
-        if (content) {
-            const lines = content.querySelectorAll('.content-line');
-            let linesVisible = 0;
-            lines.forEach(line => {
-                const op = line.style.opacity;
-                if (parseFloat(op || '0') >= 1) linesVisible++;
-            });
-            leftProgress = lines.length ? linesVisible / lines.length : currentItemProgress;
-        } else {
-            leftProgress = currentItemProgress;
-        }
-    } else {
-        leftProgress = 0;
-    }
-
-    // 计算右侧进度条进度（与03.2022内容同步）
-    let rightProgress = 0;
-    if (visibleItems > idx2022) {
-        rightProgress = 1;
-    } else if (visibleItems === idx2022) {
-        const content = timelineContainer.querySelector(`#timeline-content-${idx2022}`);
-        if (content) {
-            const lines = content.querySelectorAll('.content-line');
-            let linesVisible = 0;
-            lines.forEach(line => {
-                const op = line.style.opacity;
-                if (parseFloat(op || '0') >= 1) linesVisible++;
-            });
-            rightProgress = lines.length ? linesVisible / lines.length : currentItemProgress;
-        } else {
-            rightProgress = currentItemProgress;
-        }
-    } else {
-        rightProgress = 0;
-    }
-
-    const idx072022 = Array.from(allLabels).findIndex(label => label.textContent === '07.2022');
-
-    // 计算右侧进度条进度（与07.2022内容同步）
-    let rightProgress072022 = 0;
-    if (visibleItems > idx072022) {
-        rightProgress072022 = 1;
-    } else if (visibleItems === idx072022) {
-        const content = timelineContainer.querySelector(`#timeline-content-${idx072022}`);
-        if (content) {
-            const lines = content.querySelectorAll('.content-line');
-            let linesVisible = 0;
-            lines.forEach(line => {
-                const op = line.style.opacity;
-                if (parseFloat(op || '0') >= 1) linesVisible++;
-            });
-            rightProgress072022 = lines.length ? linesVisible / lines.length : currentItemProgress;
-        } else {
-            rightProgress072022 = currentItemProgress;
-        }
-    } else {
-        rightProgress072022 = 0;
-    }
-
-    // timeline anfang lange
-    // const lineHeight = maxVisibleHeight;
-    // const lineHeight = Math.max(maxVisibleHeight, 910);
+    // 4. Black Line (进度条) 的显示逻辑
     const lineHeight = 1210;
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
 
-    // 左侧黑色进度条
-    const progressBar = timelineContainer.querySelector('.timeline-progress-bar');
-    if (progressBar) {
-        const maxBarHeight = 300;
-        const barHeight = Math.min(maxBarHeight, leftProgress * maxBarHeight);
-        progressBar.style.height = `${barHeight}px`;
-    }
-
-    const leftProgressBar102024 = timelineContainer.querySelector('.timeline-progress-bar.left-bar.left-bar-102024');
-    if (leftProgressBar102024) {
-        const idx102024 = Array.from(allLabels).findIndex(label => label.textContent === '10.2024');
-        let leftProgress102024 = 0;
-        if (visibleItems > idx102024) {
-            leftProgress102024 = 1;
-        } else if (visibleItems === idx102024) {
-            const content = timelineContainer.querySelector(`#timeline-content-${idx102024}`);
-            if (content) {
-                const lines = content.querySelectorAll('.content-line');
-                let linesVisible = 0;
-                lines.forEach(line => {
-                    const op = line.style.opacity;
-                    if (parseFloat(op || '0') >= 1) linesVisible++;
-                });
-                leftProgress102024 = lines.length ? linesVisible / lines.length : currentItemProgress;
-            } else {
-                leftProgress102024 = currentItemProgress;
-            }
-        } else {
-            leftProgress102024 = 0;
+    const updateProgressBar = (selector, index, maxHeight) => {
+        const progressBar = timelineContainer.querySelector(selector);
+        if (progressBar && index !== -1) {
+            const progress = calculateContentProgress(index);
+            progressBar.style.height = `${progress * maxHeight}px`;
         }
-        const maxBarHeight = 480;
-        const barHeight = Math.min(maxBarHeight, leftProgress102024 * maxBarHeight);
-        leftProgressBar102024.style.height = `${barHeight}px`;
-    }
+    };
 
-    // 右侧黑色进度条
-    const rightProgressBar = timelineContainer.querySelector('.timeline-progress-bar.right-bar');
-    if (rightProgressBar) {
-        const maxRightBarHeight = 150;
-        const barHeight = Math.min(maxRightBarHeight, rightProgress * maxRightBarHeight);
-        rightProgressBar.style.height = `${barHeight}px`;
-    }
+    const findIndexByTime = (time) => Array.from(allLabels).findIndex(label => label.textContent === time);
 
-    // 新增：右侧黑色进度条（07.2022）
-    const rightProgressBar072022 = timelineContainer.querySelector('.timeline-progress-bar.right-bar.right-bar-072022');
-    if (rightProgressBar072022) {
-        const maxBarHeight = 150;
-        const barHeight = Math.min(maxBarHeight, rightProgress072022 * maxBarHeight);
-        rightProgressBar072022.style.height = `${barHeight}px`;
-    }
-
-    // 新增：右侧黑色进度条（08.2024）
-    const rightProgressBar082024 = timelineContainer.querySelector('.timeline-progress-bar.right-bar.right-bar-082024');
-    if (rightProgressBar082024) {
-        const idx082024 = Array.from(allLabels).findIndex(label => label.textContent === '08.2024');
-        let rightProgress082024 = 0;
-        if (visibleItems > idx082024) {
-            rightProgress082024 = 1;
-        } else if (visibleItems === idx082024) {
-            const content = timelineContainer.querySelector(`#timeline-content-${idx082024}`);
-            if (content) {
-                const lines = content.querySelectorAll('.content-line');
-                let linesVisible = 0;
-                lines.forEach(line => {
-                    const op = line.style.opacity;
-                    if (parseFloat(op || '0') >= 1) linesVisible++;
-                });
-                rightProgress082024 = lines.length ? linesVisible / lines.length : currentItemProgress;
-            } else {
-                rightProgress082024 = currentItemProgress;
-            }
-        } else {
-            rightProgress082024 = 0;
-        }
-
-        const maxBarHeight = 200;
-        const barHeight = Math.min(maxBarHeight, rightProgress082024 * maxBarHeight);
-        rightProgressBar082024.style.height = `${barHeight}px`;
-    }
-
-    // 新增：右侧黑色进度条（12.2024）
-    const rightProgressBar122024 = timelineContainer.querySelector('.timeline-progress-bar.right-bar.right-bar-122024');
-    if (rightProgressBar122024) {
-        const idx122024 = Array.from(allLabels).findIndex(label => label.textContent === '12.2024');
-        let rightProgress122024 = 0;
-        if (visibleItems > idx122024) {
-            rightProgress122024 = 1;
-        } else if (visibleItems === idx122024) {
-            const content = timelineContainer.querySelector(`#timeline-content-${idx122024}`);
-            if (content) {
-                const lines = content.querySelectorAll('.content-line');
-                let linesVisible = 0;
-                lines.forEach(line => {
-                    const op = line.style.opacity;
-                    if (parseFloat(op || '0') >= 1) linesVisible++;
-                });
-                rightProgress122024 = lines.length ? linesVisible / lines.length : currentItemProgress;
-            } else {
-                rightProgress122024 = currentItemProgress;
-            }
-        } else {
-            rightProgress122024 = 0;
-        }
-
-        const maxBarHeight = 400;
-        const barHeight = Math.min(maxBarHeight, rightProgress122024 * maxBarHeight);
-        rightProgressBar122024.style.height = `${barHeight}px`;
-    }
+    updateProgressBar('#timeline-progress-bar', findIndexByTime('09.2018'), 300);
+    updateProgressBar('#timeline-progress-bar-102024', findIndexByTime('10.2024'), 480);
+    updateProgressBar('#timeline-progress-bar-right', findIndexByTime('03.2022'), 150);
+    updateProgressBar('#timeline-progress-bar-right-072022', findIndexByTime('07.2022'), 150);
+    updateProgressBar('#timeline-progress-bar-right-082024', findIndexByTime('08.2024'), 200);
+    updateProgressBar('#timeline-progress-bar-right-122024', findIndexByTime('12.2024'), 400);
 }
 
 // ============ 🧭 mouse events interaction logik ============
