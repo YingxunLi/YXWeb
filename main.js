@@ -775,32 +775,29 @@ function handlePageScroll() {
 function updateTimelineDisplay() {
     if (!timelineContainer) return;
 
+    const detailContent = utils.getElement('detail-content');
+    if (!detailContent) return;
+
     const leftLine = timelineContainer.querySelector('.left-line');
     const rightLine = timelineContainer.querySelector('.right-line');
     const allLabels = timelineContainer.querySelectorAll('.timeline-label');
     const allPoints = timelineContainer.querySelectorAll('.timeline-point');
-    const allContents = timelineContainer.querySelectorAll('.timeline-content');
     const allBubbles = timelineContainer.querySelectorAll('.timeline-bubble');
-    
+
     if (!leftLine || !rightLine || allLabels.length === 0) return;
-    
-    const totalItems = allLabels.length;
-    const visibleItemsFloat = timelineScrollProgress * totalItems;
-    const visibleItems = Math.floor(visibleItemsFloat);
-    const currentItemProgress = visibleItemsFloat - visibleItems;
+
+    const viewportHeight = detailContent.clientHeight;
+    const triggerPoint = viewportHeight * 0.5; // 动画在屏幕中线触发
 
     // 辅助函数：计算与内容显示同步的进度
-    const calculateContentProgress = (itemIndex) => {
-        if (visibleItems > itemIndex) return 1;
-        if (visibleItems < itemIndex) return 0;
-        
+    const calculateContentProgress = (itemIndex, itemProgress) => {
         const content = document.getElementById(`timeline-content-${itemIndex}`);
-        if (!content) return currentItemProgress;
+        if (!content) return itemProgress;
 
         const lines = content.querySelectorAll('.content-line');
-        if (lines.length === 0) return currentItemProgress;
+        if (lines.length === 0) return itemProgress;
 
-        const lineProgress = currentItemProgress * lines.length;
+        const lineProgress = itemProgress * lines.length;
         let visibleLines = 0;
         lines.forEach((line, lineIndex) => {
             if (lineProgress > lineIndex + 1) {
@@ -811,22 +808,28 @@ function updateTimelineDisplay() {
         });
         return visibleLines / lines.length;
     };
-    
+
     // 更新每个时间轴项目的显示状态
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
         const content = document.getElementById(`timeline-content-${index}`);
-        const bubble = allBubbles[index]; // 假设bubble和content一一对应
+        const bubble = allBubbles[index];
 
-        const isVisible = index <= visibleItems;
-        const itemProgress = isVisible ? ((index < visibleItems) ? 1 : currentItemProgress) : 0;
+        const itemRect = label.getBoundingClientRect();
+        const detailContentRect = detailContent.getBoundingClientRect();
+        const itemTopInViewport = itemRect.top - detailContentRect.top;
 
-        // 1. Label 和 Point 的显示逻辑: 项目开始出现时即显示
+        // 计算当前项的进度 (0到1)
+        const animationStart = triggerPoint;
+        const animationEnd = triggerPoint - 150; // 150px的滚动距离内完成动画
+        const itemProgress = Math.max(0, Math.min(1, (animationStart - itemTopInViewport) / (animationStart - animationEnd)));
+
+        // 1. Label 和 Point 的显示逻辑
         const showLabelAndPoint = itemProgress > 0;
         label.style.opacity = showLabelAndPoint ? '1' : '0';
         if (point) point.style.opacity = showLabelAndPoint ? '1' : '0';
 
-        // 2. Content 的显示逻辑: 逐行显示
+        // 2. Content 的显示逻辑
         if (content) {
             content.style.opacity = showLabelAndPoint ? '1' : '0';
             const contentLines = content.querySelectorAll('.content-line');
@@ -844,9 +847,9 @@ function updateTimelineDisplay() {
             });
         }
 
-        // 3. Bubble 的显示逻辑: 内容完全显示后出现
+        // 3. Bubble 的显示逻辑
         if (bubble) {
-            const contentProgress = calculateContentProgress(index);
+            const contentProgress = calculateContentProgress(index, itemProgress);
             const showBubble = contentProgress >= 1;
             
             bubble.style.opacity = showBubble ? '1' : '0';
@@ -870,22 +873,29 @@ function updateTimelineDisplay() {
     leftLine.style.height = `${lineHeight}px`;
     rightLine.style.height = `${lineHeight}px`;
 
-    const updateProgressBar = (selector, index, maxHeight) => {
+    const updateProgressBar = (selector, time, maxHeight) => {
         const progressBar = timelineContainer.querySelector(selector);
-        if (progressBar && index !== -1) {
-            const progress = calculateContentProgress(index);
+        const labelIndex = Array.from(allLabels).findIndex(label => label.textContent === time);
+        if (progressBar && labelIndex !== -1) {
+            const label = allLabels[labelIndex];
+            const itemRect = label.getBoundingClientRect();
+            const detailContentRect = detailContent.getBoundingClientRect();
+            const itemTopInViewport = itemRect.top - detailContentRect.top;
+            const animationStart = triggerPoint;
+            const animationEnd = triggerPoint - 150;
+            const itemProgress = Math.max(0, Math.min(1, (animationStart - itemTopInViewport) / (animationStart - animationEnd)));
+            
+            const progress = calculateContentProgress(labelIndex, itemProgress);
             progressBar.style.height = `${progress * maxHeight}px`;
         }
     };
 
-    const findIndexByTime = (time) => Array.from(allLabels).findIndex(label => label.textContent === time);
-
-    updateProgressBar('#timeline-progress-bar', findIndexByTime('09.2018'), 300);
-    updateProgressBar('#timeline-progress-bar-102024', findIndexByTime('10.2024'), 480);
-    updateProgressBar('#timeline-progress-bar-right', findIndexByTime('03.2022'), 150);
-    updateProgressBar('#timeline-progress-bar-right-072022', findIndexByTime('07.2022'), 150);
-    updateProgressBar('#timeline-progress-bar-right-082024', findIndexByTime('08.2024'), 200);
-    updateProgressBar('#timeline-progress-bar-right-122024', findIndexByTime('12.2024'), 400);
+    updateProgressBar('#timeline-progress-bar', '09.2018', 300);
+    updateProgressBar('#timeline-progress-bar-102024', '10.2024', 480);
+    updateProgressBar('#timeline-progress-bar-right', '03.2022', 150);
+    updateProgressBar('#timeline-progress-bar-right-072022', '07.2022', 150);
+    updateProgressBar('#timeline-progress-bar-right-082024', '08.2024', 200);
+    updateProgressBar('#timeline-progress-bar-right-122024', '12.2024', 400);
 }
 
 // ============ 🧭 mouse events interaction logik ============
