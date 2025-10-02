@@ -556,59 +556,40 @@ function createTimeline() {
         pointElement.id = `timeline-point-${index}`;
         timelineContainer.appendChild(pointElement);
         
-        let contentElement = null;
-        let bubbleText = '';
-        let hasBubble = false;
-
-        // 左侧内容（学校类）
         if (item.time === '09.2018') {
-            contentElement = document.createElement('div');
+            const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content left-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
+            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Zhejiang University of Technology</div>
                 <div class="content-line content-location" data-line="1">Hangzhou, Zhejiang, China</div>
                 <div class="content-line content-degree" data-line="2">Industrie Design, Bachelor of Engineering</div>
             `;
+            
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Zhejiang University of Technology';
-            hasBubble = true;
         }
-        if (item.time === '10.2024') {
-            contentElement = document.createElement('div');
-            contentElement.className = 'timeline-content left-content';
-            contentElement.style.top = `${item.top}px`;
-            contentElement.style.opacity = '0';
-            contentElement.id = `timeline-content-${index}`;
-            contentElement.innerHTML = `
-                <div class="content-line content-title" data-line="0">Hochschule für Gestaltung Schwäbisch Gmünd</div>
-                <div class="content-line content-location" data-line="1">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</div>
-                <div class="content-line content-degree" data-line="2">Interaktiongestaltung, Bachelor of Arts</div>
-            `;
-            timelineContainer.appendChild(contentElement);
-            bubbleText = 'HfG Schwäbisch Gmünd';
-            hasBubble = true;
-        }
-        // 右侧内容（职位类）
+        
         if (item.time === '03.2022') {
-            contentElement = document.createElement('div');
+            const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
             contentElement.id = `timeline-content-${index}`;
+            
             contentElement.innerHTML = `
                 <div class="content-line content-title" data-line="0">Produktmanager Praktikant</div>
                 <div class="content-line content-location" data-line="1">Hangzhou Zhixiao Technology Co. ｜ Hangzhou, Zhejiang, China ｜ Vor Ort</div>
                 <div class="content-line content-description" data-line="2">Erstellung von PRD sowie Web- und Mobil-Prototypen eines Jobsuchprodukts für Studierende</div>
             `;
+            
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'PM Praktikant';
-            hasBubble = true;
         }
+        
         if (item.time === '07.2022') {
-            contentElement = document.createElement('div');
+            const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
@@ -621,11 +602,10 @@ function createTimeline() {
             `;
             
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'PM';
-            hasBubble = true;
         }
+        
         if (item.time === '08.2024') {
-            contentElement = document.createElement('div');
+            const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
@@ -640,11 +620,26 @@ function createTimeline() {
             `;
             
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'CM Praktikant';
-            hasBubble = true;
         }
+        
+        if (item.time === '10.2024') {
+            const contentElement = document.createElement('div');
+            contentElement.className = 'timeline-content left-content';
+            contentElement.style.top = `${item.top}px`;
+            contentElement.style.opacity = '0';
+            contentElement.id = `timeline-content-${index}`;
+            
+            contentElement.innerHTML = `
+                <div class="content-line content-title" data-line="0">Hochschule für Gestaltung Schwäbisch Gmünd</div>
+                <div class="content-line content-location" data-line="1">Schwäbisch Gmünd, Baden-Württemberg, Deutschland</div>
+                <div class="content-line content-degree" data-line="2">Interaktiongestaltung, Bachelor of Arts</div>
+            `;
+            
+            timelineContainer.appendChild(contentElement);
+        }
+        
         if (item.time === '12.2024') {
-            contentElement = document.createElement('div');
+            const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
@@ -657,11 +652,10 @@ function createTimeline() {
             `;
             
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Content-Management';
-            hasBubble = true;
         }
+        
         if (item.time === '06.2025') {
-            contentElement = document.createElement('div');
+            const contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
             contentElement.style.top = `${item.top}px`;
             contentElement.style.opacity = '0';
@@ -675,37 +669,6 @@ function createTimeline() {
             `;
             
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Kommunikationsdesigner';
-            hasBubble = true;
-        }
-
-        // 只为有内容的项生成气泡
-        if (hasBubble) {
-            const bubbleSize = 40 + Math.random() * 20; // 40~60px
-            const bubbleOffsetY = 12; // 内容区块底部向下偏移
-            const bubble = document.createElement('div');
-            bubble.className = `timeline-bubble bubble-below`;
-            bubble.textContent = bubbleText;
-            bubble.style.width = bubble.style.height = `${bubbleSize}px`;
-            bubble.style.lineHeight = `${bubbleSize}px`;
-            bubble.style.opacity = '0';
-            bubble.style.transition = 'opacity 0.5s cubic-bezier(.5,1.5,.5,1), transform 0.5s cubic-bezier(.5,1.5,.5,1)';
-            bubble.id = `timeline-bubble-${index}`;
-            bubble.style.position = 'absolute';
-            bubble.style.transform = 'scale(0.7)';
-            // 计算内容区块底部位置
-            // 内容区块高度估算：每行18px，内容行数
-            let contentLines = contentElement ? contentElement.querySelectorAll('.content-line').length : 3;
-            let contentHeight = contentLines * 18 + 8; // 18px/行+padding
-            let bubbleTop = item.top + contentHeight + bubbleOffsetY;
-            bubble.style.top = `${bubbleTop}px`;
-            // 水平位置与内容区块一致
-            if (contentElement && contentElement.classList.contains('left-content')) {
-                bubble.style.right = 'calc(50% + 100px)';
-            } else if (contentElement && contentElement.classList.contains('right-content')) {
-                bubble.style.left = 'calc(50% + 100px)';
-            }
-            timelineContainer.appendChild(bubble);
         }
     });
     
@@ -792,7 +755,6 @@ function updateTimelineDisplay() {
     const allLabels = timelineContainer.querySelectorAll('.timeline-label');
     const allPoints = timelineContainer.querySelectorAll('.timeline-point');
     const allContents = timelineContainer.querySelectorAll('.timeline-content');
-    const allBubbles = timelineContainer.querySelectorAll('.timeline-bubble');
     
     if (!leftLine || !rightLine || allLabels.length === 0) return;
     
@@ -808,7 +770,6 @@ function updateTimelineDisplay() {
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
         const content = allContents[index]; // 可能为null
-        const bubble = allBubbles[index];
 
         // 判断内容的第一行是否开始出现
         let firstLineVisible = false;
@@ -836,10 +797,6 @@ function updateTimelineDisplay() {
                     line.style.opacity = '1';
                     line.style.transform = 'translateX(0)';
                 });
-            }
-            if (bubble) {
-                bubble.style.opacity = '1';
-                bubble.style.transform = 'scale(1)';
             }
             
             // 更新最大高度
@@ -893,10 +850,6 @@ function updateTimelineDisplay() {
                     }
                 });
             }
-            if (bubble) {
-                bubble.style.opacity = currentItemProgress.toString();
-                bubble.style.transform = `scale(${0.7 + 0.3 * currentItemProgress})`;
-            }
             
             // 更新最大高度（渐进式）
             const itemTop = parseFloat(label.style.top) || 0;
@@ -921,10 +874,6 @@ function updateTimelineDisplay() {
                         line.style.transform = 'translateX(50px)';
                     }
                 });
-            }
-            if (bubble) {
-                bubble.style.opacity = '0';
-                bubble.style.transform = 'scale(0.7)';
             }
         }
     });
@@ -1590,7 +1539,7 @@ function showProjectDetail(project) {
     // animation to close
     closeBtn.onclick = () => {
         detailOverlay.classList.remove('project-detail-expanded');
-        detailOverlay.classList.add('project-detail_expanding');
+        detailOverlay.classList.add('project-detail-expanding');
         detailOverlay.style.left = rect.left + 'px';
         detailOverlay.style.top = rect.top + 'px';
         detailOverlay.style.width = rect.width + 'px';
