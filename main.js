@@ -560,7 +560,7 @@ function createTimeline() {
         let bubbleText = '';
         let hasBubble = false;
 
-        // 左侧内容（学校类）
+        // 左侧内容
         if (item.time === '09.2018') {
             contentElement = document.createElement('div');
             contentElement.className = 'timeline-content left-content';
@@ -591,7 +591,7 @@ function createTimeline() {
             bubbleText = 'UX';
             hasBubble = true;
         }
-        // 右侧内容（职位类）
+        // 右侧内容
         if (item.time === '03.2022') {
             contentElement = document.createElement('div');
             contentElement.className = 'timeline-content right-content';
@@ -673,24 +673,21 @@ function createTimeline() {
 
         // 只为有内容的项生成气泡
         if (hasBubble) {
-            const bubbleSize = 40 + Math.random() * 20; // 40~60px
-            // 水平位置随机偏移
-            const horizontalRand = (Math.random() - 0.5) * 60; // -30~30px
-            const bubbleOffsetY = 12; // 内容区块底部向下偏移
+            const bubbleSize = 40 + Math.random() * 20;
+            const horizontalRand = (Math.random() - 0.5) * 60;
+            const bubbleOffsetY = 12;
             const bubble = document.createElement('div');
-            bubble.className = `timeline-bubble bubble-below`;
+            bubble.className = 'timeline-bubble bubble-below';
             bubble.textContent = bubbleText;
             bubble.style.width = bubble.style.height = `${bubbleSize}px`;
             bubble.style.lineHeight = `${bubbleSize}px`;
             bubble.style.opacity = '0';
             bubble.style.position = 'absolute';
-            bubble.style.transform = `scale(0.7)`;
-            // 计算内容区块底部位置
+            bubble.style.transform = 'scale(0.7)';
             let contentLines = contentElement ? contentElement.querySelectorAll('.content-line').length : 3;
             let contentHeight = contentLines * 18 + 8;
             let bubbleTop = item.top + contentHeight + bubbleOffsetY;
             bubble.style.top = `${bubbleTop}px`;
-            // 水平位置：左侧内容往左偏，右侧内容往右偏
             if (contentElement && contentElement.classList.contains('left-content')) {
                 bubble.style.right = `calc(50% + 100px + ${horizontalRand}px)`;
             } else if (contentElement && contentElement.classList.contains('right-content')) {
