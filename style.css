@@ -201,7 +201,7 @@ canvas {
     border-radius: 50%;
     background-color: var(--color-black);
     opacity: 0;
-    transition: var(--transition-opacity-normal);
+    /* transition: var(--transition-opacity-normal); */
     z-index: 103;
 }
 

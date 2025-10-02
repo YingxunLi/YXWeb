@@ -798,141 +798,77 @@ function updateTimelineDisplay() {
         const content = allContents[index]; // 可能为null
         const bubble = allBubbles[index];
 
-        // 判断内容的第一行是否开始出现
-        let firstLineVisible = false;
-        if (content) {
-            const firstLine = content.querySelector('.content-line[data-line="0"]');
-            if (firstLine) {
-                firstLineVisible = parseFloat(firstLine.style.opacity || '0') > 0;
-            }
-        }
+        // 统一的显示逻辑
+        let isVisible = index < visibleItems;
+        let itemProgress = (index === visibleItems) ? currentItemProgress : (isVisible ? 1 : 0);
 
-        // 控制时间点显示：内容第一行开始出现时就显示
-        if (point) {
-            point.style.opacity = firstLineVisible ? '1' : '0';
-        }
-        
-        if (index < visibleItems) {
-            // 已完全显示的项目
+        // 默认隐藏
+        label.style.opacity = '0';
+        if (point) point.style.opacity = '0';
+        if (content) content.style.opacity = '0';
+        if (bubble) bubble.style.opacity = '0';
+
+        if (itemProgress > 0) {
+            // 当内容开始出现时，标签和点就完全显示
             label.style.opacity = '1';
             if (point) point.style.opacity = '1';
+
             if (content) {
-                content.style.opacity = '1';
-                // 显示所有内容行
-                const contentLines = content.querySelectorAll('.content-line');
-                contentLines.forEach(line => {
-                    line.style.opacity = '1';
-                    line.style.transform = 'translateX(0)';
-                });
-            }
-            if (bubble) {
-                // 首次渐显时自动渐隐
-                if (!bubble.__autoFade) {
-                    bubble.style.opacity = '1';
-                    bubble.style.transform = 'scale(1)';
-                    bubble.__autoFade = true;
-                    setTimeout(() => {
-                        bubble.style.opacity = '0';
-                        bubble.style.transform = 'scale(0.7)';
-                        // 允许再次渐显（如重新滚动）
-                        setTimeout(() => { bubble.__autoFade = false; }, 600);
-                    }, 1200); // 1.2秒后开始渐隐
-                }
-            }
-            
-            // 更新最大高度
-            const itemTop = parseFloat(label.style.top) || 0;
-            maxVisibleHeight = Math.max(maxVisibleHeight, itemTop + 50);
-        } else if (index === visibleItems) {
-            // 正在显示的项目（渐进效果）
-            const opacity = currentItemProgress.toString();
-            label.style.opacity = opacity;
-            if (point) point.style.opacity = opacity;
-            if (content) {
-                content.style.opacity = '1';
-                // 特殊处理内容行的逐行显示
+                content.style.opacity = '1'; // 容器本身可见
                 const contentLines = content.querySelectorAll('.content-line');
                 const totalLines = contentLines.length;
-                const lineProgress = currentItemProgress * totalLines;
-                
-                // 判断内容是左侧还是右侧
+                const lineProgress = itemProgress * totalLines;
                 const isRightContent = content.classList.contains('right-content');
-                
+
                 contentLines.forEach((line, lineIndex) => {
-                    if (lineIndex < Math.floor(lineProgress)) {
-                        // 完全显示的行
-                        line.style.opacity = '1';
-                        line.style.transform = 'translateX(0)';
-                    } else if (lineIndex === Math.floor(lineProgress)) {
-                        // 正在显示的行
-                        const currentLineProgress = lineProgress - lineIndex;
-                        line.style.opacity = currentLineProgress.toString();
-                        
-                        // 根据左右侧设置不同的滑入方向
-                        if (isRightContent) {
-                            // 右侧内容：从左向右滑入
-                            const translateX = (1 - currentLineProgress) * -50; // 负值表示从左侧滑入
-                            line.style.transform = `translateX(${translateX}px)`;
-                        } else {
-                            // 左侧内容：从右向左滑入
-                            const translateX = (1 - currentLineProgress) * 50; // 正值表示从右侧滑入
-                            line.style.transform = `translateX(${translateX}px)`;
-                        }
-                    } else {
-                        // 未显示的行
-                        line.style.opacity = '0';
-                        if (isRightContent) {
-                            // 右侧内容：初始位置在左侧
-                            line.style.transform = 'translateX(-50px)';
-                        } else {
-                            // 左侧内容：初始位置在右侧
-                            line.style.transform = 'translateX(50px)';
-                        }
-                    }
+                    const currentLineProgress = Math.max(0, Math.min(1, lineProgress - lineIndex));
+                    line.style.opacity = currentLineProgress.toString();
+                    
+                    const slideDistance = 50;
+                    const translateX = (1 - currentLineProgress) * (isRightContent ? -slideDistance : slideDistance);
+                    line.style.transform = `translateX(${translateX}px)`;
                 });
             }
+
             if (bubble) {
-                bubble.style.opacity = currentItemProgress.toString();
-                bubble.style.transform = `scale(${0.7 + 0.3 * currentItemProgress})`;
-                // 只在完全渐显后自动渐隐
-                if (!bubble.__autoFade && currentItemProgress > 0.99) {
+                // 气泡与内容同步出现
+                bubble.style.opacity = itemProgress.toString();
+                bubble.style.transform = `scale(${0.7 + 0.3 * itemProgress})`;
+
+                // 自动渐隐逻辑
+                if (!bubble.__autoFade && itemProgress > 0.99) {
                     bubble.__autoFade = true;
                     setTimeout(() => {
                         bubble.style.opacity = '0';
                         bubble.style.transform = 'scale(0.7)';
+                        // 允许再次触发
                         setTimeout(() => { bubble.__autoFade = false; }, 600);
                     }, 1200);
+                } else if (itemProgress < 0.99) {
+                    // 如果滚动回去，重置状态
+                    bubble.__autoFade = false;
                 }
             }
-            // 更新最大高度
-            const itemTop = parseFloat(label.style.top) || 0;
-            maxVisibleHeight = Math.max(maxVisibleHeight, itemTop + 50); 
         } else {
-            // 未显示的项目保持透明
-            label.style.opacity = '0';
-            if (point) point.style.opacity = '0';
+            // 未显示的项目，确保所有内容行都已重置
             if (content) {
-                content.style.opacity = '0';
-                // 隐藏所有内容行
                 const contentLines = content.querySelectorAll('.content-line');
                 const isRightContent = content.classList.contains('right-content');
-                
                 contentLines.forEach(line => {
                     line.style.opacity = '0';
-                    if (isRightContent) {
-                        // 右侧内容：初始位置在左侧
-                        line.style.transform = 'translateX(-50px)';
-                    } else {
-                        // 左侧内容：初始位置在右侧
-                        line.style.transform = 'translateX(50px)';
-                    }
+                    line.style.transform = `translateX(${isRightContent ? -50 : 50}px)`;
                 });
             }
             if (bubble) {
-                bubble.style.opacity = '0';
                 bubble.style.transform = 'scale(0.7)';
                 bubble.__autoFade = false;
             }
+        }
+        
+        // 更新最大高度
+        if (itemProgress > 0) {
+            const itemTop = parseFloat(label.style.top) || 0;
+            maxVisibleHeight = Math.max(maxVisibleHeight, itemTop + 50);
         }
     });
     
