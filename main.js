@@ -802,13 +802,17 @@ function handlePageScroll(event) {
             circleWrapper.classList.add('show-person');
             
             // 动画完成后更新状态
-            circleWrapper.addEventListener('animationend', () => {
-                console.log("Person animation finished");
-                skillAnimationPhase = 5; // 人形动画完成
-                // 恢复滚动
-                const detailContent = utils.getElement('detail-content');
-                if (detailContent) {
-                    detailContent.style.overflowY = 'auto';
+            // 监听身体动画结束，因为它和头部动画时长相同
+            const personBody = document.getElementById('person-body');
+            personBody.addEventListener('animationend', (e) => {
+                if (e.animationName === 'transform-to-body') {
+                    console.log("Person animation finished");
+                    skillAnimationPhase = 5; // 人形动画完成
+                    // 恢复滚动
+                    const detailContent = utils.getElement('detail-content');
+                    if (detailContent) {
+                        detailContent.style.overflowY = 'auto';
+                    }
                 }
             }, { once: true });
         }
