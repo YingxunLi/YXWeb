@@ -74,25 +74,14 @@
         transform: translateX(-50%) scale(1);
     }
     100% {
-        /* 头部(wrapper)原始高度400px, 缩小0.5倍后为200px。
-           身体(#person-body)的顶部将与wrapper的底部(y=400px)对齐。
-           为了让头部(200px高)的底部与身体的顶部对齐，头部需要向上移动。
-           头部中心点从y=200px移动到y=300px，即上移100px。
-           所以 translateY 应该是 -100px。
-        */
         transform: translateX(-50%) translateY(-100px) scale(0.5);
     }
 }
 
 #skill-circle-wrapper.show-person #person-body {
     opacity: 1;
-    /* 身体的顶部需要与wrapper的底部(y=400px)对齐。
-       身体高度500px，所以bottom应为 400px - 500px = -100px。
-       由于wrapper缩小并上移，身体也需要调整位置以正确衔接。
-       最终wrapper的底部在 y=300px (200px中心 + 100px高度)。
-       身体的顶部需要对齐到 y=300px。身体高度500px，所以bottom应为 300 - 500 = -200px。
-    */
-    bottom: -200px; /* 调整最终位置，使其与头部衔接 */
+
+    bottom: -500px; /* 调整最终位置，将身体向下移动100px以避免重叠 */
 }
 
 #skill-bowl {
