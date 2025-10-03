@@ -707,6 +707,14 @@ function createTimeline() {
     personBody.id = 'person-body';
     skillCircleWrapper.appendChild(personBody);
 
+    // 添加文字元素
+    const textElement = document.createElement('div');
+    textElement.id = 'manchmal-text';
+    textElement.textContent = 'Manchmal will ich';
+    textElement.style.opacity = '0';
+    skillCircleWrapper.appendChild(textElement);
+
+    // 添加到时间线容器
     timelineContainer.appendChild(skillCircleWrapper);
 
     skillsData.forEach((skill, index) => {
@@ -815,6 +823,66 @@ function handlePageScroll(event) {
                     }
                 }
             }, { once: true });
+        }
+        return;
+    }
+    
+    // 阶段5：人形动画完成后，显示文字并恢复原始圆形
+    if (skillAnimationPhase === 5 && event.deltaY > 0) {
+        event.preventDefault();
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        const textElement = document.getElementById('manchmal-text');
+        if (circleWrapper && !circleWrapper.classList.contains('restore-circle')) {
+            console.log("Starting text reveal and shape restore animation");
+            textElement.style.opacity = '1';
+            circleWrapper.classList.add('restore-circle');
+            
+            // 监听恢复动画结束
+            circleWrapper.addEventListener('animationend', (e) => {
+                if (e.animationName === 'restore-to-circle') {
+                    console.log("Restore animation finished");
+                    skillAnimationPhase = 6; // 恢复动画完成
+                    // 恢复滚动
+                    const detailContent = utils.getElement('detail-content');
+                    if (detailContent) {
+                        detailContent.style.overflowY = 'auto';
+                    }
+                }
+            }, { once: true });
+        }
+        return;
+    }
+    
+    // 阶段6：先完整显示句子，之后再旋转文字
+    if (skillAnimationPhase === 6 && event.deltaY > 0) {
+        event.preventDefault();
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        const textElement = document.getElementById('manchmal-text');
+        if (circleWrapper && !circleWrapper.classList.contains('text-updated')) {
+            console.log("Updating complete text");
+            
+            // 更新文本并分行显示，添加类以标记文本已更新
+            textElement.innerHTML = 'Manchmal will ich<br>die Welt auf<br>den Kopf stellen';
+            circleWrapper.classList.add('text-updated');
+            
+            // 等待1秒让用户阅读完整文本后再开始旋转动画
+            setTimeout(() => {
+                console.log("Starting rotation animation");
+                circleWrapper.classList.add('flip-circle');
+                
+                // 监听文字旋转动画结束
+                textElement.addEventListener('animationend', (e) => {
+                    if (e.animationName === 'text-rotate-animation') {
+                        console.log("Text rotation animation finished");
+                        skillAnimationPhase = 7; // 旋转动画完成
+                        // 恢复滚动
+                        const detailContent = utils.getElement('detail-content');
+                        if (detailContent) {
+                            detailContent.style.overflowY = 'auto';
+                        }
+                    }
+                }, { once: true });
+            }, 1000); // 等待1秒
         }
         return;
     }
@@ -1690,8 +1758,8 @@ function showProjectDetailDirect(project) {
     closeBtn.className = 'project-close-btn';
     closeBtn.style.opacity = '0';
     closeBtn.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="24" height="24" viewBox="0 0 24" fill="none>
+                       <path d="M18 6L6 18M6  6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     `;
     document.body.appendChild(closeBtn);
