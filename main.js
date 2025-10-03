@@ -101,7 +101,7 @@ let timelineScrollProgress = 0;
 let timelineContainer = null;
 let timelineMaxHeight = 1000;
 let hasScrollControl = false;
-let skillAnimationPhase = 0; // 0: start, 1: rings, 2: balls falling, 3: lid closing, 4: done
+let skillAnimationPhase = 0; // 0: start, 1: rings, 2: balls falling, 3: lid closing, 4: ready for person anim, 5: person anim done
 
 // mouse - raycaster
 let raycaster = new THREE.Raycaster(); 
@@ -702,6 +702,11 @@ function createTimeline() {
     skillCircleWrapper.appendChild(skillBowlLid);
     skillCircleWrapper.appendChild(skillBowlContainer);
 
+    // 添加人形身体元素
+    const personBody = document.createElement('div');
+    personBody.id = 'person-body';
+    skillCircleWrapper.appendChild(personBody);
+
     timelineContainer.appendChild(skillCircleWrapper);
 
     skillsData.forEach((skill, index) => {
@@ -781,7 +786,25 @@ function handlePageScroll(event) {
             
             lid.addEventListener('animationend', () => {
                 console.log("Lid animation finished.");
-                skillAnimationPhase = 4; // 动画完成
+                skillAnimationPhase = 4; // 动画完成，准备人形动画
+            }, { once: true });
+        }
+        return;
+    }
+
+    // 阶段4：人形动画，阻止滚动
+    if (skillAnimationPhase === 4 && event.deltaY > 0) {
+        event.preventDefault();
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        if (circleWrapper && !circleWrapper.classList.contains('shrink-to-head')) {
+            console.log("Starting person animation");
+            circleWrapper.classList.add('shrink-to-head');
+            circleWrapper.classList.add('show-person');
+            
+            // 动画完成后更新状态
+            circleWrapper.addEventListener('animationend', () => {
+                console.log("Person animation finished");
+                skillAnimationPhase = 5; // 人形动画完成
                 // 恢复滚动
                 const detailContent = utils.getElement('detail-content');
                 if (detailContent) {
@@ -1022,7 +1045,7 @@ function addMouseEvents() {
         // interaction detection
         const currentMouseX = (event.clientX / window.innerWidth) * 2 - 1;
         
-        // nur wenn über dem Logo, nicht in der Detailansicht und nicht während einer Rotation
+        // nur wenn über dem Logo, nicht in der Detailansicht und nicht während的一次旋转
         if (isHoveringLogo && !isRotating && !isDetailMode && !isTransitioningToDetail) {
             const deltaX = currentMouseX - lastMouseX;
             

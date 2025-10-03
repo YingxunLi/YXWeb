@@ -48,6 +48,50 @@
     }
 }
 
+/* 人形图标相关样式 */
+#person-body {
+    position: absolute;
+    width: 400px; /* 与头部等宽 */
+    height: 500px; /* 增加高度使比例更协调 */
+    background-color: var(--color-black);
+    border-top-left-radius: 200px; /* 匹配头部的圆角 */
+    border-top-right-radius: 200px; /* 匹配头部的圆角 */
+    bottom: -500px; /* 初始位置在圆形下方 */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    z-index: 90; /* 确保在碗下面 */
+    transition: opacity 1s ease, bottom 1s ease;
+}
+
+#skill-circle-wrapper.shrink-to-head {
+    animation: shrink-to-head 1s cubic-bezier(0.6, 0.04, 0.98, 0.335) forwards;
+    z-index: 120; /* 确保头部在身体上方 */
+}
+
+@keyframes shrink-to-head {
+    0% {
+        transform: translateX(-50%) scale(1);
+    }
+    100% {
+        /* 头部(wrapper)原始高度400px, 缩小0.5倍后为200px。
+           身体(#person-body)的顶部将与wrapper的底部(y=400px)对齐。
+           为了让头部(200px高)的底部与身体的顶部对齐，头部需要向上移动。
+           头部中心点从y=200px移动到y=300px，即上移100px。
+           所以 translateY 应该是 -100px。
+        */
+        transform: translateX(-50%) translateY(-100px) scale(0.5);
+    }
+}
+
+#skill-circle-wrapper.show-person #person-body {
+    opacity: 1;
+    /* 身体的顶部需要与wrapper的底部(y=400px)对齐。
+       身体高度500px，所以bottom应为 400px - 500px = -100px。
+    */
+    bottom: -100px; /* 调整最终位置，使其与头部衔接 */
+}
+
 #skill-bowl {
     position: absolute;
     bottom: 0;
