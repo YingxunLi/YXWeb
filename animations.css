@@ -11,7 +11,7 @@
 
 #skill-circle-wrapper {
     position: absolute;
-    top: 1950px; /* 调整整体位置 */
+    top: 2050px; /* 调整整体位置 */
     left: 50%;
     transform: translateX(-50%);
     width: 400px;
@@ -88,17 +88,17 @@
 /* 定义每个球的最终位置 */
 @keyframes fall-1 {
     0% { opacity: 1; transform: translate(0, 0) scale(1); }
-    100% { opacity: 1; transform: translate(240px, 370px) scale(0.9) rotate(-15deg); }
+    100% { opacity: 1; transform: translate(250px, 470px) scale(0.9) rotate(-15deg); }
 }
 @keyframes fall-2 {
     0% { opacity: 1; transform: translate(0, 0) scale(1); }
-    100% { opacity: 1; transform: translate(70px, 370px) scale(0.9) rotate(10deg); }
+    100% { opacity: 1; transform: translate(70px, 470px) scale(0.9) rotate(10deg); }
 }
 @keyframes fall-3 {
     0% { opacity: 1; transform: translate(0, 0) scale(1); }
-    100% { opacity: 1; transform: translate(-100px, 370px) scale(0.9) rotate(-8deg); }
+    100% { opacity: 1; transform: translate(-100px, 470px) scale(0.9) rotate(-8deg); }
 }
 @keyframes fall-4 {
     0% { opacity: 1; transform: translate(0, 0) scale(1); }
-    100% { opacity: 1; transform: translate(-280px, 370px) scale(0.9) rotate(15deg); }
+    100% { opacity: 1; transform: translate(-280px, 470px) scale(0.9) rotate(15deg); }
 }
