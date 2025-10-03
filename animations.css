@@ -1,0 +1,104 @@
+#skill-bowl-container {
+    position: absolute;
+    /* top: 2150px; */ /* 由 wrapper 控制 */
+    left: 0;
+    bottom: 0; /* 定位在 wrapper 底部 */
+    width: 400px;
+    height: 200px; /* 碗的高度 */
+    pointer-events: none;
+    /* 移除，因为碗现在是 wrapper 的一部分 */
+}
+
+#skill-circle-wrapper {
+    position: absolute;
+    top: 1950px; /* 调整整体位置 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 400px; /* 完整圆形的高度 */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#skill-bowl-lid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 400px;
+    height: 200px;
+    background-color: var(--color-black);
+    border-top-left-radius: 200px;
+    border-top-right-radius: 200px;
+    transform-origin: 0% 100%; /* 设置旋转中心为左下角 */
+    transform: rotate(-135deg); /* 初始打开状态 */
+    opacity: 1; /* 初始可见 */
+    z-index: 120; /* 确保盖子在最上层 */
+}
+
+#skill-bowl-lid.closing {
+    animation: close-lid 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+@keyframes close-lid {
+    from {
+        transform: rotate(-135deg);
+    }
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+#skill-bowl {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background-color: var(--color-black);
+    /* 修改为开口向上的半圆 */
+    border-bottom-left-radius: 200px;
+    border-bottom-right-radius: 200px;
+    z-index: 100; /* 确保碗在小球下面 */
+}
+
+.skill-ball {
+    position: absolute;
+    width: 100px; /* 尺寸小于圆环 */
+    height: 100px;
+    background-color: var(--color-light-gray);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    color: var(--color-black);
+    opacity: 0; /* 初始隐藏 */
+    z-index: 110;
+    pointer-events: none;
+    transition: opacity 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 为每个球定义掉落动画 */
+.skill-ball.fall-1 { animation: fall-1 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.0s forwards; }
+.skill-ball.fall-2 { animation: fall-2 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.2s forwards; }
+.skill-ball.fall-3 { animation: fall-3 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.4s forwards; }
+.skill-ball.fall-4 { animation: fall-4 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.6s forwards; }
+
+/* 定义每个球的最终位置 */
+@keyframes fall-1 {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 1; transform: translate(240px, 370px) scale(0.9) rotate(-15deg); }
+}
+@keyframes fall-2 {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 1; transform: translate(70px, 370px) scale(0.9) rotate(10deg); }
+}
+@keyframes fall-3 {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 1; transform: translate(-100px, 370px) scale(0.9) rotate(-8deg); }
+}
+@keyframes fall-4 {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 1; transform: translate(-280px, 370px) scale(0.9) rotate(15deg); }
+}

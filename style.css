@@ -17,18 +17,23 @@
     --font-weight-small: 300;
     --color-black: #000;
     --color-gray: #a3a3a3;
+    --color-medium-gray: #8f8f8f;
     --color-light-gray: #e5e5e5;
     --transition-opacity-fast: opacity 0.2s ease;
     --transition-opacity-normal: opacity 0.3s ease;
 }
 
+html,
 body {
     margin: 0;
     padding: 0;
     background-color: white;
-    overflow-x: hidden; /* 只隐藏水平滚动条 */
-    overflow-y: auto; /* 允许垂直滚动 */
+    overflow-x: hidden; /* 彻底禁止水平滚动 */
     font-family: var(--font-primary);
+}
+
+body {
+    overflow-y: auto; /* 仅在body上允许垂直滚动 */
 }
 
 #container {
@@ -334,6 +339,7 @@ canvas {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    z-index: 1; /* 确保在小球下方 */
 }
 
 .skill-ring {

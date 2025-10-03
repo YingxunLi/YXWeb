@@ -101,6 +101,7 @@ let timelineScrollProgress = 0;
 let timelineContainer = null;
 let timelineMaxHeight = 1000;
 let hasScrollControl = false;
+let skillAnimationPhase = 0; // 0: start, 1: rings, 2: balls falling, 3: lid closing, 4: done
 
 // mouse - raycaster
 let raycaster = new THREE.Raycaster(); 
@@ -686,6 +687,30 @@ function createTimeline() {
         skillsContainer.appendChild(skillItem);
     });
     timelineContainer.appendChild(skillsContainer);
+
+    // 技能碗、盖子和小球
+    const skillCircleWrapper = document.createElement('div');
+    skillCircleWrapper.id = 'skill-circle-wrapper';
+    
+    const skillBowlContainer = document.createElement('div');
+    skillBowlContainer.id = 'skill-bowl-container';
+    skillBowlContainer.innerHTML = '<div id="skill-bowl"></div>';
+
+    const skillBowlLid = document.createElement('div');
+    skillBowlLid.id = 'skill-bowl-lid';
+
+    skillCircleWrapper.appendChild(skillBowlLid);
+    skillCircleWrapper.appendChild(skillBowlContainer);
+
+    timelineContainer.appendChild(skillCircleWrapper);
+
+    skillsData.forEach((skill, index) => {
+        const ball = document.createElement('div');
+        ball.className = `skill-ball skill-ball-${index + 1}`;
+        ball.textContent = skill.title;
+        // 将小球也放入 wrapper，便于定位
+        skillCircleWrapper.appendChild(ball);
+    });
     
     detailContent.appendChild(timelineContainer);
     
@@ -714,10 +739,13 @@ function addTimelineScrollEvents() {
     if (hasScrollControl) return;
     
     hasScrollControl = true;
+    skillAnimationPhase = 0; // 重置动画阶段
     
     const detailContent = utils.getElement('detail-content');
     if (detailContent) {
-        detailContent.addEventListener('scroll', handlePageScroll, { passive: true });
+        // 需要移除 passive: true 以便使用 preventDefault()
+        detailContent.addEventListener('scroll', handlePageScroll);
+        detailContent.addEventListener('wheel', handlePageScroll, { passive: false });
     }
     
     if (detailContent) {
@@ -734,13 +762,35 @@ function removeTimelineScrollEvents() {
     const detailContent = utils.getElement('detail-content');
     if (detailContent) {
         detailContent.removeEventListener('scroll', handlePageScroll);
+        detailContent.removeEventListener('wheel', handlePageScroll);
         detailContent.scrollTop = 0;
     }
 }
 
 // ============ page scrollen ============
-function handlePageScroll() {
+function handlePageScroll(event) {
     if (!isDetailMode || currentState !== 1 || !timelineContainer) return;
+
+    // 阶段3：盖子动画，阻止滚动
+    if (skillAnimationPhase === 3 && event.deltaY > 0) {
+        event.preventDefault();
+        const lid = document.getElementById('skill-bowl-lid');
+        if (lid && !lid.classList.contains('closing')) {
+            console.log("Closing lid");
+            lid.classList.add('closing');
+            
+            lid.addEventListener('animationend', () => {
+                console.log("Lid animation finished.");
+                skillAnimationPhase = 4; // 动画完成
+                // 恢复滚动
+                const detailContent = utils.getElement('detail-content');
+                if (detailContent) {
+                    detailContent.style.overflowY = 'auto';
+                }
+            }, { once: true });
+        }
+        return;
+    }
     
     const detailContent = utils.getElement('detail-content');
     if (!detailContent) return;
@@ -873,19 +923,61 @@ function updateTimelineDisplay() {
         const skillsTopInViewport = skillsRect.top - detailContentRect.top;
 
         if (skillsTopInViewport < viewportHeight * 0.8) {
-            skillsContainer.style.opacity = '1';
-            
-            const skillRings = skillsContainer.querySelectorAll('.skill-ring-fg');
-            const skillsData = [
-                { percentage: 80 }, { percentage: 80 }, { percentage: 70 }, { percentage: 75 }
-            ];
-            const radius = 54;
-            const circumference = 2 * Math.PI * radius;
+            if (skillAnimationPhase < 1) {
+                skillAnimationPhase = 1;
+                skillsContainer.style.opacity = '1';
+                
+                const skillRings = skillsContainer.querySelectorAll('.skill-ring-fg');
+                const skillsData = [
+                    { percentage: 80 }, { percentage: 80 }, { percentage: 70 }, { percentage: 75 }
+                ];
+                const radius = 54;
+                const circumference = 2 * Math.PI * radius;
 
-            skillRings.forEach((ring, index) => {
-                const offset = circumference - (skillsData[index].percentage / 100) * circumference;
-                ring.style.strokeDashoffset = offset;
+                skillRings.forEach((ring, index) => {
+                    const offset = circumference - (skillsData[index].percentage / 100) * circumference;
+                    ring.style.strokeDashoffset = offset;
+                });
+            }
+        }
+    }
+
+    // 6. 技能碗和小球动画
+    const circleWrapper = document.getElementById('skill-circle-wrapper');
+    if (circleWrapper) {
+        const wrapperRect = circleWrapper.getBoundingClientRect();
+        const detailContentRect = detailContent.getBoundingClientRect();
+        const wrapperTopInViewport = wrapperRect.top - detailContentRect.top;
+
+        if (wrapperTopInViewport < viewportHeight * 0.7 && skillAnimationPhase < 2) {
+            skillAnimationPhase = 2;
+            circleWrapper.style.opacity = '1';
+
+            const skillItems = document.querySelectorAll('.skill-item');
+            const balls = document.querySelectorAll('.skill-ball');
+
+            balls.forEach((ball, index) => {
+                const skillItemRect = skillItems[index].querySelector('.skill-ring-container').getBoundingClientRect();
+                const wrapperRect = circleWrapper.getBoundingClientRect();
+                
+                // 计算小球相对于 wrapper 的初始位置
+                const initialX = skillItemRect.left - wrapperRect.left + (skillItemRect.width / 2) - (ball.offsetWidth / 2);
+                const initialY = skillItemRect.top - wrapperRect.top + (skillItemRect.height / 2) - (ball.offsetHeight / 2);
+
+                ball.style.left = `${initialX}px`;
+                ball.style.top = `${initialY}px`;
+                
+                ball.classList.add(`fall-${index + 1}`);
             });
+
+            // 监听最后一个球的动画结束
+            const lastBall = balls[balls.length - 1];
+            lastBall.addEventListener('animationend', () => {
+                console.log("Ball animation finished. Ready for lid.");
+                skillAnimationPhase = 3; // 球已落下，准备盖盖子
+                const detailContent = utils.getElement('detail-content');
+                detailContent.style.overflowY = 'hidden'; // 准备阻止滚动
+            }, { once: true });
         }
     }
 }
