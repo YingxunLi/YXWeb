@@ -557,9 +557,7 @@ function createTimeline() {
         timelineContainer.appendChild(pointElement);
         
         let contentElement = null;
-        let bubbleText = '';
-        let hasBubble = false;
-
+        
         // 左侧内容
         if (item.time === '09.2018') {
             contentElement = document.createElement('div');
@@ -573,8 +571,6 @@ function createTimeline() {
                 <div class="content-line content-degree" data-line="2">Industrie Design, Bachelor of Engineering</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'UI';
-            hasBubble = true;
         }
         if (item.time === '10.2024') {
             contentElement = document.createElement('div');
@@ -588,8 +584,6 @@ function createTimeline() {
                 <div class="content-line content-degree" data-line="2">Interaktiongestaltung, Bachelor of Arts</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'UX';
-            hasBubble = true;
         }
         // 右侧内容
         if (item.time === '03.2022') {
@@ -604,8 +598,6 @@ function createTimeline() {
                 <div class="content-line content-description" data-line="2">Erstellung von PRD sowie Web- und Mobil-Prototypen eines Jobsuchprodukts für Studierende</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'PM';
-            hasBubble = true;
         }
         if (item.time === '07.2022') {
             contentElement = document.createElement('div');
@@ -619,8 +611,6 @@ function createTimeline() {
                 <div class="content-line content-description" data-line="2">Erstellung von Designspezifikationen für CNC-Bearbeitung smarter Produkte</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Design';
-            hasBubble = true;
         }
         if (item.time === '08.2024') {
             contentElement = document.createElement('div');
@@ -636,8 +626,6 @@ function createTimeline() {
                 <div class="content-line content-description" data-line="4">Marktforschung zu Jobsuche-Tools und Entwicklung kreativer Ideen</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Content';
-            hasBubble = true;
         }
         if (item.time === '12.2024') {
             contentElement = document.createElement('div');
@@ -651,8 +639,6 @@ function createTimeline() {
                 <div class="content-line content-description" data-line="2">Promotion auf Instagram: Videoaufnahme, Fotografie, Nachbearbeitung</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Social';
-            hasBubble = true;
         }
         if (item.time === '06.2025') {
             contentElement = document.createElement('div');
@@ -667,33 +653,6 @@ function createTimeline() {
                 <div class="content-line content-description" data-line="3">Mitarbeit am FEAST-Projekt: Gestaltung von Postern, Flyern, interaktiven Materialien für die FEAST Summer School 2025</div>
             `;
             timelineContainer.appendChild(contentElement);
-            bubbleText = 'Visual';
-            hasBubble = true;
-        }
-
-        // 只为有内容的项生成气泡
-        if (hasBubble) {
-            const bubbleSize = 40 + Math.random() * 20;
-            const horizontalRand = (Math.random() - 0.5) * 60;
-            const bubbleOffsetY = 12;
-            const bubble = document.createElement('div');
-            bubble.className = 'timeline-bubble bubble-below';
-            bubble.textContent = bubbleText;
-            bubble.style.width = bubble.style.height = `${bubbleSize}px`;
-            bubble.style.lineHeight = `${bubbleSize}px`;
-            bubble.style.opacity = '0';
-            bubble.style.position = 'absolute';
-            bubble.style.transform = 'scale(0.7)';
-            let contentLines = contentElement ? contentElement.querySelectorAll('.content-line').length : 3;
-            let contentHeight = contentLines * 18 + 8;
-            let bubbleTop = item.top + contentHeight + bubbleOffsetY;
-            bubble.style.top = `${bubbleTop}px`;
-            if (contentElement && contentElement.classList.contains('left-content')) {
-                bubble.style.right = `calc(50% + 100px + ${horizontalRand}px)`;
-            } else if (contentElement && contentElement.classList.contains('right-content')) {
-                bubble.style.left = `calc(50% + 100px + ${horizontalRand}px)`;
-            }
-            timelineContainer.appendChild(bubble);
         }
     });
     
@@ -782,7 +741,6 @@ function updateTimelineDisplay() {
     const rightLine = timelineContainer.querySelector('.right-line');
     const allLabels = timelineContainer.querySelectorAll('.timeline-label');
     const allPoints = timelineContainer.querySelectorAll('.timeline-point');
-    const allBubbles = timelineContainer.querySelectorAll('.timeline-bubble');
 
     if (!leftLine || !rightLine || allLabels.length === 0) return;
 
@@ -813,7 +771,6 @@ function updateTimelineDisplay() {
     allLabels.forEach((label, index) => {
         const point = allPoints[index];
         const content = document.getElementById(`timeline-content-${index}`);
-        const bubble = allBubbles[index];
 
         const itemRect = label.getBoundingClientRect();
         const detailContentRect = detailContent.getBoundingClientRect();
@@ -845,26 +802,6 @@ function updateTimelineDisplay() {
                 const translateX = (1 - currentLineProgress) * (isRightContent ? -slideDistance : slideDistance);
                 line.style.transform = `translateX(${translateX}px)`;
             });
-        }
-
-        // 3. Bubble 的显示逻辑
-        if (bubble) {
-            const contentProgress = calculateContentProgress(index, itemProgress);
-            const showBubble = contentProgress >= 1;
-            
-            bubble.style.opacity = showBubble ? '1' : '0';
-            bubble.style.transform = `scale(${showBubble ? '1' : '0.7'})`;
-
-            if (!bubble.__autoFade && showBubble) {
-                bubble.__autoFade = true;
-                setTimeout(() => {
-                    bubble.style.opacity = '0';
-                    bubble.style.transform = 'scale(0.7)';
-                    setTimeout(() => { bubble.__autoFade = false; }, 600);
-                }, 1200);
-            } else if (!showBubble) {
-                bubble.__autoFade = false;
-            }
         }
     });
     
