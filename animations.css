@@ -56,7 +56,7 @@
     background-color: var(--color-black);
     border-top-left-radius: 200px; /* 匹配头部的圆角 */
     border-top-right-radius: 200px; /* 匹配头部的圆角 */
-    bottom: -500px; /* 初始位置在圆形下方 */
+    bottom: -400px; /* 初始位置在圆形下方, 与wrapper底部对齐 */
     left: 50%;
     transform: translateX(-50%);
     opacity: 0;
@@ -88,8 +88,11 @@
     opacity: 1;
     /* 身体的顶部需要与wrapper的底部(y=400px)对齐。
        身体高度500px，所以bottom应为 400px - 500px = -100px。
+       由于wrapper缩小并上移，身体也需要调整位置以正确衔接。
+       最终wrapper的底部在 y=300px (200px中心 + 100px高度)。
+       身体的顶部需要对齐到 y=300px。身体高度500px，所以bottom应为 300 - 500 = -200px。
     */
-    bottom: -100px; /* 调整最终位置，使其与头部衔接 */
+    bottom: -200px; /* 调整最终位置，使其与头部衔接 */
 }
 
 #skill-bowl {
