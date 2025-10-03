@@ -4,16 +4,20 @@
     --font-size-title: 40px;
     --font-size-title-mobile: 30px;
     --font-size-subtitle: 24px;
+    --font-size-medium: 18px;
     --font-size-body: 16px;
     --font-size-small: 14px;
+    --font-size-x-small: 10px;
 
+    --font-weight-bold: 700;
     --font-weight-title: 600;
+    --font-weight-medium: 500;
     --font-weight-subtitle: 400;
     --font-weight-body: 400;
     --font-weight-small: 300;
     --color-black: #000;
-    --color-gray: #333;
-    --color-light-gray: #ccc;
+    --color-gray: #a3a3a3;
+    --color-light-gray: #e5e5e5;
     --transition-opacity-fast: opacity 0.2s ease;
     --transition-opacity-normal: opacity 0.3s ease;
 }
@@ -46,8 +50,8 @@ body {
 
 .nav-content {
     font-family: var(--font-primary);
-    font-size: 16px;
-    font-weight: 400;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
     color: var(--color-black);
     letter-spacing: 2px;
     transition: var(--transition-opacity-fast);
@@ -164,7 +168,8 @@ canvas {
     position: absolute;
     top: 30vh; /* 居中起点，初始位置由JS动态设置 */
     font-family: var(--font-primary);
-    font-size: 16px;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
     color: var(--color-gray);
     white-space: nowrap;
     z-index: 105;
@@ -190,7 +195,10 @@ canvas {
     left: 50%;
     /* 居中显示，top由JS动态设置 */
     transform: translateX(-50%);
-    /* ...existing code... */
+    font-family: var(--font-primary);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    color: var(--color-black);
 }
 
 /* 时间点 - 分布在左右两侧 */
@@ -239,7 +247,7 @@ canvas {
 .content-line {
     margin-bottom: 4px;
     line-height: 1.2;
-    font-size: 14px; /* 与时间标签相同的字体大小 */
+    font-size: var(--font-size-small); /* 与时间标签相同的字体大小 */
     transition: opacity 0.3s ease, transform 0.3s ease;
     opacity: 0;
 }
@@ -255,18 +263,22 @@ canvas {
 }
 
 .content-title {
-    font-weight: bold;
-    color: #000;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-black);
 }
 
 .content-location {
-    font-size: 10px;
-    color: #8f8f8f;
+    font-size: var(--font-size-x-small);
+    font-weight: var(--font-weight-small);
+    color: var(--color-gray);
 }
 
-.content-degree {
-    font-weight: normal;
-    color: #000;
+.content-degree
+.content-description  {
+    font-weight: var(--font-weight-small);
+    font-size: var(--font-size-small);
+    color: var(--color-black);
 }
 
 .timeline-content.right-content {
@@ -274,11 +286,6 @@ canvas {
     text-align: left; /* 左对齐 */
 }
 
-.content-description {
-    font-weight: normal;
-    color: #000;
-    font-size: 14px;
-}
 
 /* 黑色进度条样式，覆盖在左侧灰色线上 */
 .timeline-progress-bar {
@@ -291,4 +298,77 @@ canvas {
     z-index: 102; /* 比灰色线高一层 */
     transition: height 0.3s ease;
     pointer-events: none;
+}
+
+/* 技能区域样式 */
+#skills-container {
+    position: absolute;
+    top: 1600px; /* 放置在时间轴下方 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 50px 0;
+    gap: 20px;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.2s;
+}
+
+.skill-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 200px;
+}
+
+.skill-ring-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.skill-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); /* 使圆环从顶部开始 */
+}
+
+.skill-ring-bg,
+.skill-ring-fg {
+    fill: none;
+    stroke-width: 8;
+}
+
+.skill-ring-bg {
+    stroke: var(--color-light-gray);
+}
+
+.skill-ring-fg {
+    stroke: var(--color-black);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.skill-title {
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    color: var(--color-black);
+}
+
+.skill-content {
+    font-size: var(--font-size-small);
+    line-height: 1.6;
+    color: var(--color-gray);
 }

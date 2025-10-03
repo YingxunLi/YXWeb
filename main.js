@@ -655,6 +655,37 @@ function createTimeline() {
             timelineContainer.appendChild(contentElement);
         }
     });
+
+    // 技能区域
+    const skillsContainer = document.createElement('div');
+    skillsContainer.id = 'skills-container';
+    const skillsData = [
+        { title: 'UI', percentage: 80, content: 'Illustrator<br>Photoshop<br>Indesign<br>Premiere' },
+        { title: 'UX', percentage: 80, content: 'Figma<br>HTML, CSS, JavaScript<br>Arduino' },
+        { title: '3D', percentage: 70, content: 'Rhino<br>Blender<br>Keyshot' },
+        { title: 'Sprache', percentage: 75, content: 'Chinesisch (Muttersprache)<br>Deutsch (TestDaF C1)<br>Englisch' }
+    ];
+
+    const radius = 54;
+    const circumference = 2 * Math.PI * radius;
+
+    skillsData.forEach(skill => {
+        const offset = circumference - (skill.percentage / 100) * circumference;
+        const skillItem = document.createElement('div');
+        skillItem.className = 'skill-item';
+        skillItem.innerHTML = `
+            <div class="skill-ring-container">
+                <svg class="skill-ring" width="120" height="120" viewBox="0 0 120 120">
+                    <circle class="skill-ring-bg" cx="60" cy="60" r="${radius}"></circle>
+                    <circle class="skill-ring-fg" cx="60" cy="60" r="${radius}" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"></circle>
+                </svg>
+                <div class="skill-title">${skill.title}</div>
+            </div>
+            <div class="skill-content">${skill.content}</div>
+        `;
+        skillsContainer.appendChild(skillItem);
+    });
+    timelineContainer.appendChild(skillsContainer);
     
     detailContent.appendChild(timelineContainer);
     
@@ -833,6 +864,30 @@ function updateTimelineDisplay() {
     updateProgressBar('#timeline-progress-bar-right-072022', '07.2022', 150);
     updateProgressBar('#timeline-progress-bar-right-082024', '08.2024', 200);
     updateProgressBar('#timeline-progress-bar-right-122024', '12.2024', 400);
+
+    // 5. 技能区域的显示逻辑
+    const skillsContainer = document.getElementById('skills-container');
+    if (skillsContainer) {
+        const skillsRect = skillsContainer.getBoundingClientRect();
+        const detailContentRect = detailContent.getBoundingClientRect();
+        const skillsTopInViewport = skillsRect.top - detailContentRect.top;
+
+        if (skillsTopInViewport < viewportHeight * 0.8) {
+            skillsContainer.style.opacity = '1';
+            
+            const skillRings = skillsContainer.querySelectorAll('.skill-ring-fg');
+            const skillsData = [
+                { percentage: 80 }, { percentage: 80 }, { percentage: 70 }, { percentage: 75 }
+            ];
+            const radius = 54;
+            const circumference = 2 * Math.PI * radius;
+
+            skillRings.forEach((ring, index) => {
+                const offset = circumference - (skillsData[index].percentage / 100) * circumference;
+                ring.style.strokeDashoffset = offset;
+            });
+        }
+    }
 }
 
 // ============ 🧭 mouse events interaction logik ============
@@ -955,7 +1010,9 @@ function addMouseEvents() {
             }
         }
     });
+    
 }
+
 // ============ navigation bar click event ============
 function addNavbarEvents() {
     const navItems = {
