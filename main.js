@@ -963,6 +963,15 @@ function handlePageScroll(event) {
         event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         
+        // 先检查并清理可能存在的旧副本
+        const existingSecondCircle = document.getElementById('second-circle');
+        if (existingSecondCircle && existingSecondCircle.parentNode) {
+            existingSecondCircle.parentNode.removeChild(existingSecondCircle);
+        }
+        
+        // 移除先前可能添加的类
+        circleWrapper.classList.remove('duplicated', 'move-left');
+        
         if (circleWrapper && !circleWrapper.classList.contains('duplicated')) {
             console.log("Creating duplicate circle");
             
@@ -992,11 +1001,18 @@ function handlePageScroll(event) {
             circleWrapper.classList.add('duplicated', 'move-left');
             secondCircle.classList.add('move-right');
             
-            // 延迟一段时间后再进行下一步操作
-            setTimeout(() => {
-                skillAnimationPhase = 5; // 回到阶段5，继续循环
-            }, 2000);
+            // 修复：不再自动重置到阶段5，保持在阶段9
+            // 或者可以设置为阶段10，表示动画结束
+            skillAnimationPhase = 10; // 设置为阶段10，表示动画完成
         }
+        return;
+    }
+
+    // 新增阶段10：动画结束状态
+    if (skillAnimationPhase === 10 && event.deltaY > 0) {
+        // 如果用户继续滚动，可以继续显示时间轴后续内容
+        // 或者可以保持当前状态，不做任何处理
+        event.preventDefault(); // 可选，取决于是否需要继续滚动页面
         return;
     }
     
@@ -1719,7 +1735,7 @@ function getCurrentProjectIndex(project) {
 }
 
 function setBackgroundTransparency(isTransparent) {
-    const elementsToHide = [
+       const elementsToHide = [
         '#container canvas',
         '#logo-container', 
         '#timeline-container',
