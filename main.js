@@ -841,7 +841,7 @@ function handlePageScroll(event) {
         event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const textElement = document.getElementById('manchmal-text');
-        if (circleWrapper && !circleWrapper.classList.contains('restore-circle')) {
+        if (circleWrapper && !circleWrapper.classList.contains('text-updated')) {
             console.log("Starting text reveal and shape restore animation");
             textElement.style.opacity = '1';
             circleWrapper.classList.add('restore-circle');
@@ -914,9 +914,46 @@ function handlePageScroll(event) {
                 circleWrapper.classList.add('shrink-to-head');
                 circleWrapper.classList.add('show-person');
                 
-                // 动画完成后不再继续到下一阶段
-                skillAnimationPhase = 7; // 保持在阶段7，不再进行到阶段8
+                // 动画完成后进入阶段8
+                personBody.addEventListener('animationend', (e) => {
+                    if (e.animationName === 'transform-to-body') {
+                        console.log("Second person animation finished");
+                        skillAnimationPhase = 8; // 第二次人形动画完成，进入阶段8
+                    }
+                }, { once: true });
             }, 500);
+        }
+        return;
+    }
+    
+    // 阶段8: 第二次人形动画后，恢复为带有"Manchmal will ich"文本的大圆形状态
+    if (skillAnimationPhase === 8 && event.deltaY > 0) {
+        event.preventDefault();
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        const textElement = document.getElementById('manchmal-text');
+        const personBody = document.getElementById('person-body');
+        
+        if (circleWrapper) {
+            console.log("Restoring to circle with initial text");
+            
+            // 移除所有人形相关的类
+            circleWrapper.classList.remove('shrink-to-head', 'show-person', 'text-hidden');
+            
+            // 重置文本并准备显示
+            textElement.innerHTML = 'Manchmal will ich';
+            
+            // 添加恢复动画
+            circleWrapper.classList.add('restore-circle');
+            
+            // 监听恢复动画结束
+            circleWrapper.addEventListener('animationend', (e) => {
+                if (e.animationName === 'restore-to-circle') {
+                    console.log("Restore animation finished, showing initial text");
+                    // 显示文本
+                    textElement.style.opacity = '1';
+                    skillAnimationPhase = 5; // 回到阶段5，准备下一次循环
+                }
+            }, { once: true });
         }
         return;
     }
