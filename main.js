@@ -761,6 +761,13 @@ function addTimelineScrollEvents() {
         detailContent.addEventListener('wheel', handlePageScroll, { passive: false });
     }
     
+    const body = document.getElementById('page-body');
+    if (body) {
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        body.style.paddingRight = `${scrollbarWidth}px`;
+        body.classList.add('no-scroll');
+    }
+
     if (detailContent) {
         detailContent.scrollTop = 0;
     }
@@ -777,6 +784,12 @@ function removeTimelineScrollEvents() {
         detailContent.removeEventListener('scroll', handlePageScroll);
         detailContent.removeEventListener('wheel', handlePageScroll);
         detailContent.scrollTop = 0;
+    }
+
+    const body = document.getElementById('page-body');
+    if (body) {
+        body.style.paddingRight = '';
+        body.classList.remove('no-scroll');
     }
 }
 
@@ -816,11 +829,7 @@ function handlePageScroll(event) {
                 if (e.animationName === 'transform-to-body') {
                     console.log("Person animation finished");
                     skillAnimationPhase = 5; // 人形动画完成
-                    // 恢复滚动
-                    const detailContent = utils.getElement('detail-content');
-                    if (detailContent) {
-                        detailContent.style.overflowY = 'auto';
-                    }
+                    // 恢复滚动 - 移除
                 }
             }, { once: true });
         }
@@ -842,11 +851,7 @@ function handlePageScroll(event) {
                 if (e.animationName === 'restore-to-circle') {
                     console.log("Restore animation finished");
                     skillAnimationPhase = 6; // 恢复动画完成
-                    // 恢复滚动
-                    const detailContent = utils.getElement('detail-content');
-                    if (detailContent) {
-                        detailContent.style.overflowY = 'auto';
-                    }
+                    // 恢复滚动 - 移除
                 }
             }, { once: true });
         }
@@ -875,14 +880,63 @@ function handlePageScroll(event) {
                     if (e.animationName === 'text-rotate-animation') {
                         console.log("Text rotation animation finished");
                         skillAnimationPhase = 7; // 旋转动画完成
-                        // 恢复滚动
-                        const detailContent = utils.getElement('detail-content');
-                        if (detailContent) {
-                            detailContent.style.overflowY = 'auto';
-                        }
+                        // 恢复滚动 - 移除
                     }
                 }, { once: true });
             }, 1000); // 等待1秒
+        }
+        return;
+    }
+    
+    // 阶段7：旋转动画完成后，文字消失并重复人形动画
+    if (skillAnimationPhase === 7 && event.deltaY > 0) {
+        event.preventDefault();
+        const textElement = document.getElementById('manchmal-text');
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        const personBody = document.getElementById('person-body');
+        
+        if (textElement && !circleWrapper.classList.contains('text-hidden')) {
+            console.log("Starting second person animation");
+            
+            // 隐藏文字
+            textElement.style.opacity = '0';
+            circleWrapper.classList.add('text-hidden');
+            
+            // 重置圆形和人形的状态
+            setTimeout(() => {
+                // 移除之前的动画类
+                circleWrapper.classList.remove('restore-circle', 'flip-circle', 'text-updated');
+                
+                // 确保身体元素是可见的
+                personBody.style.opacity = '1';
+                
+                // 重新添加人形动画类
+                circleWrapper.classList.add('shrink-to-head');
+                circleWrapper.classList.add('show-person');
+                
+                skillAnimationPhase = 8; // 更新到下一个阶段
+            }, 500);
+        }
+        return;
+    }
+    
+    // 阶段8：第二次人形动画完成后，创建克隆圆并分离
+    if (skillAnimationPhase === 8 && event.deltaY > 0) {
+        event.preventDefault();
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        
+        // 检查是否已经处于分离动画中
+        if (!circleWrapper.classList.contains('split-animation')) {
+            console.log("Starting horizontal split animation");
+            
+            // 使用新的专用动画函数
+            window.startSplitAnimation();
+            
+            // 监听动画完成事件
+            circleWrapper.addEventListener('splitAnimationComplete', () => {
+                console.log("Split animation finished");
+                skillAnimationPhase = 9; // 分离动画完成
+            }, { once: true });
         }
         return;
     }
@@ -1070,8 +1124,7 @@ function updateTimelineDisplay() {
             lastBall.addEventListener('animationend', () => {
                 console.log("Ball animation finished. Ready for lid.");
                 skillAnimationPhase = 3; // 球已落下，准备盖盖子
-                const detailContent = utils.getElement('detail-content');
-                detailContent.style.overflowY = 'hidden'; // 准备阻止滚动
+                // 不再需要在这里隐藏滚动条
             }, { once: true });
         }
     }
