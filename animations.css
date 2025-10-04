@@ -263,34 +263,22 @@ body.no-scroll {
     animation: shrink-to-head 1s ease-in-out forwards;
 }
 
-/* 复制圆形的基础样式 */
-.duplicate-circle {
+/* 新增：当 #person-body 成为独立圆时的样式 */
+.second-circle {
     position: absolute;
-    top: 0;
+    top: 2050px; /* 与 #skill-circle-wrapper 初始位置相同 */
     left: 50%;
-    transform: translateX(100%);  /* 初始位置在右侧不可见处 */
+    transform: translateX(-50%);
     width: 400px;
     height: 400px;
-    opacity: 0;
-    transition: transform 1.2s ease, opacity 1s ease;
-    z-index: 110;
-}
-
-/* 复制的人形身体 */
-.duplicate-circle .person-body {
-    position: absolute;
-    width: 400px;
-    height: 400px; 
     background-color: var(--color-black);
-    border-radius: 200px; 
-    top: 0; 
-    left: 0;
-    opacity: 1;
-    z-index: 95;
+    border-radius: 200px;
+    z-index: 110; /* 确保在 wrapper 下方，但在其他内容之上 */
+    opacity: 1; /* 确保可见 */
 }
 
-/* 复制的文字 */
-.duplicate-circle .manchmal-text {
+/* 新增：第二个圆内的文字样式 */
+.second-circle .manchmal-text {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -312,8 +300,8 @@ body.no-scroll {
     animation: move-circle-left 1.2s ease forwards;
 }
 
-/* 复制圆形向右移动的动画类 */
-.duplicate-circle.move-right {
+/* 修改：让 .move-right 应用于 .second-circle */
+.second-circle.move-right {
     animation: move-circle-right 1.2s ease forwards;
 }
 
@@ -329,62 +317,14 @@ body.no-scroll {
     }
 }
 
-/* 复制圆形向右移动的动画 */
+/* 修改：第二个圆的动画，从中心开始 */
 @keyframes move-circle-right {
-    0% {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    100% {
-        transform: translateX(20%);
-        opacity: 1;
-    }
-}
-
-/* 当#person-body被移出后成为独立圆的样式 */
-.second-circle {
-    position: absolute;
-    top: 2050px; /* 与#skill-circle-wrapper保持同样位置 */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 400px;
-    height: 400px; 
-    background-color: var(--color-black);
-    border-radius: 200px;
-    z-index: 110; /* 确保可见 */
-}
-
-/* 第二个圆中的文字样式 */
-.second-circle .manchmal-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: var(--font-size-body);
-    font-family: var(--font-family-body);
-    font-weight: var(--font-weight-body);
-    text-align: center;
-    opacity: 1;
-    z-index: 130;
-    pointer-events: none;
-    width: 80%;
-    line-height: 1.4;
-}
-
-/* 第二个圆向右移动的动画类 */
-.second-circle.move-right {
-    animation: second-circle-right 1.2s ease forwards;
-}
-
-/* 第二个圆向右移动的动画 */
-@keyframes second-circle-right {
     0% {
         transform: translateX(-50%); /* 从中心开始 */
         opacity: 1;
     }
     100% {
-        transform: translateX(20%); /* 向右移动 */
+        transform: translateX(20%); /* 移动到右侧 */
         opacity: 1;
     }
 }

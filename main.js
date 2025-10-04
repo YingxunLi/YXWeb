@@ -958,61 +958,52 @@ function handlePageScroll(event) {
         return;
     }
     
-    // 阶段9: 复制圆形，创建两个并排的圆
+    // 阶段9: 利用已有的两个重叠圆实现分离
     if (skillAnimationPhase === 9 && event.deltaY > 0) {
         event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
+        const personBody = document.getElementById('person-body');
         
-        // 先检查并清理可能存在的旧副本
-        const existingSecondCircle = document.getElementById('second-circle');
-        if (existingSecondCircle && existingSecondCircle.parentNode) {
-            existingSecondCircle.parentNode.removeChild(existingSecondCircle);
-        }
-        
-        // 移除先前可能添加的类
-        circleWrapper.classList.remove('duplicated', 'move-left');
-        
-        if (circleWrapper && !circleWrapper.classList.contains('duplicated')) {
-            console.log("Creating duplicate circle");
+        if (circleWrapper && personBody && !circleWrapper.classList.contains('duplicated')) {
+            console.log("Separating existing circles, no new elements created.");
+
+            // 1. 将 #person-body 从 #skill-circle-wrapper 中移出，成为同级元素
+            const parentContainer = circleWrapper.parentNode;
+            if (personBody.parentNode === circleWrapper) {
+                parentContainer.appendChild(personBody);
+            }
+
+            // 2. 为 #person-body 添加 .second-circle 类，以便独立设置样式
+            personBody.classList.add('second-circle');
             
-            // 创建第二个圆形
-            const secondCircle = document.createElement('div');
-            secondCircle.id = 'second-circle';
-            secondCircle.className = 'duplicate-circle';
+            // 3. 为第二个圆添加文字
+            if (!personBody.querySelector('.manchmal-text')) {
+                const secondText = document.createElement('div');
+                secondText.className = 'manchmal-text';
+                secondText.textContent = 'Manchmal will ich';
+                secondText.style.opacity = '1';
+                personBody.appendChild(secondText);
+            }
             
-            // 复制人形身体元素
-            const secondBody = document.createElement('div');
-            secondBody.id = 'second-person-body';
-            secondBody.className = 'person-body';
-            secondCircle.appendChild(secondBody);
-            
-            // 复制文本元素
-            const secondText = document.createElement('div');
-            secondText.id = 'second-manchmal-text';
-            secondText.className = 'manchmal-text';
-            secondText.textContent = 'Manchmal will ich';
-            secondText.style.opacity = '1';
-            secondCircle.appendChild(secondText);
-            
-            // 将第二个圆添加到DOM中
-            circleWrapper.parentNode.appendChild(secondCircle);
-            
-            // 为原始圆和新圆添加并排动画类
+            // 4. 添加移动动画类
             circleWrapper.classList.add('duplicated', 'move-left');
-            secondCircle.classList.add('move-right');
-            
-            // 修复：不再自动重置到阶段5，保持在阶段9
-            // 或者可以设置为阶段10，表示动画结束
-            skillAnimationPhase = 10; // 设置为阶段10，表示动画完成
+            personBody.classList.add('move-right');
+
+            // 5. 确保原始圆内的文字可见
+            const originalText = document.getElementById('manchmal-text');
+            if (originalText) {
+                originalText.style.opacity = '1';
+            }
+
+            // 6. 动画结束，进入最终阶段
+            skillAnimationPhase = 10;
         }
         return;
     }
 
-    // 新增阶段10：动画结束状态
+    // 新增阶段10：动画结束状态，阻止后续滚动触发任何操作
     if (skillAnimationPhase === 10 && event.deltaY > 0) {
-        // 如果用户继续滚动，可以继续显示时间轴后续内容
-        // 或者可以保持当前状态，不做任何处理
-        event.preventDefault(); // 可选，取决于是否需要继续滚动页面
+        event.preventDefault();
         return;
     }
     
