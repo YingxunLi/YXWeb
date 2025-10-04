@@ -399,6 +399,10 @@ function createTimeline() {
     timelineContainer = document.createElement('div');
     timelineContainer.id = 'timeline-container';
     
+    // 为时间轴容器增加最小高度，以在底部创建留白
+    // 您可以调整 3500px 这个值来控制留白的高度
+    timelineContainer.style.minHeight = '3500px';
+
     // line
     const leftLine = document.createElement('div');
     leftLine.className = 'timeline-line left-line';
