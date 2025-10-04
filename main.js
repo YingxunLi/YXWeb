@@ -914,29 +914,9 @@ function handlePageScroll(event) {
                 circleWrapper.classList.add('shrink-to-head');
                 circleWrapper.classList.add('show-person');
                 
-                skillAnimationPhase = 8; // 更新到下一个阶段
+                // 动画完成后不再继续到下一阶段
+                skillAnimationPhase = 7; // 保持在阶段7，不再进行到阶段8
             }, 500);
-        }
-        return;
-    }
-    
-    // 阶段8：第二次人形动画完成后，创建克隆圆并分离
-    if (skillAnimationPhase === 8 && event.deltaY > 0) {
-        event.preventDefault();
-        const circleWrapper = document.getElementById('skill-circle-wrapper');
-        
-        // 检查是否已经处于分离动画中
-        if (!circleWrapper.classList.contains('split-animation')) {
-            console.log("Starting horizontal split animation");
-            
-            // 使用新的专用动画函数
-            window.startSplitAnimation();
-            
-            // 监听动画完成事件
-            circleWrapper.addEventListener('splitAnimationComplete', () => {
-                console.log("Split animation finished");
-                skillAnimationPhase = 9; // 分离动画完成
-            }, { once: true });
         }
         return;
     }
@@ -1783,7 +1763,7 @@ function showProjectDetailDirect(project) {
         top: 0;
         left: 0;
         width: 100vw;
-        height: 100vh;
+                      height: 100vh;
         z-index: 999;
         pointer-events: auto;
         background: transparent;
