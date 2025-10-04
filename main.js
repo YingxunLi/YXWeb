@@ -968,15 +968,49 @@ function handlePageScroll(event) {
             if (originalText) {
                 originalText.style.opacity = '1';
             }
-
             // 6. 动画结束，进入最终阶段
             skillAnimationPhase = 10;
         }
         return;
     }
 
-    // 新增阶段10：动画结束状态，阻止后续滚动触发任何操作
+    // 阶段 10: 生成眼睛
     if (skillAnimationPhase === 10 && event.deltaY > 0) {
+        event.preventDefault();
+        const textElement = document.getElementById('manchmal-text');
+        const timelineContainer = document.getElementById('timeline-container');
+
+        if (textElement && timelineContainer && !document.getElementById('left-eye')) {
+            console.log("Phase 10: Hiding text and showing eyes.");
+
+            // 1. 隐藏文字
+            textElement.style.opacity = '0';
+
+            // 2. 创建并添加眼睛元素
+            const leftEye = document.createElement('div');
+            leftEye.id = 'left-eye';
+            leftEye.className = 'eye-oval';
+            timelineContainer.appendChild(leftEye);
+
+            const rightEye = document.createElement('div');
+            rightEye.id = 'right-eye';
+            rightEye.className = 'eye-oval';
+            timelineContainer.appendChild(rightEye);
+
+            // 3. 触发出现动画
+            setTimeout(() => {
+                leftEye.classList.add('appearing');
+                rightEye.classList.add('appearing');
+            }, 50); // 短暂延迟以确保CSS transition生效
+
+            // 4. 进入下一阶段
+            skillAnimationPhase = 11;
+        }
+        return;
+    }
+
+    // 新增阶段11：动画结束状态，阻止后续滚动触发任何操作
+    if (skillAnimationPhase === 11 && event.deltaY > 0) {
         event.preventDefault();
         return;
     }
