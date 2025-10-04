@@ -277,23 +277,6 @@ body.no-scroll {
     opacity: 1; /* 确保可见 */
 }
 
-/* 修改：同样提高文字样式的选择器优先级 */
-#person-body.second-circle .manchmal-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: var(--font-size-body);
-    font-family: var(--font-family-body);
-    font-weight: var(--font-weight-body);
-    text-align: center;
-    opacity: 1;
-    z-index: 130;
-    pointer-events: none;
-    width: 80%;
-    line-height: 1.4;
-}
 
 /* 原始圆形向左移动的动画类 */
 #skill-circle-wrapper.move-left {

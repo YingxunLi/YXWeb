@@ -959,15 +959,6 @@ function handlePageScroll(event) {
             // 2. 为 #person-body 添加 .second-circle 类，以便独立设置样式
             personBody.classList.add('second-circle');
             
-            // 3. 为第二个圆添加文字
-            if (!personBody.querySelector('.manchmal-text')) {
-                const secondText = document.createElement('div');
-                secondText.className = 'manchmal-text';
-                secondText.textContent = 'Manchmal will ich';
-                secondText.style.opacity = '1';
-                personBody.appendChild(secondText);
-            }
-            
             // 4. 添加移动动画类
             circleWrapper.classList.add('duplicated', 'move-left');
             personBody.classList.add('move-right');
