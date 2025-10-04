@@ -840,95 +840,74 @@ function handlePageScroll(event) {
         return;
     }
     
-    // 阶段5：人形动画完成后，显示文字并恢复原始圆形
+    // 阶段5、6、7合并：一次滚动触发，自动连续播放
     if (skillAnimationPhase === 5 && event.deltaY > 0) {
         event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const textElement = document.getElementById('manchmal-text');
-        if (circleWrapper && !circleWrapper.classList.contains('text-updated')) {
-            console.log("Starting text reveal and shape restore animation");
+        const personBody = document.getElementById('person-body');
+
+        if (circleWrapper && !circleWrapper.classList.contains('restore-circle')) {
+            console.log("Phase 5 Start: Restore circle, then chain animations.");
+            skillAnimationPhase = '5-running'; // 设置一个运行中状态，防止重复触发
+
+            // 1. 恢复为圆形，并显示初始文字
             textElement.style.opacity = '1';
             circleWrapper.classList.add('restore-circle');
-            
-            // 监听恢复动画结束
-            circleWrapper.addEventListener('animationend', (e) => {
+
+            // 2. 监听恢复动画结束
+            circleWrapper.addEventListener('animationend', function onRestoreEnd(e) {
                 if (e.animationName === 'restore-to-circle') {
-                    console.log("Restore animation finished");
-                    skillAnimationPhase = 6; // 恢复动画完成
-                    // 恢复滚动 - 移除
+                    circleWrapper.removeEventListener('animationend', onRestoreEnd); // 清理监听器
+                    console.log("Phase 6 Start: Show full text and rotate.");
+
+                    // 3. 显示完整句子
+                    textElement.innerHTML = 'Manchmal will ich<br>die Welt auf<br>den Kopf stellen';
+                    circleWrapper.classList.add('text-updated');
+
+                    // 4. 短暂延迟后，开始旋转文字
+                    setTimeout(() => {
+                        circleWrapper.classList.add('flip-circle');
+
+                        // 5. 监听旋转动画结束
+                        textElement.addEventListener('animationend', function onRotateEnd(e) {
+                            if (e.animationName === 'text-rotate-animation') {
+                                textElement.removeEventListener('animationend', onRotateEnd); // 清理监听器
+                                console.log("Phase 7 Start: Hide text and show second person animation.");
+
+                                // 6. 隐藏文字
+                                textElement.style.opacity = '0';
+                                circleWrapper.classList.add('text-hidden');
+
+                                // 7. 短暂延迟后，开始第二次人形动画
+                                setTimeout(() => {
+                                    circleWrapper.classList.remove('restore-circle', 'flip-circle', 'text-updated');
+                                    personBody.style.opacity = '1';
+                                    circleWrapper.classList.add('shrink-to-head', 'show-person');
+
+                                    // 8. 监听第二次人形动画结束
+                                    personBody.addEventListener('animationend', function onSecondPersonAnimEnd(e) {
+                                        if (e.animationName === 'transform-to-body') {
+                                            personBody.removeEventListener('animationend', onSecondPersonAnimEnd);
+                                            console.log("Phase 7 End: Second person animation finished.");
+                                            skillAnimationPhase = 8; // 进入下一阶段
+                                        }
+                                    });
+                                }, 500);
+                            }
+                        });
+                    }, 1000); // 等待1秒让用户阅读
                 }
-            }, { once: true });
+            });
         }
         return;
     }
     
-    // 阶段6：先完整显示句子，之后再旋转文字
-    if (skillAnimationPhase === 6 && event.deltaY > 0) {
-        event.preventDefault();
-        const circleWrapper = document.getElementById('skill-circle-wrapper');
-        const textElement = document.getElementById('manchmal-text');
-        if (circleWrapper && !circleWrapper.classList.contains('text-updated')) {
-            console.log("Updating complete text");
-            
-            // 更新文本并分行显示，添加类以标记文本已更新
-            textElement.innerHTML = 'Manchmal will ich<br>die Welt auf<br>den Kopf stellen';
-            circleWrapper.classList.add('text-updated');
-            
-            // 等待1秒让用户阅读完整文本后再开始旋转动画
-            setTimeout(() => {
-                console.log("Starting rotation animation");
-                circleWrapper.classList.add('flip-circle');
-                
-                // 监听文字旋转动画结束
-                textElement.addEventListener('animationend', (e) => {
-                    if (e.animationName === 'text-rotate-animation') {
-                        console.log("Text rotation animation finished");
-                        skillAnimationPhase = 7; // 旋转动画完成
-                        // 恢复滚动 - 移除
-                    }
-                }, { once: true });
-            }, 1000); // 等待1秒
-        }
-        return;
-    }
-    
-    // 阶段7：旋转动画完成后，文字消失并重复人形动画
-    if (skillAnimationPhase === 7 && event.deltaY > 0) {
-        event.preventDefault();
-        const textElement = document.getElementById('manchmal-text');
-        const circleWrapper = document.getElementById('skill-circle-wrapper');
-        const personBody = document.getElementById('person-body');
-        
-        if (textElement && !circleWrapper.classList.contains('text-hidden')) {
-            console.log("Starting second person animation");
-            
-            // 隐藏文字
-            textElement.style.opacity = '0';
-            circleWrapper.classList.add('text-hidden');
-            
-            // 重置圆形和人形的状态
-            setTimeout(() => {
-                // 移除之前的动画类
-                circleWrapper.classList.remove('restore-circle', 'flip-circle', 'text-updated');
-                
-                // 确保身体元素是可见的
-                personBody.style.opacity = '1';
-                
-                // 重新添加人形动画类
-                circleWrapper.classList.add('shrink-to-head');
-                circleWrapper.classList.add('show-person');
-                
-                // 动画完成后进入阶段8
-                personBody.addEventListener('animationend', (e) => {
-                    if (e.animationName === 'transform-to-body') {
-                        console.log("Second person animation finished");
-                        skillAnimationPhase = 8; // 第二次人形动画完成，进入阶段8
-                    }
-                }, { once: true });
-            }, 500);
-        }
-        return;
-    }
+    // 移除旧的阶段6和阶段7的独立逻辑
+    /*
+    if (skillAnimationPhase === 6 && event.deltaY > 0) { ... }
+    if (skillAnimationPhase === 7 && event.deltaY > 0) { ... }
+    */
     
     // 阶段8: 第二次人形动画后，恢复为带有"Manchmal will ich"文本的大圆形状态
     if (skillAnimationPhase === 8 && event.deltaY > 0) {
@@ -1759,8 +1738,7 @@ function setBackgroundTransparency(isTransparent) {
                 item.style.pointerEvents = '';
                                item.style.transform = '';
             }
-            item.style.transition = '';
-        }
+ }
     });
 }
 
