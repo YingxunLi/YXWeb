@@ -951,9 +951,51 @@ function handlePageScroll(event) {
                     console.log("Restore animation finished, showing initial text");
                     // 显示文本
                     textElement.style.opacity = '1';
-                    skillAnimationPhase = 5; // 回到阶段5，准备下一次循环
+                    skillAnimationPhase = 9; // 进入阶段9，准备复制圆形
                 }
             }, { once: true });
+        }
+        return;
+    }
+    
+    // 阶段9: 复制圆形，创建两个并排的圆
+    if (skillAnimationPhase === 9 && event.deltaY > 0) {
+        event.preventDefault();
+        const circleWrapper = document.getElementById('skill-circle-wrapper');
+        
+        if (circleWrapper && !circleWrapper.classList.contains('duplicated')) {
+            console.log("Creating duplicate circle");
+            
+            // 创建第二个圆形
+            const secondCircle = document.createElement('div');
+            secondCircle.id = 'second-circle';
+            secondCircle.className = 'duplicate-circle';
+            
+            // 复制人形身体元素
+            const secondBody = document.createElement('div');
+            secondBody.id = 'second-person-body';
+            secondBody.className = 'person-body';
+            secondCircle.appendChild(secondBody);
+            
+            // 复制文本元素
+            const secondText = document.createElement('div');
+            secondText.id = 'second-manchmal-text';
+            secondText.className = 'manchmal-text';
+            secondText.textContent = 'Manchmal will ich';
+            secondText.style.opacity = '1';
+            secondCircle.appendChild(secondText);
+            
+            // 将第二个圆添加到DOM中
+            circleWrapper.parentNode.appendChild(secondCircle);
+            
+            // 为原始圆和新圆添加并排动画类
+            circleWrapper.classList.add('duplicated', 'move-left');
+            secondCircle.classList.add('move-right');
+            
+            // 延迟一段时间后再进行下一步操作
+            setTimeout(() => {
+                skillAnimationPhase = 5; // 回到阶段5，继续循环
+            }, 2000);
         }
         return;
     }
@@ -1704,7 +1746,7 @@ function setBackgroundTransparency(isTransparent) {
             } else {
                 item.style.opacity = '';
                 item.style.pointerEvents = '';
-                item.style.transform = '';
+                               item.style.transform = '';
             }
             item.style.transition = '';
         }

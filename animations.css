@@ -262,3 +262,86 @@ body.no-scroll {
 #skill-circle-wrapper.text-hidden.shrink-to-head {
     animation: shrink-to-head 1s ease-in-out forwards;
 }
+
+/* 复制圆形的基础样式 */
+.duplicate-circle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(100%);  /* 初始位置在右侧不可见处 */
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+    transition: transform 1.2s ease, opacity 1s ease;
+    z-index: 110;
+}
+
+/* 复制的人形身体 */
+.duplicate-circle .person-body {
+    position: absolute;
+    width: 400px;
+    height: 400px; 
+    background-color: var(--color-black);
+    border-radius: 200px; 
+    top: 0; 
+    left: 0;
+    opacity: 1;
+    z-index: 95;
+}
+
+/* 复制的文字 */
+.duplicate-circle .manchmal-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: var(--font-size-body);
+    font-family: var(--font-family-body);
+    font-weight: var(--font-weight-body);
+    text-align: center;
+    opacity: 1;
+    z-index: 130;
+    pointer-events: none;
+    width: 80%;
+    line-height: 1.4;
+}
+
+/* 原始圆形向左移动的动画类 */
+#skill-circle-wrapper.move-left {
+    animation: move-circle-left 1.2s ease forwards;
+}
+
+/* 复制圆形向右移动的动画类 */
+.duplicate-circle.move-right {
+    animation: move-circle-right 1.2s ease forwards;
+}
+
+/* 原始圆形向左移动的动画 */
+@keyframes move-circle-left {
+    0% {
+        transform: translateX(-50%);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-120%);
+        opacity: 1;
+    }
+}
+
+/* 复制圆形向右移动的动画 */
+@keyframes move-circle-right {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(20%);
+        opacity: 1;
+    }
+}
+
+/* 确保当复制操作时，原始圆形内的文字可见 */
+#skill-circle-wrapper.duplicated #manchmal-text {
+    opacity: 1 !important;
+}
