@@ -838,7 +838,6 @@ function handlePageScroll(event) {
                     skillAnimationPhase = 5; // 人形动画完成
                     // 恢复滚动 - 移除
                 }
-// ...existing code...
             }, { once: true });
         }
         return;
@@ -943,8 +942,9 @@ function handlePageScroll(event) {
             // 移除所有人形相关的类
             circleWrapper.classList.remove('shrink-to-head', 'show-person', 'text-hidden');
             
-            // 重置文本并准备显示
+            // 重置文本并立即显示
             textElement.innerHTML = 'Manchmal will ich';
+            textElement.style.opacity = '1';
             
             // 添加恢复动画
             circleWrapper.classList.add('restore-circle');
@@ -952,9 +952,9 @@ function handlePageScroll(event) {
             // 监听恢复动画结束
             circleWrapper.addEventListener('animationend', (e) => {
                 if (e.animationName === 'restore-to-circle') {
-                    console.log("Restore animation finished, showing initial text");
-                    // 显示文本
-                    textElement.style.opacity = '1';
+                    console.log("Restore animation finished, text is already visible");
+                    // 动画结束后，移除恢复类，防止影响后续动画
+                    circleWrapper.classList.remove('restore-circle');
                     skillAnimationPhase = 9; // 进入阶段9，准备复制圆形
                 }
             }, { once: true });
@@ -1030,6 +1030,7 @@ function handlePageScroll(event) {
 
     // 阶段 11: 在眼睛中显示文字
     if (skillAnimationPhase === 11 && event.deltaY > 0) {
+        event.preventDefault();
         const timelineContainer = document.getElementById('timeline-container');
 
         if (timelineContainer && !document.getElementById('left-eye-text')) {
@@ -1053,41 +1054,114 @@ function handlePageScroll(event) {
             setTimeout(() => {
                 leftText.classList.add('visible');
                 rightText.classList.add('visible');
+                
+                // 使用固定延迟而不是transitionend事件，更可靠
+                setTimeout(() => {
+                    console.log("Text animation complete. Waiting for user to scroll...");
+                    skillAnimationPhase = 12; // 进入等待滚动的阶段
+                    
+                    // 移除创建滚动提示的代码
+                }, 1500); // 给足够时间完成文字动画
             }, 50);
-
-            // 4. 进入最终阶段
-            skillAnimationPhase = 12;
+            
+            // 不立即更新阶段，等待动画完成后才更新
+            return;
         }
         return;
     }
 
-    // 新增阶段12：动画结束状态，阻止后续滚动触发任何操作
+    // 修改阶段12：文字显示状态，完全停留等待用户再次滚动
     if (skillAnimationPhase === 12 && event.deltaY > 0) {
+        event.preventDefault();
+        
+        // 清楚地记录用户继续滚动的行为
+        console.log("Phase 12: User scrolled to continue. Starting merge animation...");
+        
+        // 进入下一个阶段
+        skillAnimationPhase = 13;
+        
+        // 移除滚动提示的代码
+        
+        // 创建并添加合并文本 - 简化版本，仅添加必要元素
+        const timelineContainer = document.getElementById('timeline-container');
+        if (timelineContainer && !document.getElementById('merge-text')) {
+            const mergeText = document.createElement('div');
+            mergeText.id = 'merge-text';
+            mergeText.className = 'merge-text';
+            mergeText.innerHTML = 'Design ist mein Weg,<br>beides möglich zu machen';
+            timelineContainer.appendChild(mergeText);
+        }
+        
+        // 开始圆形叠合动画的流程
+        const leftCircle = document.getElementById('skill-circle-wrapper');
+        const rightCircle = document.getElementById('person-body');
+        const leftEye = document.getElementById('left-eye');
+        const rightEye = document.getElementById('right-eye');
+        const leftText = document.getElementById('left-eye-text');
+        const rightText = document.getElementById('right-eye-text');
+        
+        if (leftCircle && rightCircle) {
+            console.log("Starting circle merge animation sequence");
+            
+            // 首先淡出眼睛中的文字
+            if (leftText) leftText.classList.remove('visible');
+            if (rightText) rightText.classList.remove('visible');
+            
+            // 短暂延迟后淡出眼睛
+            setTimeout(() => {
+                if (leftEye) leftEye.classList.remove('appearing');
+                if (rightEye) rightEye.classList.remove('appearing');
+                
+                // 再次延迟后开始圆形合并动画
+                setTimeout(() => {
+                    // 移除之前的移动类
+                    leftCircle.classList.remove('move-left');
+                    rightCircle.classList.remove('move-right');
+                    
+                    // 添加合并动画类
+                    leftCircle.classList.add('merge-back');
+                    rightCircle.classList.add('merge-to-center');
+                    
+                    // 监听动画完成
+                    leftCircle.addEventListener('animationend', (e) => {
+                        if (e.animationName === 'merge-circle-to-center') {
+                            console.log("Circles merged. Animation sequence complete.");
+                            skillAnimationPhase = 14; // 完成阶段
+                        }
+                    }, { once: true });
+                }, 500);
+            }, 500);
+        }
+        return;
+    }
+
+    // 最终阶段：保持合并状态，阻止滚动
+    if (skillAnimationPhase === 14 && event.deltaY > 0) {
         event.preventDefault();
         return;
     }
     
     // 如果动画阶段在2之前，则允许正常的时间轴滚动
-// ...existing code...
-    
-    const detailContent = utils.getElement('detail-content');
-    if (!detailContent) return;
-    
-    const scrollTop = detailContent.scrollTop;
-    const containerHeight = timelineContainer.offsetHeight;
-    const viewportHeight = detailContent.clientHeight;
-    
-    const scrollableHeight = containerHeight - viewportHeight;
-    let newProgress = 0;
-    
-    if (scrollableHeight > 0) {
-        newProgress = Math.min(scrollTop / scrollableHeight, 1);
+    if (skillAnimationPhase < 2) {
+        const detailContent = utils.getElement('detail-content');
+        if (!detailContent) return;
+        
+        const scrollTop = detailContent.scrollTop;
+        const containerHeight = timelineContainer.offsetHeight;
+        const viewportHeight = detailContent.clientHeight;
+        
+        const scrollableHeight = containerHeight - viewportHeight;
+        let newProgress = 0;
+        
+        if (scrollableHeight > 0) {
+            newProgress = Math.min(scrollTop / scrollableHeight, 1);
+        }
+        
+        if (newProgress > timelineScrollProgress) {
+            timelineScrollProgress = newProgress;
+        }
+        updateTimelineDisplay();
     }
-    
-    if (newProgress > timelineScrollProgress) {
-        timelineScrollProgress = newProgress;
-    }
-    updateTimelineDisplay();
 }
 
 // ...existing code...
@@ -1640,7 +1714,7 @@ function updateNavbar() {
 
         if (isRotating && currentState !== targetState) {
             const fromState = currentState;
-            const toState = targetState;
+                       const toState = targetState;
             
             if (stateProgress < 0.5) {
                 singleText.textContent = stateNames[fromState];
@@ -1832,7 +1906,7 @@ function setBackgroundTransparency(isTransparent) {
                 item.style.pointerEvents = '';
                                item.style.transform = '';
             }
- }
+        }
     });
 }
 

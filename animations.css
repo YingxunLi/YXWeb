@@ -149,10 +149,10 @@ body.no-scroll {
 }
 
 /* 为每个球定义掉落动画 */
-.skill-ball.fall-1 { animation: fall-1 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.0s forwards; }
-.skill-ball.fall-2 { animation: fall-2 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.2s forwards; }
-.skill-ball.fall-3 { animation: fall-3 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.4s forwards; }
-.skill-ball.fall-4 { animation: fall-4 1.5s cubic-bezier(0.6, 0.04, 0.98, 0.335) 0.6s forwards; }
+.skill-ball.fall-1 { animation: fall-1 1.5s ease-in 0.0s forwards; }
+.skill-ball.fall-2 { animation: fall-2 1.5s ease-in 0.2s forwards; }
+.skill-ball.fall-3 { animation: fall-3 1.5s ease-in 0.4s forwards; }
+.skill-ball.fall-4 { animation: fall-4 1.5s ease-in 0.6s forwards; }
 
 /* 定义每个球的最终位置 */
 @keyframes fall-1 {
@@ -379,4 +379,54 @@ body.no-scroll {
 .eye-text.visible {
     opacity: 1;
     clip-path: inset(0 0 0 0); /* 移除裁剪，完全可见 */
+    transition: opacity 0.5s ease, clip-path 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* 新增：圆形叠合动画 */
+#skill-circle-wrapper.merge-back {
+    animation: merge-circle-to-center 2s ease forwards;
+}
+
+#person-body.second-circle.merge-to-center {
+    animation: merge-circle-from-right 2s ease forwards;
+}
+
+/* 定义从左侧移回中心的动画 */
+@keyframes merge-circle-to-center {
+    0% {
+        transform: translateX(-120%);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%);
+        opacity: 1;
+    }
+}
+
+/* 定义从右侧移回中心的动画 */
+@keyframes merge-circle-from-right {
+    0% {
+        transform: translateX(20%);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%);
+        opacity: 1;
+    }
+}
+
+/* 合并过程中显示的文本样式 - 简化版本 */
+.merge-text {
+    position: absolute;
+    top: 2250px; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    text-align: center;
+    color: white;
+    z-index: 140;
+    line-height: 1.5;
 }
