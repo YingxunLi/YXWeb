@@ -312,16 +312,6 @@ body.no-scroll {
     }
 }
 
-/* 确保当复制操作时，原始圆形内的文字可见 */
-#skill-circle-wrapper.duplicated #manchmal-text {
-    opacity: 1 !important;
-}
-
-/* 确保当复制操作时，原始圆形内的文字可见 */
-#skill-circle-wrapper.duplicated #manchmal-text {
-    opacity: 1 !important;
-}
-
 /* 新增：眼睛椭圆样式 */
 .eye-oval {
     position: absolute;
@@ -348,4 +338,39 @@ body.no-scroll {
 
 .eye-oval.appearing {
     transform: scale(1);
+}
+
+/* 新增：眼睛内部文字样式 */
+.eye-text {
+    position: absolute;
+    top: 2280px; /* 与眼睛垂直对齐 */
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    color: var(--color-black);
+    z-index: 120; /* 在白色椭圆之上 */
+    line-height: 1.4;
+    text-align: center;
+    opacity: 0; /* 初始不可见 */
+}
+
+.eye-text.left-text {
+    text-align: left;
+    left: calc(50% - 140px);
+    width: 200px;
+    clip-path: inset(0 100% 0 0); /* 从右侧裁剪，初始不可见 */
+    transition: clip-path 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s;
+}
+
+.eye-text.right-text {
+    text-align: right;
+    left: calc(50% - 60px);
+    width: 200px;
+    clip-path: inset(0 0 0 100%); /* 从左侧裁剪，初始不可见 */
+    transition: clip-path 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s;
+}
+
+.eye-text.visible {
+    opacity: 1;
+    clip-path: inset(0 0 0 0); /* 移除裁剪，完全可见 */
 }

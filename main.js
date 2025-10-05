@@ -1009,11 +1009,48 @@ function handlePageScroll(event) {
         return;
     }
 
-    // 新增阶段11：动画结束状态，阻止后续滚动触发任何操作
+    // 阶段 11: 在眼睛中显示文字
     if (skillAnimationPhase === 11 && event.deltaY > 0) {
+        event.preventDefault();
+        const timelineContainer = document.getElementById('timeline-container');
+
+        if (timelineContainer && !document.getElementById('left-eye-text')) {
+            console.log("Phase 11: Showing text in eyes.");
+
+            // 1. 创建左侧文字
+            const leftText = document.createElement('div');
+            leftText.id = 'left-eye-text';
+            leftText.className = 'eye-text left-text';
+            leftText.innerHTML = 'manchmal<br>will<br>ich';
+            timelineContainer.appendChild(leftText);
+
+            // 2. 创建右侧文字
+            const rightText = document.createElement('div');
+            rightText.id = 'right-eye-text';
+            rightText.className = 'eye-text right-text';
+            rightText.innerHTML = 'einfach<br>mit<br>ihr<br>quatschen';
+            timelineContainer.appendChild(rightText);
+
+            // 3. 触发动画
+            setTimeout(() => {
+                leftText.classList.add('visible');
+                rightText.classList.add('visible');
+            }, 50);
+
+            // 4. 进入最终阶段
+            skillAnimationPhase = 12;
+        }
+        return;
+    }
+
+    // 新增阶段12：动画结束状态，阻止后续滚动触发任何操作
+    if (skillAnimationPhase === 12 && event.deltaY > 0) {
         event.preventDefault();
         return;
     }
+    
+    // 如果动画阶段在2之前，则允许正常的时间轴滚动
+// ...existing code...
     
     const detailContent = utils.getElement('detail-content');
     if (!detailContent) return;
