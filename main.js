@@ -801,9 +801,13 @@ function removeTimelineScrollEvents() {
 function handlePageScroll(event) {
     if (!isDetailMode || currentState !== 1 || !timelineContainer) return;
 
+    // 动画从阶段2开始，到阶段14结束。在此期间，阻止默认的滚动行为。
+    if (skillAnimationPhase >= 2 && skillAnimationPhase <= 14) {
+        event.preventDefault();
+    }
+
     // 阶段3：盖子动画，阻止滚动
     if (skillAnimationPhase === 3 && event.deltaY > 0) {
-        event.preventDefault();
         const lid = document.getElementById('skill-bowl-lid');
         if (lid && !lid.classList.contains('closing')) {
             console.log("Closing lid");
@@ -819,7 +823,6 @@ function handlePageScroll(event) {
 
     // 阶段4：人形动画，阻止滚动
     if (skillAnimationPhase === 4 && event.deltaY > 0) {
-        event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         if (circleWrapper && !circleWrapper.classList.contains('shrink-to-head')) {
             console.log("Starting person animation");
@@ -843,7 +846,6 @@ function handlePageScroll(event) {
     
     // 阶段 5: 恢复为圆形，并显示初始文字
     if (skillAnimationPhase === 5 && event.deltaY > 0) {
-        event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const textElement = document.getElementById('manchmal-text');
 
@@ -870,7 +872,6 @@ function handlePageScroll(event) {
 
     // 阶段 6: 旋转并补全文字
     if (skillAnimationPhase === 6 && event.deltaY > 0) {
-        event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const textElement = document.getElementById('manchmal-text');
 
@@ -902,7 +903,6 @@ function handlePageScroll(event) {
 
     // 阶段 7: 隐藏文字并播放第二次人形动画
     if (skillAnimationPhase === 7 && event.deltaY > 0) {
-        event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const textElement = document.getElementById('manchmal-text');
         const personBody = document.getElementById('person-body');
@@ -933,7 +933,6 @@ function handlePageScroll(event) {
     }
     // 阶段8: 第二次人形动画后，恢复为带有"Manchmal will ich"文本的大圆形状态
     if (skillAnimationPhase === 8 && event.deltaY > 0) {
-        event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const textElement = document.getElementById('manchmal-text');
         const personBody = document.getElementById('person-body');
@@ -965,7 +964,6 @@ function handlePageScroll(event) {
     
     // 阶段9: 利用已有的两个重叠圆实现分离
     if (skillAnimationPhase === 9 && event.deltaY > 0) {
-        event.preventDefault();
         const circleWrapper = document.getElementById('skill-circle-wrapper');
         const personBody = document.getElementById('person-body');
         
@@ -998,7 +996,6 @@ function handlePageScroll(event) {
 
     // 阶段 10: 生成眼睛
     if (skillAnimationPhase === 10 && event.deltaY > 0) {
-        event.preventDefault();
         const textElement = document.getElementById('manchmal-text');
         const timelineContainer = document.getElementById('timeline-container');
 
@@ -1033,7 +1030,6 @@ function handlePageScroll(event) {
 
     // 阶段 11: 在眼睛中显示文字
     if (skillAnimationPhase === 11 && event.deltaY > 0) {
-        event.preventDefault();
         const timelineContainer = document.getElementById('timeline-container');
 
         if (timelineContainer && !document.getElementById('left-eye-text')) {
