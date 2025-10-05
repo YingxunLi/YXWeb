@@ -191,6 +191,12 @@ body.no-scroll {
     line-height: 1.4; /* 增加行高，使分行文字更易读 */
 }
 
+/* 新增：用于控制新文本淡入效果的样式 */
+#manchmal-text .new-text-part {
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+}
+
 /* 修改为文字顺时针旋转动画 */
 #skill-circle-wrapper.flip-circle #manchmal-text {
     animation: text-rotate-animation 2s ease-in-out forwards;
