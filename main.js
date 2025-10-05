@@ -1573,6 +1573,11 @@ function showProjectsGrid() {
 
     detailContent.innerHTML = '';
 
+    // 立即创建网格容器，给用户快速的视觉反馈
+    const projectsGrid = document.createElement('div');
+    projectsGrid.id = 'projects-grid';
+    detailContent.appendChild(projectsGrid);
+
     const projectsData = [
     { id: 'project-1', image: 'projects/project-1/images/cover.png', titlePath: 'projects/project-1/title.txt' },
     { id: 'project-2', image: 'projects/project-2/images/cover.png', titlePath: 'projects/project-2/title.txt' },
@@ -1597,8 +1602,6 @@ function showProjectsGrid() {
     });
 
     Promise.all(preloadAll).then(projectsWithTitle => {
-        const projectsGrid = document.createElement('div');
-        projectsGrid.id = 'projects-grid';
         projectsWithTitle.forEach(project => {
             const projectItem = document.createElement('div');
             projectItem.className = 'project-item';
@@ -1660,7 +1663,16 @@ function showProjectsGrid() {
         });
             projectsGrid.appendChild(projectItem);
         });
-        detailContent.appendChild(projectsGrid);
+
+        // 错落有致的动画展示，类似苹果官网
+        setTimeout(() => {
+            const items = projectsGrid.querySelectorAll('.project-item');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('visible');
+                }, index * 100); // 每个项目间隔100ms出现
+            });
+        }, 50); // 整体延迟50ms开始动画序列，给浏览器绘制时间
     });
 }
 

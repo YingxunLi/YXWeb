@@ -13,8 +13,18 @@
     width: 200px;
     cursor: pointer;
     position: relative;
-    transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+    /* 初始状态设置 - 隐藏并稍微向下偏移 */
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform, opacity;
+}
+
+/* 可见状态 - 通过JS添加此类来触发动画 */
+.project-item.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .project-image {
