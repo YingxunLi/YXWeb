@@ -327,24 +327,23 @@ body.no-scroll {
     position: absolute;
     top: 2250px; /* 垂直位置大致对齐圆形中心 */
     width: 200px;  /* 椭圆宽度 */
-    height: 400px; /* 椭圆高度 (与圆形相同) */
-    background-color: white;
-    border-radius: 100px / 200px; /* 创建椭圆形状 */
+    height: 140px; /* 椭圆高度 (与圆形相同) */
+    background-color: rgb(255, 255, 255);
+    border-radius: 800px / 600px; /* 创建椭圆形状 */
     z-index: 115; /* 在黑色圆形之上 */
     transform: scale(0);
     transition: transform 1s ease-in-out;
     opacity: 1;
-    /* 您可以稍后调整这里的 left 值来精确定位 */
 }
 
 #left-eye {
     /* 定位在左圆的右侧 */
-    left: calc(50% - 320px); 
+    left: calc(50% - 220px); 
 }
 
 #right-eye {
     /* 定位在右圆的左侧 */
-    left: calc(50% + 120px); 
+    left: calc(50% + 20px); 
 }
 
 .eye-oval.appearing {
