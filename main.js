@@ -1090,6 +1090,7 @@ function handlePageScroll(event) {
     updateTimelineDisplay();
 }
 
+// ...existing code...
 function updateTimelineDisplay() {
     if (!timelineContainer) return;
 
@@ -1220,27 +1221,40 @@ function updateTimelineDisplay() {
         }
     }
 
-    // 6. 技能碗和小球动画
+    // 6. 【精准修改】技能碗和小球动画的“吸附到中心”逻辑
     const circleWrapper = document.getElementById('skill-circle-wrapper');
     if (circleWrapper) {
         const wrapperRect = circleWrapper.getBoundingClientRect();
         const detailContentRect = detailContent.getBoundingClientRect();
         const wrapperTopInViewport = wrapperRect.top - detailContentRect.top;
 
-        if (wrapperTopInViewport < viewportHeight * 0.7 && skillAnimationPhase < 2) {
-            skillAnimationPhase = 2;
-            circleWrapper.style.opacity = '1';
+        // 检查是否到达或超过了居中触发点，并且动画尚未开始
+        if (wrapperTopInViewport < (viewportHeight / 2) && skillAnimationPhase < 2) {
+            
+            // 1. 计算让 wrapper 垂直居中的精确 scrollTop 值
+            const targetScrollTop = detailContent.scrollTop + wrapperTopInViewport - (viewportHeight / 2) + (wrapperRect.height / 2);
 
+            // 2. 平滑地滚动到该位置
+            detailContent.scrollTo({
+                top: targetScrollTop,
+                behavior: 'smooth'
+            });
+
+            // 3. 立即进入动画阶段2，开始锁定滚动并准备播放动画
+            skillAnimationPhase = 2;
+            console.log("Circle wrapper centered. Locking scroll and starting animation phase 2.");
+
+            // 4. 触发小球掉落动画
+            circleWrapper.style.opacity = '1';
             const skillItems = document.querySelectorAll('.skill-item');
             const balls = document.querySelectorAll('.skill-ball');
 
             balls.forEach((ball, index) => {
                 const skillItemRect = skillItems[index].querySelector('.skill-ring-container').getBoundingClientRect();
-                const wrapperRect = circleWrapper.getBoundingClientRect();
+                const ballInitialRect = circleWrapper.getBoundingClientRect();
                 
-                // 计算小球相对于 wrapper 的初始位置
-                const initialX = skillItemRect.left - wrapperRect.left + (skillItemRect.width / 2) - (ball.offsetWidth / 2);
-                const initialY = skillItemRect.top - wrapperRect.top + (skillItemRect.height / 2) - (ball.offsetHeight / 2);
+                const initialX = skillItemRect.left - ballInitialRect.left + (skillItemRect.width / 2) - (ball.offsetWidth / 2);
+                const initialY = skillItemRect.top - ballInitialRect.top + (skillItemRect.height / 2) - (ball.offsetHeight / 2);
 
                 ball.style.left = `${initialX}px`;
                 ball.style.top = `${initialY}px`;
@@ -1248,16 +1262,16 @@ function updateTimelineDisplay() {
                 ball.classList.add(`fall-${index + 1}`);
             });
 
-            // 监听最后一个球的动画结束
+            // 5. 监听最后一个球的动画结束
             const lastBall = balls[balls.length - 1];
             lastBall.addEventListener('animationend', () => {
                 console.log("Ball animation finished. Ready for lid.");
                 skillAnimationPhase = 3; // 球已落下，准备盖盖子
-                // 不再需要在这里隐藏滚动条
             }, { once: true });
         }
     }
 }
+// ...existing code...
 
 // ============ 🧭 mouse events interaction logik ============
 function addMouseEvents() {
